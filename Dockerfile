@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y wget \
     && wget https://github.com/alist-org/alist/releases/download/$version/alist-linux-musl-amd64.tar.gz \
     && tar -zxvf alist-linux-musl-amd64.tar.gz \
     && rm alist-linux-musl-amd64.tar.gz \
+    && chmod +x alist \
     && apt-get remove -y wget \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
