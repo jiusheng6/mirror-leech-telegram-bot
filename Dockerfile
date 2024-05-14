@@ -19,4 +19,7 @@ RUN apt-get update && apt-get install -y wget \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
+# 手动设置一个密码 `NEW_PASSWORD`是指你需要设置的密码
+RUN ./alist admin set 123456
+
 CMD ["bash", "start.sh"]
