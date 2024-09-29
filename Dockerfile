@@ -8,4 +8,19 @@ RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 
 COPY . .
 
+# 下载 alist
+RUN apt-get update && apt-get install -y wget \
+    && version=$(curl -s https://api.github.com/repos/alist-org/alist/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') \
+    && wget https://github.com/alist-org/alist/releases/download/$version/alist-linux-musl-amd64.tar.gz \
+    && tar -zxvf alist-linux-musl-amd64.tar.gz \
+    && rm alist-linux-musl-amd64.tar.gz \
+    && chmod +x alist \
+    && apt-get remove -y wget \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# 手动设置一个密码 `NEW_PASSWORD`是指你需要设置的密码
+RUN ./alist admin set 123456
+
+
 CMD ["bash", "start.sh"]
