@@ -1,3 +1,3 @@
 source mltbenv/bin/activate
-python3 update.py
-python3 -m bot
+nohup ./alist server &
+python3 update.py && python3 -m bot
