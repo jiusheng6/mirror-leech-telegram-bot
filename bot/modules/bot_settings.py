@@ -80,10 +80,10 @@ async def get_buttons(key=None, edit_type=None):
     elif edit_type is not None:
         if edit_type == "botvar":
             msg = ""
-            buttons.data_button("Back", "botset var")
+            buttons.data_button("返回", "botset var")
             if key not in ["TELEGRAM_HASH", "TELEGRAM_API", "OWNER_ID", "BOT_TOKEN"]:
-                buttons.data_button("Default", f"botset resetvar {key}")
-            buttons.data_button("Close", "botset close")
+                buttons.data_button("默认", f"botset resetvar {key}")
+            buttons.data_button("关闭", "botset close")
             if key in [
                 "CMD_SUFFIX",
                 "OWNER_ID",
@@ -96,32 +96,32 @@ async def get_buttons(key=None, edit_type=None):
                 msg += "Restart required for this edit to take effect! You will not see the changes in bot vars, the edit will be in database only!\n\n"
             msg += f"Send a valid value for {key}. Current value is '{Config.get(key)}'. Timeout: 60 sec"
         elif edit_type == "ariavar":
-            buttons.data_button("Back", "botset aria")
+            buttons.data_button("返回", "botset aria")
             if key != "newkey":
-                buttons.data_button("Empty String", f"botset emptyaria {key}")
-            buttons.data_button("Close", "botset close")
+                buttons.data_button("空字符串", f"botset emptyaria {key}")
+            buttons.data_button("关闭", "botset close")
             msg = (
                 "Send a key with value. Example: https-proxy-user:value. Timeout: 60 sec"
                 if key == "newkey"
                 else f"Send a valid value for {key}. Current value is '{aria2_options[key]}'. Timeout: 60 sec"
             )
         elif edit_type == "qbitvar":
-            buttons.data_button("Back", "botset qbit")
-            buttons.data_button("Empty String", f"botset emptyqbit {key}")
-            buttons.data_button("Close", "botset close")
+            buttons.data_button("返回", "botset qbit")
+            buttons.data_button("空字符串", f"botset emptyqbit {key}")
+            buttons.data_button("关闭", "botset close")
             msg = f"Send a valid value for {key}. Current value is '{qbit_options[key]}'. Timeout: 60 sec"
         elif edit_type == "nzbvar":
-            buttons.data_button("Back", "botset nzb")
-            buttons.data_button("Default", f"botset resetnzb {key}")
-            buttons.data_button("Empty String", f"botset emptynzb {key}")
-            buttons.data_button("Close", "botset close")
+            buttons.data_button("返回", "botset nzb")
+            buttons.data_button("默认", f"botset resetnzb {key}")
+            buttons.data_button("空字符串", f"botset emptynzb {key}")
+            buttons.data_button("关闭", "botset close")
             msg = f"Send a valid value for {key}. Current value is '{nzb_options[key]}'.\nIf the value is list then seperate them by space or ,\nExample: .exe,info or .exe .info\nTimeout: 60 sec"
         elif edit_type.startswith("nzbsevar"):
             index = 0 if key == "newser" else int(edit_type.replace("nzbsevar", ""))
-            buttons.data_button("Back", f"botset nzbser{index}")
+            buttons.data_button("返回", f"botset nzbser{index}")
             if key != "newser":
-                buttons.data_button("Empty", f"botset emptyserkey {index} {key}")
-            buttons.data_button("Close", "botset close")
+                buttons.data_button("空", f"botset emptyserkey {index} {key}")
+            buttons.data_button("关闭", "botset close")
             if key == "newser":
                 msg = "Send one server as dictionary {}, like in config.py without []. Timeout: 60 sec"
             else:

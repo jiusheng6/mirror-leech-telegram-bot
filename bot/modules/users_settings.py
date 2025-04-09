@@ -50,17 +50,17 @@ async def get_user_settings(from_user, stype="main"):
 
     if stype == "leech":
         thumbpath = f"thumbnails/{user_id}.jpg"
-        buttons.data_button("Thumbnail", f"userset {user_id} menu THUMBNAIL")
-        thumbmsg = "Exists" if await aiopath.exists(thumbpath) else "Not Exists"
+        buttons.data_button("缩略图", f"userset {user_id} menu THUMBNAIL")
+        thumbmsg = "已存在" if await aiopath.exists(thumbpath) else "不存在"
         buttons.data_button(
-            "Leech Split Size", f"userset {user_id} menu LEECH_SPLIT_SIZE"
+            "下载分割大小", f"userset {user_id} menu LEECH_SPLIT_SIZE"
         )
         if user_dict.get("LEECH_SPLIT_SIZE", False):
             split_size = user_dict["LEECH_SPLIT_SIZE"]
         else:
             split_size = Config.LEECH_SPLIT_SIZE
         buttons.data_button(
-            "Leech Destination", f"userset {user_id} menu LEECH_DUMP_CHAT"
+            "下载目标位置", f"userset {user_id} menu LEECH_DUMP_CHAT"
         )
         if user_dict.get("LEECH_DUMP_CHAT", False):
             leech_dest = user_dict["LEECH_DUMP_CHAT"]
@@ -69,7 +69,7 @@ async def get_user_settings(from_user, stype="main"):
         else:
             leech_dest = "None"
         buttons.data_button(
-            "Leech Prefix", f"userset {user_id} menu LEECH_FILENAME_PREFIX"
+            "下载前缀", f"userset {user_id} menu LEECH_FILENAME_PREFIX"
         )
         if user_dict.get("LEECH_FILENAME_PREFIX", False):
             lprefix = user_dict["LEECH_FILENAME_PREFIX"]
@@ -83,11 +83,11 @@ async def get_user_settings(from_user, stype="main"):
             and Config.AS_DOCUMENT
         ):
             ltype = "DOCUMENT"
-            buttons.data_button("Send As Media", f"userset {user_id} tog AS_DOCUMENT f")
+            buttons.data_button("以媒体形式发送", f"userset {user_id} tog AS_DOCUMENT f")
         else:
             ltype = "MEDIA"
             buttons.data_button(
-                "Send As Document", f"userset {user_id} tog AS_DOCUMENT t"
+                "以文档形式发送", f"userset {user_id} tog AS_DOCUMENT t"
             )
         if (
             user_dict.get("EQUAL_SPLITS", False)
@@ -95,28 +95,28 @@ async def get_user_settings(from_user, stype="main"):
             and Config.EQUAL_SPLITS
         ):
             buttons.data_button(
-                "Disable Equal Splits", f"userset {user_id} tog EQUAL_SPLITS f"
+                "禁用平均分割", f"userset {user_id} tog EQUAL_SPLITS f"
             )
-            equal_splits = "Enabled"
+            equal_splits = "已启用"
         else:
             buttons.data_button(
-                "Enable Equal Splits", f"userset {user_id} tog EQUAL_SPLITS t"
+                "启用平均分割", f"userset {user_id} tog EQUAL_SPLITS t"
             )
-            equal_splits = "Disabled"
+            equal_splits = "已禁用"
         if (
             user_dict.get("MEDIA_GROUP", False)
             or "MEDIA_GROUP" not in user_dict
             and Config.MEDIA_GROUP
         ):
             buttons.data_button(
-                "Disable Media Group", f"userset {user_id} tog MEDIA_GROUP f"
+                "禁用媒体组", f"userset {user_id} tog MEDIA_GROUP f"
             )
-            media_group = "Enabled"
+            media_group = "已启用"
         else:
             buttons.data_button(
-                "Enable Media Group", f"userset {user_id} tog MEDIA_GROUP t"
+                "启用媒体组", f"userset {user_id} tog MEDIA_GROUP t"
             )
-            media_group = "Disabled"
+            media_group = "已禁用"
         if (
             TgClient.IS_PREMIUM_USER
             and user_dict.get("USER_TRANSMISSION", False)
@@ -124,13 +124,13 @@ async def get_user_settings(from_user, stype="main"):
             and Config.USER_TRANSMISSION
         ):
             buttons.data_button(
-                "Leech by Bot", f"userset {user_id} tog USER_TRANSMISSION f"
+                "由机器人下载", f"userset {user_id} tog USER_TRANSMISSION f"
             )
             leech_method = "user"
         elif TgClient.IS_PREMIUM_USER:
             leech_method = "bot"
             buttons.data_button(
-                "Leech by User", f"userset {user_id} tog USER_TRANSMISSION t"
+                "由用户下载", f"userset {user_id} tog USER_TRANSMISSION t"
             )
         else:
             leech_method = "bot"
@@ -141,20 +141,20 @@ async def get_user_settings(from_user, stype="main"):
             or "HYBRID_LEECH" not in user_dict
             and Config.HYBRID_LEECH
         ):
-            hybrid_leech = "Enabled"
+            hybrid_leech = "已启用"
             buttons.data_button(
-                "Disable Hybride Leech", f"userset {user_id} tog HYBRID_LEECH f"
+                "禁用混合下载", f"userset {user_id} tog HYBRID_LEECH f"
             )
         elif TgClient.IS_PREMIUM_USER:
-            hybrid_leech = "Disabled"
+            hybrid_leech = "已禁用"
             buttons.data_button(
-                "Enable HYBRID Leech", f"userset {user_id} tog HYBRID_LEECH t"
+                "启用混合下载", f"userset {user_id} tog HYBRID_LEECH t"
             )
         else:
-            hybrid_leech = "Disabled"
+            hybrid_leech = "已禁用"
 
         buttons.data_button(
-            "Thumbnail Layout", f"userset {user_id} menu THUMBNAIL_LAYOUT"
+            "缩略图布局", f"userset {user_id} menu THUMBNAIL_LAYOUT"
         )
         if user_dict.get("THUMBNAIL_LAYOUT", False):
             thumb_layout = user_dict["THUMBNAIL_LAYOUT"]
@@ -166,27 +166,27 @@ async def get_user_settings(from_user, stype="main"):
         buttons.data_button("返回", f"userset {user_id} back")
         buttons.data_button("关闭", f"userset {user_id} close")
 
-        text = f"""<u>Leech Settings for {name}</u>
-Leech Type is <b>{ltype}</b>
-Custom Thumbnail <b>{thumbmsg}</b>
-Leech Split Size is <b>{split_size}</b>
-Equal Splits is <b>{equal_splits}</b>
-Media Group is <b>{media_group}</b>
-Leech Prefix is <code>{escape(lprefix)}</code>
-Leech Destination is <code>{leech_dest}</code>
-Leech by <b>{leech_method}</b> session
-HYBRID Leech is <b>{hybrid_leech}</b>
-Thumbnail Layout is <b>{thumb_layout}</b>
+        text = f"""<u>下载设置 - {name}</u>
+下载类型为 <b>{ltype}</b>
+自定义缩略图 <b>{thumbmsg}</b>
+下载分割大小为 <b>{split_size}</b>
+平均分割为 <b>{equal_splits}</b>
+媒体组为 <b>{media_group}</b>
+下载前缀为 <code>{escape(lprefix)}</code>
+下载目标位置为 <code>{leech_dest}</code>
+由 <b>{leech_method}</b> 会话下载
+混合下载为 <b>{hybrid_leech}</b>
+缩略图布局为 <b>{thumb_layout}</b>
 """
     elif stype == "rclone":
-        buttons.data_button("Rclone Config", f"userset {user_id} menu RCLONE_CONFIG")
+        buttons.data_button("Rclone 配置", f"userset {user_id} menu RCLONE_CONFIG")
         buttons.data_button(
-            "Default Rclone Path", f"userset {user_id} menu RCLONE_PATH"
+            "默认 Rclone 路径", f"userset {user_id} menu RCLONE_PATH"
         )
-        buttons.data_button("Rclone Flags", f"userset {user_id} menu RCLONE_FLAGS")
-        buttons.data_button("Back", f"userset {user_id} back")
-        buttons.data_button("Close", f"userset {user_id} close")
-        rccmsg = "Exists" if await aiopath.exists(rclone_conf) else "Not Exists"
+        buttons.data_button("Rclone 参数", f"userset {user_id} menu RCLONE_FLAGS")
+        buttons.data_button("返回", f"userset {user_id} back")
+        buttons.data_button("关闭", f"userset {user_id} close")
+        rcc_msg = "已存在" if await aiopath.exists(rclone_conf) else "不存在"
         if user_dict.get("RCLONE_PATH", False):
             rccpath = user_dict["RCLONE_PATH"]
         elif Config.RCLONE_PATH:
@@ -199,31 +199,31 @@ Thumbnail Layout is <b>{thumb_layout}</b>
             rcflags = Config.RCLONE_FLAGS
         else:
             rcflags = "None"
-        text = f"""<u>Rclone Settings for {name}</u>
-Rclone Config <b>{rccmsg}</b>
-Rclone Path is <code>{rccpath}</code>
-Rclone Flags is <code>{rcflags}</code>"""
+        text = f"""<u>Rclone 设置 - {name}</u>
+Rclone 配置 <b>{rcc_msg}</b>
+Rclone 路径为 <code>{rccpath}</code>
+Rclone 参数为 <code>{rcflags}</code>"""
     elif stype == "gdrive":
         buttons.data_button("token.pickle", f"userset {user_id} menu TOKEN_PICKLE")
-        buttons.data_button("Default Gdrive ID", f"userset {user_id} menu GDRIVE_ID")
-        buttons.data_button("Index URL", f"userset {user_id} menu INDEX_URL")
+        buttons.data_button("默认谷歌云ID", f"userset {user_id} menu GDRIVE_ID")
+        buttons.data_button("索引网址", f"userset {user_id} menu INDEX_URL")
         if (
             user_dict.get("STOP_DUPLICATE", False)
             or "STOP_DUPLICATE" not in user_dict
             and Config.STOP_DUPLICATE
         ):
             buttons.data_button(
-                "Disable Stop Duplicate", f"userset {user_id} tog STOP_DUPLICATE f"
+                "禁用重复检测", f"userset {user_id} tog STOP_DUPLICATE f"
             )
-            sd_msg = "Enabled"
+            sd_msg = "已启用"
         else:
             buttons.data_button(
-                "Enable Stop Duplicate", f"userset {user_id} tog STOP_DUPLICATE t"
+                "启用重复检测", f"userset {user_id} tog STOP_DUPLICATE t"
             )
-            sd_msg = "Disabled"
-        buttons.data_button("Back", f"userset {user_id} back")
-        buttons.data_button("Close", f"userset {user_id} close")
-        tokenmsg = "Exists" if await aiopath.exists(token_pickle) else "Not Exists"
+            sd_msg = "已禁用"
+        buttons.data_button("返回", f"userset {user_id} back")
+        buttons.data_button("关闭", f"userset {user_id} close")
+        token_msg = "已存在" if await aiopath.exists(token_pickle) else "不存在"
         if user_dict.get("GDRIVE_ID", False):
             gdrive_id = user_dict["GDRIVE_ID"]
         elif GDID := Config.GDRIVE_ID:
@@ -231,11 +231,11 @@ Rclone Flags is <code>{rcflags}</code>"""
         else:
             gdrive_id = "None"
         index = user_dict["INDEX_URL"] if user_dict.get("INDEX_URL", False) else "None"
-        text = f"""<u>Gdrive API Settings for {name}</u>
-Gdrive Token <b>{tokenmsg}</b>
-Gdrive ID is <code>{gdrive_id}</code>
-Index URL is <code>{index}</code>
-Stop Duplicate is <b>{sd_msg}</b>"""
+        text = f"""<u>谷歌云API设置 - {name}</u>
+谷歌云令牌 <b>{token_msg}</b>
+谷歌云ID为 <code>{gdrive_id}</code>
+索引网址为 <code>{index}</code>
+重复检测功能 <b>{sd_msg}</b>"""
     else:
         buttons.data_button("下载", f"userset {user_id} leech")
         buttons.data_button("Rclone", f"userset {user_id} rclone")
@@ -253,22 +253,22 @@ Stop Duplicate is <b>{sd_msg}</b>"""
             default_upload = user_dict["DEFAULT_UPLOAD"]
         elif "DEFAULT_UPLOAD" not in user_dict:
             default_upload = Config.DEFAULT_UPLOAD
-        du = "Gdrive API" if default_upload == "gd" else "Rclone"
-        dur = "Gdrive API" if default_upload != "gd" else "Rclone"
+        du = "谷歌云API" if default_upload == "gd" else "Rclone"
+        dur = "谷歌云API" if default_upload != "gd" else "Rclone"
         buttons.data_button(
-            f"Upload using {dur}", f"userset {user_id} {default_upload}"
+            f"使用{dur}上传", f"userset {user_id} {default_upload}"
         )
 
         user_tokens = user_dict.get("USER_TOKENS", False)
-        tr = "MY" if user_tokens else "OWNER"
-        trr = "OWNER" if user_tokens else "MY"
+        tr = "我的" if user_tokens else "所有者的"
+        trr = "所有者的" if user_tokens else "我的"
         buttons.data_button(
-            f"Use {trr} token/config",
+            f"使用{trr}令牌/配置",
             f"userset {user_id} tog USER_TOKENS {'f' if user_tokens else 't'}",
         )
 
         buttons.data_button(
-            "Excluded Extensions", f"userset {user_id} menu EXCLUDED_EXTENSIONS"
+            "排除的扩展名", f"userset {user_id} menu EXCLUDED_EXTENSIONS"
         )
         if user_dict.get("EXCLUDED_EXTENSIONS", False):
             ex_ex = user_dict["EXCLUDED_EXTENSIONS"]
@@ -297,9 +297,9 @@ Stop Duplicate is <b>{sd_msg}</b>"""
             ffc = "None"
 
         if user_dict:
-            buttons.data_button("重置所有", f"userset {user_id} reset all")
+        buttons.data_button("重置所有", f"userset {user_id} reset all")
 
-        buttons.data_button("Close", f"userset {user_id} close")
+        buttons.data_button("关闭", f"userset {user_id} close")
 
         text = f"""<u>设置 - {name}</u>
 默认包是 <b>{du}</b>
@@ -422,20 +422,17 @@ async def get_menu(option, message, user_id):
     handler_dict[user_id] = False
     user_dict = user_data.get(user_id, {})
     buttons = ButtonMaker()
-    if option in ["THUMBNAIL", "RCLONE_CONFIG", "TOKEN_PICKLE"]:
-        key = "file"
-    else:
-        key = "set"
-    buttons.data_button("Set", f"userset {user_id} {key} {option}")
-    if option in user_dict and key != "file":
-        buttons.data_button("Reset", f"userset {user_id} reset {option}")
-    buttons.data_button("Remove", f"userset {user_id} remove {option}")
+    key = "文件" if option in ["THUMBNAIL", "RCLONE_CONFIG", "TOKEN_PICKLE"] else "设置"
+    buttons.data_button("设置", f"userset {user_id} {key} {option}")
+    if option in user_dict and key != "文件":
+        buttons.data_button("重置", f"userset {user_id} reset {option}")
+    buttons.data_button("移除", f"userset {user_id} remove {option}")
     if option in user_dict and user_dict[option]:
         if option == "THUMBNAIL":
-            buttons.data_button("View", f"userset {user_id} view THUMBNAIL")
+            buttons.data_button("查看", f"userset {user_id} view THUMBNAIL")
         if option in ["YT_DLP_OPTIONS", "FFMPEG_CMDS", "UPLOAD_PATHS"]:
-            buttons.data_button("Add one", f"userset {user_id} addone {option}")
-            buttons.data_button("Remove one", f"userset {user_id} rmone {option}")
+            buttons.data_button("添加一个", f"userset {user_id} addone {option}")
+            buttons.data_button("移除一个", f"userset {user_id} rmone {option}")
     if option in leech_options:
         back_to = "leech"
     elif option in rclone_options:
@@ -444,9 +441,9 @@ async def get_menu(option, message, user_id):
         back_to = "gdrive"
     else:
         back_to = "back"
-    buttons.data_button("Back", f"userset {user_id} {back_to}")
-    buttons.data_button("Close", f"userset {user_id} close")
-    text = f"Edit menu for: {option}"
+    buttons.data_button("返回", f"userset {user_id} {back_to}")
+    buttons.data_button("关闭", f"userset {user_id} close")
+    text = f"编辑菜单: {option}"
     await edit_message(message, text, buttons.build_menu(2))
 
 
