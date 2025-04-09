@@ -39,10 +39,10 @@ async def task_status(_, message):
     if count == 0:
         currentTime = get_readable_time(time() - bot_start_time)
         free = get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)
-        msg = f"No Active Tasks!\nEach user can get status for his tasks by adding me or user_id after cmd: /{BotCommands.StatusCommand} me"
+        msg = f"没有活跃任务！\n每个用户可以通过在命令后添加 me 或 user_id 来获取他的任务状态: /{BotCommands.StatusCommand} me"
         msg += (
-            f"\n<b>CPU:</b> {cpu_percent()}% | <b>FREE:</b> {free}"
-            f"\n<b>RAM:</b> {virtual_memory().percent}% | <b>UPTIME:</b> {currentTime}"
+            f"\n<b>CPU:</b> {cpu_percent()}% | <b>可用空间:</b> {free}"
+            f"\n<b>内存:</b> {virtual_memory().percent}% | <b>运行时间:</b> {currentTime}"
         )
         reply_message = await send_message(message, msg)
         await auto_delete_message(message, reply_message)
@@ -170,15 +170,15 @@ async def status_pages(_, query):
                     case _:
                         tasks["Download"] += 1
 
-        msg = f"""<b>DL:</b> {tasks['Download']} | <b>UP:</b> {tasks['Upload']} | <b>SD:</b> {tasks['Seed']} | <b>AR:</b> {tasks['Archive']}
-<b>EX:</b> {tasks['Extract']} | <b>SP:</b> {tasks['Split']} | <b>QD:</b> {tasks['QueueDl']} | <b>QU:</b> {tasks['QueueUp']}
-<b>CL:</b> {tasks['Clone']} | <b>CK:</b> {tasks['CheckUp']} | <b>PA:</b> {tasks['Pause']} | <b>SV:</b> {tasks['SamVid']}
-<b>CM:</b> {tasks['ConvertMedia']} | <b>FF:</b> {tasks['FFmpeg']}
+        msg = f"""<b>下载:</b> {tasks['Download']} | <b>上传:</b> {tasks['Upload']} | <b>做种:</b> {tasks['Seed']} | <b>压缩:</b> {tasks['Archive']}
+<b>解压:</b> {tasks['Extract']} | <b>分割:</b> {tasks['Split']} | <b>下载队列:</b> {tasks['QueueDl']} | <b>上传队列:</b> {tasks['QueueUp']}
+<b>克隆:</b> {tasks['Clone']} | <b>检查:</b> {tasks['CheckUp']} | <b>暂停:</b> {tasks['Pause']} | <b>视频采样:</b> {tasks['SamVid']}
+<b>转换媒体:</b> {tasks['ConvertMedia']} | <b>FFmpeg:</b> {tasks['FFmpeg']}
 
-<b>ODLS:</b> {get_readable_file_size(dl_speed)}/s
-<b>OULS:</b> {get_readable_file_size(up_speed)}/s
-<b>OSDS:</b> {get_readable_file_size(seed_speed)}/s
+<b>总下载速度:</b> {get_readable_file_size(dl_speed)}/s
+<b>总上传速度:</b> {get_readable_file_size(up_speed)}/s
+<b>总做种速度:</b> {get_readable_file_size(seed_speed)}/s
 """
         button = ButtonMaker()
-        button.data_button("Back", f"status {data[1]} ref")
+        button.data_button("返回", f"status {data[1]} ref")
         await edit_message(message, msg, button.build_menu())

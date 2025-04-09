@@ -1,261 +1,261 @@
 from ..telegram_helper.bot_commands import BotCommands
 from ...core.mltb_client import TgClient
 
-mirror = """<b>Send link along with command line or </b>
+mirror = """<b>发送链接及命令行或</b>
 
-/cmd link
+/cmd 链接
 
-<b>By replying to link/file</b>:
+<b>通过回复链接/文件</b>:
 
-/cmd -n new name -e -up upload destination
+/cmd -n 新名称 -e -up 上传目的地
 
-<b>NOTE:</b>
-1. Commands that start with <b>qb</b> are ONLY for torrents."""
+<b>注意:</b>
+1. 以 <b>qb</b> 开头的命令仅适用于种子文件。"""
 
-yt = """<b>Send link along with command line</b>:
+yt = """<b>发送链接及命令行</b>:
 
-/cmd link
-<b>By replying to link</b>:
-/cmd -n new name -z password -opt x:y|x1:y1
+/cmd 链接
+<b>通过回复链接</b>:
+/cmd -n 新名称 -z 密码 -opt x:y|x1:y1
 
-Check here all supported <a href='https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md'>SITES</a>
-Check all yt-dlp api options from this <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L212'>FILE</a> or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to convert cli arguments to api options."""
+查看所有支持的<a href='https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md'>网站</a>
+从这个<a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L212'>文件</a>中查看所有 yt-dlp API 选项，或使用这个<a href='https://t.me/mltb_official_channel/177'>脚本</a>将命令行参数转换为 API 选项。"""
 
-clone = """Send Gdrive|Gdot|Filepress|Filebee|Appdrive|Gdflix link or rclone path along with command or by replying to the link/rc_path by command.
-Use -sync to use sync method in rclone. Example: /cmd rcl/rclone_path -up rcl/rclone_path/rc -sync"""
+clone = """发送 Gdrive|Gdot|Filepress|Filebee|Appdrive|Gdflix 链接或 rclone 路径，与命令一起发送或通过命令回复链接/rc_路径。
+使用 -sync 在 rclone 中使用同步方法。例如：/cmd rcl/rclone_path -up rcl/rclone_path/rc -sync"""
 
-new_name = """<b>New Name</b>: -n
+new_name = """<b>新文件名</b>: -n
 
-/cmd link -n new name
-Note: Doesn't work with torrents"""
+/cmd 链接 -n 新名称
+注意：不适用于种子文件"""
 
-multi_link = """<b>Multi links only by replying to first link/file</b>: -i
+multi_link = """<b>多链接仅通过回复第一个链接/文件</b>: -i
 
-/cmd -i 10(number of links/files)"""
+/cmd -i 10(链接/文件数量)"""
 
-same_dir = """<b>Move file(s)/folder(s) to new folder</b>: -m
+same_dir = """<b>将文件/文件夹移动到新文件夹</b>: -m
 
-You can use this arg also to move multiple links/torrents contents to the same directory, so all links will be uploaded together as one task
+您还可以使用此参数将多个链接/种子内容移动到同一目录，这样所有链接将作为一个任务一起上传
 
-/cmd link -m new folder (only one link inside new folder)
-/cmd -i 10(number of links/files) -m folder name (all links contents in one folder)
-/cmd -b -m folder name (reply to batch of message/file(each link on new line))
+/cmd 链接 -m 新文件夹 (仅一个链接在新文件夹内)
+/cmd -i 10(链接/文件数量) -m 文件夹名称 (所有链接内容在一个文件夹中)
+/cmd -b -m 文件夹名称 (回复批量消息/文件(每行一个链接))
 
-While using bulk you can also use this arg with different folder name along with the links in message or file batch
-Example:
-link1 -m folder1
-link2 -m folder1
-link3 -m folder2
-link4 -m folder2
-link5 -m folder3
-link6
-so link1 and link2 content will be uploaded from same folder which is folder1
-link3 and link4 content will be uploaded from same folder also which is folder2
-link5 will uploaded alone inside new folder named folder3
-link6 will get uploaded normally alone
+使用批量时，也可以在消息或文件批处理中的链接旁使用此参数，并指定不同的文件夹名称
+例如:
+链接1 -m 文件夹1
+链接2 -m 文件夹1
+链接3 -m 文件夹2
+链接4 -m 文件夹2
+链接5 -m 文件夹3
+链接6
+这样，链接1和链接2的内容将从同一个文件夹上传，即文件夹1
+链接3和链接4的内容将从同一个文件夹上传，即文件夹2
+链接5将单独上传到名为文件夹3的新文件夹中
+链接6将正常单独上传
 """
 
-thumb = """<b>Thumbnail for current task</b>: -t
+thumb = """<b>当前任务的缩略图</b>: -t
 
-/cmd link -t tg-message-link (doc or photo) or none (file without thumb)"""
+/cmd 链接 -t tg-消息链接 (文档或照片) 或 none (无缩略图的文件)"""
 
-split_size = """<b>Split size for current task</b>: -sp
+split_size = """<b>当前任务的分割大小</b>: -sp
 
-/cmd link -sp (500mb or 2gb or 4000000000)
-Note: Only mb and gb are supported or write in bytes without unit!"""
+/cmd 链接 -sp (500mb 或 2gb 或 4000000000)
+注意: 仅支持 mb 和 gb 单位，或以字节为单位直接写入数字!"""
 
-upload = """<b>Upload Destination</b>: -up
+upload = """<b>上传目的地</b>: -up
 
-/cmd link -up rcl/gdl (rcl: to select rclone config, remote & path | gdl: To select token.pickle, gdrive id) using buttons
-You can directly add the upload path: -up remote:dir/subdir or -up Gdrive_id or -up id/username (telegram) or -up id/username|topic_id (telegram)
-If DEFAULT_UPLOAD is `rc` then you can pass up: `gd` to upload using gdrive tools to GDRIVE_ID.
-If DEFAULT_UPLOAD is `gd` then you can pass up: `rc` to upload to RCLONE_PATH.
+/cmd 链接 -up rcl/gdl (rcl: 选择 rclone 配置、远程和路径 | gdl: 选择 token.pickle、gdrive id) 使用按钮
+您可以直接添加上传路径: -up remote:dir/subdir 或 -up Gdrive_id 或 -up id/username (telegram) 或 -up id/username|topic_id (telegram)
+如果 DEFAULT_UPLOAD 是 `rc`，则可以传递 up: `gd` 使用 gdrive 工具上传到 GDRIVE_ID。
+如果 DEFAULT_UPLOAD 是 `gd`，则可以传递 up: `rc` 上传到 RCLONE_PATH。
 
-If you want to add path or gdrive manually from your config/token (UPLOADED FROM USETTING) add mrcc: for rclone and mtp: before the path/gdrive_id without space.
-/cmd link -up mrcc:main:dump or -up mtp:gdrive_id <strong>or you can simply edit upload using owner/user token/config from usetting without adding mtp: or mrcc: before the upload path/id</strong>
+如果您想从配置/令牌手动添加路径或 gdrive (从用户设置上传)，在路径/gdrive_id 前添加 mrcc: 表示 rclone，添加 mtp: 表示路径/gdrive_id，不带空格。
+/cmd 链接 -up mrcc:main:dump 或 -up mtp:gdrive_id <strong>或者您可以简单地从所有者/用户令牌/配置中编辑上传，无需在上传路径/id 前添加 mtp: 或 mrcc:</strong>
 
-To add leech destination:
+添加下载目的地:
 -up id/@username/pm
--up b:id/@username/pm (b: means leech by bot) (id or username of the chat or write pm means private message so bot will send the files in private to you)
-when you should use b:(leech by bot)? When your default settings is leech by user and you want to leech by bot for specific task.
--up u:id/@username(u: means leech by user) This incase OWNER added USER_STRING_SESSION.
--up h:id/@username(hybrid leech) h: to upload files by bot and user based on file size.
--up id/@username|topic_id(leech in specific chat and topic) add | without space and write topic id after chat id or username.
+-up b:id/@username/pm (b: 表示通过机器人下载) (聊天的 id 或用户名，或写 pm 表示私人消息，机器人将私下发送文件给您)
+何时应该使用 b:(通过机器人下载)? 当您的默认设置是通过用户下载，但您想为特定任务通过机器人下载时。
+-up u:id/@username(u: 表示通过用户下载) 这种情况下 OWNER 添加了 USER_STRING_SESSION。
+-up h:id/@username(混合下载) h: 根据文件大小通过机器人和用户上传文件。
+-up id/@username|topic_id(在特定聊天和主题中下载) 添加 | 不带空格，并在聊天 id 或用户名后写入主题 id。
 
-In case you want to specify whether using token.pickle or service accounts you can add tp:gdrive_id (using token.pickle) or sa:gdrive_id (using service accounts) or mtp:gdrive_id (using token.pickle uploaded from usetting).
-DEFAULT_UPLOAD doesn't affect on leech cmds.
+如果您想指定是使用 token.pickle 还是服务帐户，可以添加 tp:gdrive_id (使用 token.pickle) 或 sa:gdrive_id (使用服务帐户) 或 mtp:gdrive_id (使用从用户设置上传的 token.pickle)。
+DEFAULT_UPLOAD 不影响下载命令。
 """
 
-user_download = """<b>User Download</b>: link
+user_download = """<b>用户下载</b>: 链接
 
-/cmd tp:link to download using owner token.pickle incase service account enabled.
-/cmd sa:link to download using service account incase service account disabled.
-/cmd tp:gdrive_id to download using token.pickle and file_id incase service account enabled.
-/cmd sa:gdrive_id to download using service account and file_id incase service account disabled.
-/cmd mtp:gdrive_id or mtp:link to download using user token.pickle uploaded from usetting
-/cmd mrcc:remote:path to download using user rclone config uploaded from usetting
-you can simply edit upload using owner/user token/config from usetting without adding mtp: or mrcc: before the path/id"""
+/cmd tp:链接 使用所有者 token.pickle 下载，适用于已启用服务帐户的情况。
+/cmd sa:链接 使用服务帐户下载，适用于已禁用服务帐户的情况。
+/cmd tp:gdrive_id 使用 token.pickle 和文件 ID 下载，适用于已启用服务帐户的情况。
+/cmd sa:gdrive_id 使用服务帐户和文件 ID 下载，适用于已禁用服务帐户的情况。
+/cmd mtp:gdrive_id 或 mtp:链接 使用从用户设置上传的用户 token.pickle 下载
+/cmd mrcc:remote:path 使用从用户设置上传的用户 rclone 配置下载
+您可以简单地从所有者/用户令牌/配置中编辑上传，无需在路径/id 前添加 mtp: 或 mrcc:"""
 
-rcf = """<b>Rclone Flags</b>: -rcf
+rcf = """<b>Rclone 标志</b>: -rcf
 
-/cmd link|path|rcl -up path|rcl -rcf --buffer-size:8M|--drive-starred-only|key|key:value
-This will override all other flags except --exclude
-Check here all <a href='https://rclone.org/flags/'>RcloneFlags</a>."""
+/cmd 链接|路径|rcl -up 路径|rcl -rcf --buffer-size:8M|--drive-starred-only|key|key:value
+这将覆盖所有其他标志，除了 --exclude
+在这里查看所有 <a href='https://rclone.org/flags/'>Rclone 标志</a>。"""
 
-bulk = """<b>Bulk Download</b>: -b
+bulk = """<b>批量下载</b>: -b
 
-Bulk can be used only by replying to text message or text file contains links separated by new line.
-Example:
-link1 -n new name -up remote1:path1 -rcf |key:value|key:value
-link2 -z -n new name -up remote2:path2
-link3 -e -n new name -up remote2:path2
-Reply to this example by this cmd -> /cmd -b(bulk)
+批量只能通过回复文本消息或包含按行分隔链接的文本文件使用。
+例如:
+链接1 -n 新名称 -up remote1:path1 -rcf |key:value|key:value
+链接2 -z -n 新名称 -up remote2:path2
+链接3 -e -n 新名称 -up remote2:path2
+通过此命令回复此示例 -> /cmd -b(批量)
 
-Note: Any arg along with the cmd will be setted to all links
-/cmd -b -up remote: -z -m folder name (all links contents in one zipped folder uploaded to one destination)
-so you can't set different upload destinations along with link incase you have added -m along with cmd
-You can set start and end of the links from the bulk like seed, with -b start:end or only end by -b :end or only start by -b start.
-The default start is from zero(first link) to inf."""
+注意: 与命令一起的任何参数将设置给所有链接
+/cmd -b -up remote: -z -m 文件夹名称 (所有链接内容在一个压缩文件夹中上传到一个目的地)
+因此，如果您添加了 -m 和命令，则无法为链接设置不同的上传目的地
+您可以像种子一样，从批量中设置链接的开始和结束，使用 -b start:end 或仅结束 -b :end 或仅开始 -b start。
+默认起点是从零(第一个链接)到无限。"""
 
-rlone_dl = """<b>Rclone Download</b>:
+rlone_dl = """<b>Rclone 下载</b>:
 
-Treat rclone paths exactly like links
-/cmd main:dump/ubuntu.iso or rcl(To select config, remote and path)
-Users can add their own rclone from user settings
-If you want to add path manually from your config add mrcc: before the path without space
+像链接一样处理 rclone 路径
+/cmd main:dump/ubuntu.iso 或 rcl(选择配置、远程和路径)
+用户可以从用户设置添加自己的 rclone
+如果您想从配置中手动添加路径，请在路径前添加 mrcc: 不带空格
 /cmd mrcc:main:dump/ubuntu.iso
-You can simply edit using owner/user config from usetting without adding mrcc: before the path"""
+您可以简单地从所有者/用户配置中编辑，无需在路径前添加 mrcc:"""
 
-extract_zip = """<b>Extract/Zip</b>: -e -z
+extract_zip = """<b>解压/压缩</b>: -e -z
 
-/cmd link -e password (extract password protected)
-/cmd link -z password (zip password protected)
-/cmd link -z password -e (extract and zip password protected)
-Note: When both extract and zip added with cmd it will extract first and then zip, so always extract first"""
+/cmd 链接 -e 密码 (解压受密码保护的文件)
+/cmd 链接 -z 密码 (压缩并设置密码保护)
+/cmd 链接 -z 密码 -e (解压并压缩，设置密码保护)
+注意: 当同时使用解压和压缩选项时，会先解压然后再压缩，所以始终先解压"""
 
-join = """<b>Join Splitted Files</b>: -j
+join = """<b>合并分割文件</b>: -j
 
-This option will only work before extract and zip, so mostly it will be used with -m argument (samedir)
-By Reply:
-/cmd -i 3 -j -m folder name
-/cmd -b -j -m folder name
-if u have link(folder) have splitted files:
-/cmd link -j"""
+此选项仅在解压和压缩之前有效，所以它主要与 -m 参数(同一目录)一起使用
+通过回复:
+/cmd -i 3 -j -m 文件夹名称
+/cmd -b -j -m 文件夹名称
+如果您有链接(文件夹)包含分割文件:
+/cmd 链接 -j"""
 
-tg_links = """<b>TG Links</b>:
+tg_links = """<b>TG 链接</b>:
 
-Treat links like any direct link
-Some links need user access so you must add USER_SESSION_STRING for it.
-Three types of links:
-Public: https://t.me/channel_name/message_id
-Private: tg://openmessage?user_id=xxxxxx&message_id=xxxxx
-Super: https://t.me/c/channel_id/message_id
-Range: https://t.me/channel_name/first_message_id-last_message_id
-Range Example: tg://openmessage?user_id=xxxxxx&message_id=555-560 or https://t.me/channel_name/100-150
-Note: Range link will work only by replying cmd to it"""
+像任何直接链接一样处理链接
+有些链接需要用户访问权限，因此您必须为其添加 USER_SESSION_STRING。
+三种类型的链接:
+公开: https://t.me/channel_name/message_id
+私人: tg://openmessage?user_id=xxxxxx&message_id=xxxxx
+超级: https://t.me/c/channel_id/message_id
+范围: https://t.me/channel_name/first_message_id-last_message_id
+范围示例: tg://openmessage?user_id=xxxxxx&message_id=555-560 或 https://t.me/channel_name/100-150
+注意: 范围链接仅在通过命令回复时有效"""
 
-sample_video = """<b>Sample Video</b>: -sv
+sample_video = """<b>样本视频</b>: -sv
 
-Create sample video for one video or folder of videos.
-/cmd -sv (it will take the default values which 60sec sample duration and part duration is 4sec).
-You can control those values. Example: /cmd -sv 70:5(sample-duration:part-duration) or /cmd -sv :5 or /cmd -sv 70."""
+为一个视频或视频文件夹创建样本视频。
+/cmd -sv (它将采用默认值，即 60 秒样本持续时间和 4 秒部分持续时间)。
+您可以控制这些值。例如: /cmd -sv 70:5(样本持续时间:部分持续时间) 或 /cmd -sv :5 或 /cmd -sv 70。"""
 
-screenshot = """<b>ScreenShots</b>: -ss
+screenshot = """<b>截图</b>: -ss
 
-Create screenshots for one video or folder of videos.
-/cmd -ss (it will take the default values which is 10 photos).
-You can control this value. Example: /cmd -ss 6."""
+为一个视频或视频文件夹创建截图。
+/cmd -ss (它将采用默认值，即 10 张照片)。
+您可以控制这个值。例如: /cmd -ss 6。"""
 
-seed = """<b>Bittorrent seed</b>: -d
+seed = """<b>BT 做种</b>: -d
 
-/cmd link -d ratio:seed_time or by replying to file/link
-To specify ratio and seed time add -d ratio:time.
-Example: -d 0.7:10 (ratio and time) or -d 0.7 (only ratio) or -d :10 (only time) where time in minutes"""
+/cmd 链接 -d 比率:做种时间 或通过回复文件/链接
+要指定比率和做种时间，添加 -d 比率:时间。
+例如: -d 0.7:10 (比率和时间) 或 -d 0.7 (仅比率) 或 -d :10 (仅时间)，其中时间以分钟为单位"""
 
-zip_arg = """<b>Zip</b>: -z password
+zip_arg = """<b>压缩</b>: -z 密码
 
-/cmd link -z (zip)
-/cmd link -z password (zip password protected)"""
+/cmd 链接 -z (压缩)
+/cmd 链接 -z 密码 (压缩并设置密码保护)"""
 
-qual = """<b>Quality Buttons</b>: -s
+qual = """<b>质量按钮</b>: -s
 
-In case default quality added from yt-dlp options using format option and you need to select quality for specific link or links with multi links feature.
-/cmd link -s"""
+如果从 yt-dlp 选项中使用格式选项添加了默认质量，并且您需要为特定链接或使用多链接功能的链接选择质量。
+/cmd 链接 -s"""
 
-yt_opt = """<b>Options</b>: -opt
+yt_opt = """<b>选项</b>: -opt
 
-/cmd link -opt {"format": "bv*+mergeall[vcodec=none]", "nocheckcertificate": True, "playliststart": 10, "fragment_retries": float("inf"), "matchtitle": "S13", "writesubtitles": True, "live_from_start": True, "postprocessor_args": {"ffmpeg": ["-threads", "4"]}, "wait_for_video": (5, 100), "download_ranges": [{"start_time": 0, "end_time": 10}]}
+/cmd 链接 -opt {"format": "bv*+mergeall[vcodec=none]", "nocheckcertificate": True, "playliststart": 10, "fragment_retries": float("inf"), "matchtitle": "S13", "writesubtitles": True, "live_from_start": True, "postprocessor_args": {"ffmpeg": ["-threads", "4"]}, "wait_for_video": (5, 100), "download_ranges": [{"start_time": 0, "end_time": 10}]}
 
-Check all yt-dlp api options from this <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L184'>FILE</a> or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to convert cli arguments to api options."""
+从这个<a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L184'>文件</a>中查看所有 yt-dlp API 选项，或使用这个<a href='https://t.me/mltb_official_channel/177'>脚本</a>将命令行参数转换为 API 选项。"""
 
-convert_media = """<b>Convert Media</b>: -ca -cv
-/cmd link -ca mp3 -cv mp4 (convert all audios to mp3 and all videos to mp4)
-/cmd link -ca mp3 (convert all audios to mp3)
-/cmd link -cv mp4 (convert all videos to mp4)
-/cmd link -ca mp3 + flac ogg (convert only flac and ogg audios to mp3)
-/cmd link -cv mkv - webm flv (convert all videos to mp4 except webm and flv)"""
+convert_media = """<b>转换媒体</b>: -ca -cv
+/cmd 链接 -ca mp3 -cv mp4 (将所有音频转换为 mp3，所有视频转换为 mp4)
+/cmd 链接 -ca mp3 (将所有音频转换为 mp3)
+/cmd 链接 -cv mp4 (将所有视频转换为 mp4)
+/cmd 链接 -ca mp3 + flac ogg (仅将 flac 和 ogg 音频转换为 mp3)
+/cmd 链接 -cv mkv - webm flv (将所有视频转换为 mp4，除了 webm 和 flv)"""
 
-force_start = """<b>Force Start</b>: -f -fd -fu
-/cmd link -f (force download and upload)
-/cmd link -fd (force download only)
-/cmd link -fu (force upload directly after download finish)"""
+force_start = """<b>强制开始</b>: -f -fd -fu
+/cmd 链接 -f (强制下载和上传)
+/cmd 链接 -fd (仅强制下载)
+/cmd 链接 -fu (下载完成后直接强制上传)"""
 
-gdrive = """<b>Gdrive</b>: link
-If DEFAULT_UPLOAD is `rc` then you can pass up: `gd` to upload using gdrive tools to GDRIVE_ID.
-/cmd gdriveLink or gdl or gdriveId -up gdl or gdriveId or gd
-/cmd tp:gdriveLink or tp:gdriveId -up tp:gdriveId or gdl or gd (to use token.pickle if service account enabled)
-/cmd sa:gdriveLink or sa:gdriveId -p sa:gdriveId or gdl or gd (to use service account if service account disabled)
-/cmd mtp:gdriveLink or mtp:gdriveId -up mtp:gdriveId or gdl or gd(if you have added upload gdriveId from usetting) (to use user token.pickle that uploaded by usetting)
-You can simply edit using owner/user token from usetting without adding mtp: before the id"""
+gdrive = """<b>Gdrive</b>: 链接
+如果 DEFAULT_UPLOAD 是 `rc`，则可以传递 up: `gd` 使用 gdrive 工具上传到 GDRIVE_ID。
+/cmd gdriveLink 或 gdl 或 gdriveId -up gdl 或 gdriveId 或 gd
+/cmd tp:gdriveLink 或 tp:gdriveId -up tp:gdriveId 或 gdl 或 gd (如果启用了服务账户，则使用 token.pickle)
+/cmd sa:gdriveLink 或 sa:gdriveId -p sa:gdriveId 或 gdl 或 gd (如果禁用了服务账户，则使用服务账户)
+/cmd mtp:gdriveLink 或 mtp:gdriveId -up mtp:gdriveId 或 gdl 或 gd(如果您已从用户设置添加了上传 gdriveId) (使用用户设置上传的用户 token.pickle)
+您可以简单地使用所有者/用户令牌从用户设置编辑，无需在 ID 前添加 mtp:"""
 
-rclone_cl = """<b>Rclone</b>: path
-If DEFAULT_UPLOAD is `gd` then you can pass up: `rc` to upload to RCLONE_PATH.
+rclone_cl = """<b>Rclone</b>: 路径
+如果 DEFAULT_UPLOAD 是 `gd`，则可以传递 up: `rc` 上传到 RCLONE_PATH。
 /cmd rcl/rclone_path -up rcl/rclone_path/rc -rcf flagkey:flagvalue|flagkey|flagkey:flagvalue
-/cmd rcl or rclone_path -up rclone_path or rc or rcl
-/cmd mrcc:rclone_path -up rcl or rc(if you have add rclone path from usetting) (to use user config)
-You can simply edit using owner/user config from usetting without adding mrcc: before the path"""
+/cmd rcl 或 rclone_path -up rclone_path 或 rc 或 rcl
+/cmd mrcc:rclone_path -up rcl 或 rc(如果您已从用户设置添加了 rclone 路径) (使用用户配置)
+您可以简单地使用所有者/用户配置从用户设置编辑，无需在路径前添加 mrcc:"""
 
-name_sub = r"""<b>Name Substitution</b>: -ns
-/cmd link -ns script/code/s | mirror/leech | tea/ /s | clone | cpu/ | \[mltb\]/mltb | \\text\\/text/s
-This will affect on all files. Format: wordToReplace/wordToReplaceWith/sensitiveCase
-Word Subtitions. You can add pattern instead of normal text. Timeout: 60 sec
-NOTE: You must add \ before any character, those are the characters: \^$.|?*+()[]{}-
-1. script will get replaced by code with sensitive case
-2. mirror will get replaced by leech
-4. tea will get replaced by space with sensitive case
-5. clone will get removed
-6. cpu will get replaced by space
-7. [mltb] will get replaced by mltb
-8. \text\ will get replaced by text with sensitive case
+name_sub = r"""<b>名称替换</b>: -ns
+/cmd 链接 -ns script/code/s | mirror/leech | tea/ /s | clone | cpu/ | \[mltb\]/mltb | \\text\\/text/s
+这将影响所有文件。格式: 要替换的词/替换为的词/区分大小写
+词替换。您可以添加模式而不是普通文本。超时: 60 秒
+注意: 您必须在任何字符前添加 \，这些字符是: \^$.|?*+()[]{}-
+1. script 将被替换为 code，区分大小写
+2. mirror 将被替换为 leech
+4. tea 将被替换为空格，区分大小写
+5. clone 将被删除
+6. cpu 将被替换为空格
+7. [mltb] 将被替换为 mltb
+8. \text\ 将被替换为 text，区分大小写
 """
 
-transmission = """<b>Tg transmission</b>: -hl -ut -bt
-/cmd link -hl (leech by user and bot session with respect to size) (Hybrid Leech)
-/cmd link -bt (leech by bot session)
-/cmd link -ut (leech by user)"""
+transmission = """<b>Tg 传输</b>: -hl -ut -bt
+/cmd 链接 -hl (根据大小通过用户和机器人会话下载) (混合下载)
+/cmd 链接 -bt (通过机器人会话下载)
+/cmd 链接 -ut (通过用户下载)"""
 
-thumbnail_layout = """Thumbnail Layout: -tl
-/cmd link -tl 3x3 (widthxheight) 3 photos in row and 3 photos in column"""
+thumbnail_layout = """缩略图布局: -tl
+/cmd 链接 -tl 3x3 (宽x高) 每行3张照片，每列3张照片"""
 
-leech_as = """<b>Leech as</b>: -doc -med
-/cmd link -doc (Leech as document)
-/cmd link -med (Leech as media)"""
+leech_as = """<b>下载为</b>: -doc -med
+/cmd 链接 -doc (作为文档下载)
+/cmd 链接 -med (作为媒体下载)"""
 
-ffmpeg_cmds = """<b>FFmpeg Commands</b>: -ff
-list of lists of ffmpeg commands. You can set multiple ffmpeg commands for all files before upload. Don't write ffmpeg at beginning, start directly with the arguments.
-Notes:
-1. Add <code>-del</code> to the list(s) which you want from the bot to delete the original files after command run complete!
-3. To execute one of pre-added lists in bot like: ({"subtitle": ["-i mltb.mkv -c copy -c:s srt mltb.mkv"]}), you must use -ff subtitle (list key)
-Examples: ["-i mltb.mkv -c copy -c:s srt mltb.mkv", "-i mltb.video -c copy -c:s srt mltb", "-i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb.audio -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb -map 0:a -c copy mltb.mka -map 0:s -c copy mltb.srt"]
-Here I will explain how to use mltb.* which is reference to files you want to work on.
-1. First cmd: the input is mltb.mkv so this cmd will work only on mkv videos and the output is mltb.mkv also so all outputs is mkv. -del will delete the original media after complete run of the cmd.
-2. Second cmd: the input is mltb.video so this cmd will work on all videos and the output is only mltb so the extenstion is same as input files.
-3. Third cmd: the input in mltb.m4a so this cmd will work only on m4a audios and the output is mltb.mp3 so the output extension is mp3.
-4. Fourth cmd: the input is mltb.audio so this cmd will work on all audios and the output is mltb.mp3 so the output extension is mp3."""
+ffmpeg_cmds = """<b>FFmpeg 命令</b>: -ff
+FFmpeg 命令列表的列表。您可以在上传前为所有文件设置多个 FFmpeg 命令。不要在开头写 ffmpeg，直接从参数开始。
+注意:
+1. 在您希望机器人在命令运行完成后删除原始文件的列表中添加 <code>-del</code>！
+3. 要执行机器人中预添加的列表之一，如: ({"subtitle": ["-i mltb.mkv -c copy -c:s srt mltb.mkv"]})，您必须使用 -ff subtitle (列表键)
+示例: ["-i mltb.mkv -c copy -c:s srt mltb.mkv", "-i mltb.video -c copy -c:s srt mltb", "-i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb.audio -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb -map 0:a -c copy mltb.mka -map 0:s -c copy mltb.srt"]
+这里我将解释如何使用 mltb.*，它是指您想要处理的文件的引用。
+1. 第一个命令: 输入是 mltb.mkv，所以这个命令将只对 mkv 视频起作用，输出也是 mltb.mkv，所以所有输出都是 mkv。-del 将在命令运行完成后删除原始媒体。
+2. 第二个命令: 输入是 mltb.video，所以这个命令将对所有视频起作用，输出只是 mltb，所以扩展名与输入文件相同。
+3. 第三个命令: 输入是 mltb.m4a，所以这个命令将只对 m4a 音频起作用，输出是 mltb.mp3，所以输出扩展名是 mp3。
+4. 第四个命令: 输入是 mltb.audio，所以这个命令将对所有音频起作用，输出是 mltb.mp3，所以输出扩展名是 mp3。"""
 
 YT_HELP_DICT = {
     "main": yt,
-    "New-Name": f"{new_name}\nNote: Don't add file extension",
+    "New-Name": f"{new_name}\n注意: 不要添加文件扩展名",
     "Zip": zip_arg,
     "Quality": qual,
     "Options": yt_opt,
@@ -280,10 +280,10 @@ YT_HELP_DICT = {
 MIRROR_HELP_DICT = {
     "main": mirror,
     "New-Name": new_name,
-    "DL-Auth": "<b>Direct link authorization</b>: -au -ap\n\n/cmd link -au username -ap password",
-    "Headers": "<b>Direct link custom headers</b>: -h\n\n/cmd link -h key: value key1: value1",
+    "DL-Auth": "<b>直接链接授权</b>: -au -ap\n\n/cmd 链接 -au 用户名 -ap 密码",
+    "Headers": "<b>直接链接自定义标头</b>: -h\n\n/cmd 链接 -h key: value key1: value1",
     "Extract/Zip": extract_zip,
-    "Select-Files": "<b>Bittorrent/JDownloader/Sabnzbd File Selection</b>: -s\n\n/cmd link -s or by replying to file/link",
+    "Select-Files": "<b>BT/JDownloader/Sabnzbd 文件选择</b>: -s\n\n/cmd 链接 -s 或通过回复文件/链接",
     "Torrent-Seed": seed,
     "Multi-Link": multi_link,
     "Same-Directory": same_dir,
@@ -316,115 +316,115 @@ CLONE_HELP_DICT = {
 }
 
 RSS_HELP_MESSAGE = """
-Use this format to add feed url:
-Title1 link (required)
-Title2 link -c cmd -inf xx -exf xx
-Title3 link -c cmd -d ratio:time -z password
+使用此格式添加 feed 网址:
+标题1 链接 (必需)
+标题2 链接 -c 命令 -inf xx -exf xx
+标题3 链接 -c 命令 -d 比率:时间 -z 密码
 
--c command -up mrcc:remote:path/subdir -rcf --buffer-size:8M|key|key:value
--inf For included words filter.
--exf For excluded words filter.
--stv true or false (sensitive filter)
+-c 命令 -up mrcc:remote:path/subdir -rcf --buffer-size:8M|key|key:value
+-inf 用于包含词过滤器。
+-exf 用于排除词过滤器。
+-stv true 或 false (敏感过滤器)
 
-Example: Title https://www.rss-url.com -inf 1080 or 720 or 144p|mkv or mp4|hevc -exf flv or web|xxx
-This filter will parse links that its titles contain `(1080 or 720 or 144p) and (mkv or mp4) and hevc` and doesn't contain (flv or web) and xxx words. You can add whatever you want.
+示例: 标题 https://www.rss-url.com -inf 1080 or 720 or 144p|mkv or mp4|hevc -exf flv or web|xxx
+这个过滤器将解析标题中包含`(1080 或 720 或 144p) 和 (mkv 或 mp4) 和 hevc`但不包含 (flv 或 web) 和 xxx 词的链接。您可以添加任何您想要的内容。
 
-Another example: -inf  1080  or 720p|.web. or .webrip.|hvec or x264. This will parse titles that contain ( 1080  or 720p) and (.web. or .webrip.) and (hvec or x264). I have added space before and after 1080 to avoid wrong matching. If this `10805695` number in title it will match 1080 if added 1080 without spaces after it.
+另一个示例: -inf 1080 or 720p|.web. or .webrip.|hvec or x264. 这将解析标题中包含 (1080 或 720p) 和 (.web. 或 .webrip.) 和 (hvec 或 x264) 的内容。我在 1080 前后添加了空格以避免错误匹配。如果标题中的数字是 `10805695`，如果添加没有空格的 1080，它将匹配 1080。
 
-Filter Notes:
-1. | means and.
-2. Add `or` between similar keys, you can add it between qualities or between extensions, so don't add filter like this f: 1080|mp4 or 720|web because this will parse 1080 and (mp4 or 720) and web ... not (1080 and mp4) or (720 and web).
-3. You can add `or` and `|` as much as you want.
-4. Take a look at the title if it has a static special character after or before the qualities or extensions or whatever and use them in the filter to avoid wrong match.
-Timeout: 60 sec.
+过滤器注意事项:
+1. | 表示和。
+2. 在相似键之间添加 `or`，您可以在质量之间或扩展名之间添加它，所以不要像这样添加过滤器 f: 1080|mp4 or 720|web，因为这将解析 1080 和 (mp4 或 720) 和 web ... 而不是 (1080 和 mp4) 或 (720 和 web)。
+3. 您可以根据需要添加任意数量的 `or` 和 `|`。
+4. 查看标题，如果在质量或扩展名或其他内容之后或之前有静态特殊字符，请在过滤器中使用它们以避免错误匹配。
+超时: 60 秒。
 """
 
 PASSWORD_ERROR_MESSAGE = """
-<b>This link requires a password!</b>
-- Insert <b>::</b> after the link and write the password after the sign.
+<b>此链接需要密码!</b>
+- 在链接后插入 <b>::</b> 并在标志后写入密码。
 
-<b>Example:</b> link::my password
+<b>示例:</b> 链接::我的密码
 """
 
 user_settings_text = {
-    "LEECH_SPLIT_SIZE": f"Send Leech split size in bytes or use gb or mb. Example: 40000000 or 2.5gb or 1000mb. IS_PREMIUM_USER: {TgClient.IS_PREMIUM_USER}. Timeout: 60 sec",
-    "LEECH_DUMP_CHAT": """"Send leech destination ID/USERNAME/PM. 
-* b:id/@username/pm (b: means leech by bot) (id or username of the chat or write pm means private message so bot will send the files in private to you) when you should use b:(leech by bot)? When your default settings is leech by user and you want to leech by bot for specific task.
-* u:id/@username(u: means leech by user) This incase OWNER added USER_STRING_SESSION.
-* h:id/@username(hybrid leech) h: to upload files by bot and user based on file size.
-* id/@username|topic_id(leech in specific chat and topic) add | without space and write topic id after chat id or username. Timeout: 60 sec""",
-    "LEECH_FILENAME_PREFIX": r"Send Leech Filename Prefix. You can add HTML tags. Example: <code>@mychannel</code>. Timeout: 60 sec",
-    "THUMBNAIL_LAYOUT": "Send thumbnail layout (widthxheight, 2x2, 3x3, 2x4, 4x4, ...). Example: 3x3. Timeout: 60 sec",
-    "RCLONE_PATH": "Send Rclone Path. If you want to use your rclone config edit using owner/user config from usetting or add mrcc: before rclone path. Example mrcc:remote:folder. Timeout: 60 sec",
-    "RCLONE_FLAGS": "key:value|key|key|key:value . Check here all <a href='https://rclone.org/flags/'>RcloneFlags</a>\nEx: --buffer-size:8M|--drive-starred-only",
-    "GDRIVE_ID": "Send Gdrive ID. If you want to use your token.pickle edit using owner/user token from usetting or add mtp: before the id. Example: mtp:F435RGGRDXXXXXX . Timeout: 60 sec",
-    "INDEX_URL": "Send Index URL. Timeout: 60 sec",
-    "UPLOAD_PATHS": "Send Dict of keys that have path values. Example: {'path 1': 'remote:rclonefolder', 'path 2': 'gdrive1 id', 'path 3': 'tg chat id', 'path 4': 'mrcc:remote:', 'path 5': b:@username} . Timeout: 60 sec",
-    "EXCLUDED_EXTENSIONS": "Send exluded extenions seperated by space without dot at beginning. Timeout: 60 sec",
-    "NAME_SUBSTITUTE": r"""Word Subtitions. You can add pattern instead of normal text. Timeout: 60 sec
-NOTE: You must add \ before any character, those are the characters: \^$.|?*+()[]{}-
-Example: script/code/s | mirror/leech | tea/ /s | clone | cpu/ | \[mltb\]/mltb | \\text\\/text/s
-1. script will get replaced by code with sensitive case
-2. mirror will get replaced by leech
-4. tea will get replaced by space with sensitive case
-5. clone will get removed
-6. cpu will get replaced by space
-7. [mltb] will get replaced by mltb
-8. \text\ will get replaced by text with sensitive case
+    "LEECH_SPLIT_SIZE": f"发送下载分割大小（以字节为单位）或使用 gb 或 mb。例如：40000000 或 2.5gb 或 1000mb。IS_PREMIUM_USER: {TgClient.IS_PREMIUM_USER}。超时：60 秒",
+    "LEECH_DUMP_CHAT": """"发送下载目标 ID/用户名/PM。
+* b:id/@username/pm (b: 表示通过机器人下载) (聊天的 id 或用户名，或写 pm 表示私人消息，机器人将私下发送文件给您) 何时应该使用 b:(通过机器人下载)? 当您的默认设置是通过用户下载，但您想为特定任务通过机器人下载时。
+* u:id/@username(u: 表示通过用户下载) 这种情况下 OWNER 添加了 USER_STRING_SESSION。
+* h:id/@username(混合下载) h: 根据文件大小通过机器人和用户上传文件。
+* id/@username|topic_id(在特定聊天和主题中下载) 添加 | 不带空格，并在聊天 id 或用户名后写入主题 id。超时：60 秒""",
+    "LEECH_FILENAME_PREFIX": r"发送下载文件名前缀。您可以添加 HTML 标签。例如：<code>@mychannel</code>。超时：60 秒",
+    "THUMBNAIL_LAYOUT": "发送缩略图布局（宽x高，2x2，3x3，2x4，4x4，...）。例如：3x3。超时：60 秒",
+    "RCLONE_PATH": "发送 Rclone 路径。如果您想使用您的 rclone 配置，请通过所有者/用户配置从 usetting 编辑或在 rclone 路径前添加 mrcc:。例如 mrcc:remote:folder。超时：60 秒",
+    "RCLONE_FLAGS": "key:value|key|key|key:value 。在这里查看所有 <a href='https://rclone.org/flags/'>Rclone标志</a>\n例如：--buffer-size:8M|--drive-starred-only",
+    "GDRIVE_ID": "发送 Gdrive ID。如果您想使用您的 token.pickle，请通过所有者/用户令牌从 usetting 编辑或在 id 前添加 mtp:。例如：mtp:F435RGGRDXXXXXX 。超时：60 秒",
+    "INDEX_URL": "发送索引 URL。超时：60 秒",
+    "UPLOAD_PATHS": "发送具有路径值的键的字典。例如：{'path 1': 'remote:rclonefolder', 'path 2': 'gdrive1 id', 'path 3': 'tg chat id', 'path 4': 'mrcc:remote:', 'path 5': b:@username} 。超时：60 秒",
+    "EXCLUDED_EXTENSIONS": "发送排除的扩展名，用空格分隔，开头不带点。超时：60 秒",
+    "NAME_SUBSTITUTE": r"""字词替换。您可以添加模式而不是普通文本。超时：60 秒
+注意：您必须在这些字符前添加 \：\^$.|?*+()[]{}-
+例如：script/code/s | mirror/leech | tea/ /s | clone | cpu/ | \[mltb\]/mltb | \\text\\/text/s
+1. script 将被替换为 code，区分大小写
+2. mirror 将被替换为 leech
+4. tea 将被替换为空格，区分大小写
+5. clone 将被删除
+6. cpu 将被替换为空格
+7. [mltb] 将被替换为 mltb
+8. \text\ 将被替换为 text，区分大小写
 """,
-    "YT_DLP_OPTIONS": """Send dict of YT-DLP Options. Timeout: 60 sec
-Format: {key: value, key: value, key: value}.
-Example: {"format": "bv*+mergeall[vcodec=none]", "nocheckcertificate": True, "playliststart": 10, "fragment_retries": float("inf"), "matchtitle": "S13", "writesubtitles": True, "live_from_start": True, "postprocessor_args": {"ffmpeg": ["-threads", "4"]}, "wait_for_video": (5, 100), "download_ranges": [{"start_time": 0, "end_time": 10}]}
-Check all yt-dlp api options from this <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L184'>FILE</a> or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to convert cli arguments to api options.""",
-    "FFMPEG_CMDS": """Dict of list values of ffmpeg commands. You can set multiple ffmpeg commands for all files before upload. Don't write ffmpeg at beginning, start directly with the arguments.
-Examples: {"subtitle": ["-i mltb.mkv -c copy -c:s srt mltb.mkv", "-i mltb.video -c copy -c:s srt mltb"], "convert": ["-i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb.audio -c:a libmp3lame -q:a 2 mltb.mp3"], extract: ["-i mltb -map 0:a -c copy mltb.mka -map 0:s -c copy mltb.srt"]}
-Notes:
-- Add `-del` to the list which you want from the bot to delete the original files after command run complete!
-- To execute one of those lists in bot for example, you must use -ff subtitle (list key) or -ff convert (list key)
-Here I will explain how to use mltb.* which is reference to files you want to work on.
-1. First cmd: the input is mltb.mkv so this cmd will work only on mkv videos and the output is mltb.mkv also so all outputs is mkv. -del will delete the original media after complete run of the cmd.
-2. Second cmd: the input is mltb.video so this cmd will work on all videos and the output is only mltb so the extenstion is same as input files.
-3. Third cmd: the input in mltb.m4a so this cmd will work only on m4a audios and the output is mltb.mp3 so the output extension is mp3.
-4. Fourth cmd: the input is mltb.audio so this cmd will work on all audios and the output is mltb.mp3 so the output extension is mp3.""",
+    "YT_DLP_OPTIONS": """发送 YT-DLP 选项字典。超时：60 秒
+格式：{key: value, key: value, key: value}。
+例如：{"format": "bv*+mergeall[vcodec=none]", "nocheckcertificate": True, "playliststart": 10, "fragment_retries": float("inf"), "matchtitle": "S13", "writesubtitles": True, "live_from_start": True, "postprocessor_args": {"ffmpeg": ["-threads", "4"]}, "wait_for_video": (5, 100), "download_ranges": [{"start_time": 0, "end_time": 10}]}
+从这个<a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L184'>文件</a>中查看所有 yt-dlp API 选项，或使用这个<a href='https://t.me/mltb_official_channel/177'>脚本</a>将命令行参数转换为 API 选项。""",
+    "FFMPEG_CMDS": """FFmpeg 命令列表的字典。您可以在上传前为所有文件设置多个 FFmpeg 命令。不要在开头写 ffmpeg，直接从参数开始。
+例如：{"subtitle": ["-i mltb.mkv -c copy -c:s srt mltb.mkv", "-i mltb.video -c copy -c:s srt mltb"], "convert": ["-i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb.audio -c:a libmp3lame -q:a 2 mltb.mp3"], extract: ["-i mltb -map 0:a -c copy mltb.mka -map 0:s -c copy mltb.srt"]}
+注意：
+- 在您希望机器人在命令运行完成后删除原始文件的列表中添加`-del`！
+- 要在机器人中执行这些列表之一，例如，您必须使用 -ff subtitle（列表键）或 -ff convert（列表键）
+这里我将解释如何使用 mltb.*，它是指您想要处理的文件的引用。
+1. 第一个命令：输入是 mltb.mkv，所以这个命令将只对 mkv 视频起作用，输出也是 mltb.mkv，所以所有输出都是 mkv。-del 将在命令运行完成后删除原始媒体。
+2. 第二个命令：输入是 mltb.video，所以这个命令将对所有视频起作用，输出只是 mltb，所以扩展名与输入文件相同。
+3. 第三个命令：输入是 mltb.m4a，所以这个命令将只对 m4a 音频起作用，输出是 mltb.mp3，所以输出扩展名是 mp3。
+4. 第四个命令：输入是 mltb.audio，所以这个命令将对所有音频起作用，输出是 mltb.mp3，所以输出扩展名是 mp3。""",
 }
 
 
 help_string = f"""
-NOTE: Try each command without any argument to see more detalis.
-/{BotCommands.MirrorCommand[0]} or /{BotCommands.MirrorCommand[1]}: Start mirroring to cloud.
-/{BotCommands.QbMirrorCommand[0]} or /{BotCommands.QbMirrorCommand[1]}: Start Mirroring to cloud using qBittorrent.
-/{BotCommands.JdMirrorCommand[0]} or /{BotCommands.JdMirrorCommand[1]}: Start Mirroring to cloud using JDownloader.
-/{BotCommands.NzbMirrorCommand[0]} or /{BotCommands.NzbMirrorCommand[1]}: Start Mirroring to cloud using Sabnzbd.
-/{BotCommands.YtdlCommand[0]} or /{BotCommands.YtdlCommand[1]}: Mirror yt-dlp supported link.
-/{BotCommands.LeechCommand[0]} or /{BotCommands.LeechCommand[1]}: Start leeching to Telegram.
-/{BotCommands.QbLeechCommand[0]} or /{BotCommands.QbLeechCommand[1]}: Start leeching using qBittorrent.
-/{BotCommands.JdLeechCommand[0]} or /{BotCommands.JdLeechCommand[1]}: Start leeching using JDownloader.
-/{BotCommands.NzbLeechCommand[0]} or /{BotCommands.NzbLeechCommand[1]}: Start leeching using Sabnzbd.
-/{BotCommands.YtdlLeechCommand[0]} or /{BotCommands.YtdlLeechCommand[1]}: Leech yt-dlp supported link.
-/{BotCommands.CloneCommand} [drive_url]: Copy file/folder to Google Drive.
-/{BotCommands.CountCommand} [drive_url]: Count file/folder of Google Drive.
-/{BotCommands.DeleteCommand} [drive_url]: Delete file/folder from Google Drive (Only Owner & Sudo).
-/{BotCommands.UserSetCommand[0]} or /{BotCommands.UserSetCommand[1]} [query]: Users settings.
-/{BotCommands.BotSetCommand[0]} or /{BotCommands.BotSetCommand[1]} [query]: Bot settings.
-/{BotCommands.SelectCommand}: Select files from torrents or nzb by gid or reply.
-/{BotCommands.CancelTaskCommand[0]} or /{BotCommands.CancelTaskCommand[1]} [gid]: Cancel task by gid or reply.
-/{BotCommands.ForceStartCommand[0]} or /{BotCommands.ForceStartCommand[1]} [gid]: Force start task by gid or reply.
-/{BotCommands.CancelAllCommand} [query]: Cancel all [status] tasks.
-/{BotCommands.ListCommand} [query]: Search in Google Drive(s).
-/{BotCommands.SearchCommand} [query]: Search for torrents with API.
-/{BotCommands.StatusCommand}: Shows a status of all the downloads.
-/{BotCommands.StatsCommand}: Show stats of the machine where the bot is hosted in.
-/{BotCommands.PingCommand}: Check how long it takes to Ping the Bot (Only Owner & Sudo).
-/{BotCommands.AuthorizeCommand}: Authorize a chat or a user to use the bot (Only Owner & Sudo).
-/{BotCommands.UnAuthorizeCommand}: Unauthorize a chat or a user to use the bot (Only Owner & Sudo).
-/{BotCommands.UsersCommand}: show users settings (Only Owner & Sudo).
-/{BotCommands.AddSudoCommand}: Add sudo user (Only Owner).
-/{BotCommands.RmSudoCommand}: Remove sudo users (Only Owner).
-/{BotCommands.RestartCommand}: Restart and update the bot (Only Owner & Sudo).
-/{BotCommands.LogCommand}: Get a log file of the bot. Handy for getting crash reports (Only Owner & Sudo).
-/{BotCommands.ShellCommand}: Run shell commands (Only Owner).
-/{BotCommands.AExecCommand}: Exec async functions (Only Owner).
-/{BotCommands.ExecCommand}: Exec sync functions (Only Owner).
-/{BotCommands.ClearLocalsCommand}: Clear {BotCommands.AExecCommand} or {BotCommands.ExecCommand} locals (Only Owner).
-/{BotCommands.RssCommand}: RSS Menu.
+注意：尝试不带任何参数使用每个命令以查看更多详细信息。
+/{BotCommands.MirrorCommand[0]} 或 /{BotCommands.MirrorCommand[1]}：开始镜像到云端。
+/{BotCommands.QbMirrorCommand[0]} 或 /{BotCommands.QbMirrorCommand[1]}：使用 qBittorrent 开始镜像到云端。
+/{BotCommands.JdMirrorCommand[0]} 或 /{BotCommands.JdMirrorCommand[1]}：使用 JDownloader 开始镜像到云端。
+/{BotCommands.NzbMirrorCommand[0]} 或 /{BotCommands.NzbMirrorCommand[1]}：使用 Sabnzbd 开始镜像到云端。
+/{BotCommands.YtdlCommand[0]} 或 /{BotCommands.YtdlCommand[1]}：镜像 yt-dlp 支持的链接。
+/{BotCommands.LeechCommand[0]} 或 /{BotCommands.LeechCommand[1]}：开始下载到 Telegram。
+/{BotCommands.QbLeechCommand[0]} 或 /{BotCommands.QbLeechCommand[1]}：使用 qBittorrent 开始下载。
+/{BotCommands.JdLeechCommand[0]} 或 /{BotCommands.JdLeechCommand[1]}：使用 JDownloader 开始下载。
+/{BotCommands.NzbLeechCommand[0]} 或 /{BotCommands.NzbLeechCommand[1]}：使用 Sabnzbd 开始下载。
+/{BotCommands.YtdlLeechCommand[0]} 或 /{BotCommands.YtdlLeechCommand[1]}：下载 yt-dlp 支持的链接。
+/{BotCommands.CloneCommand} [drive_url]：复制文件/文件夹到 Google Drive。
+/{BotCommands.CountCommand} [drive_url]：计算 Google Drive 的文件/文件夹数量。
+/{BotCommands.DeleteCommand} [drive_url]：从 Google Drive 删除文件/文件夹（仅限所有者和 Sudo）。
+/{BotCommands.UserSetCommand[0]} 或 /{BotCommands.UserSetCommand[1]} [query]：用户设置。
+/{BotCommands.BotSetCommand[0]} 或 /{BotCommands.BotSetCommand[1]} [query]：机器人设置。
+/{BotCommands.SelectCommand}：通过 gid 或回复选择种子或 nzb 中的文件。
+/{BotCommands.CancelTaskCommand[0]} 或 /{BotCommands.CancelTaskCommand[1]} [gid]：通过 gid 或回复取消任务。
+/{BotCommands.ForceStartCommand[0]} 或 /{BotCommands.ForceStartCommand[1]} [gid]：通过 gid 或回复强制开始任务。
+/{BotCommands.CancelAllCommand} [query]：取消所有 [status] 任务。
+/{BotCommands.ListCommand} [query]：在 Google Drive 中搜索。
+/{BotCommands.SearchCommand} [query]：使用 API 搜索种子。
+/{BotCommands.StatusCommand}：显示所有下载的状态。
+/{BotCommands.StatsCommand}：显示机器人所在机器的统计信息。
+/{BotCommands.PingCommand}：检查 Ping 机器人所需的时间（仅限所有者和 Sudo）。
+/{BotCommands.AuthorizeCommand}：授权聊天或用户使用机器人（仅限所有者和 Sudo）。
+/{BotCommands.UnAuthorizeCommand}：取消授权聊天或用户使用机器人（仅限所有者和 Sudo）。
+/{BotCommands.UsersCommand}：显示用户设置（仅限所有者和 Sudo）。
+/{BotCommands.AddSudoCommand}：添加 sudo 用户（仅限所有者）。
+/{BotCommands.RmSudoCommand}：删除 sudo 用户（仅限所有者）。
+/{BotCommands.RestartCommand}：重启并更新机器人（仅限所有者和 Sudo）。
+/{BotCommands.LogCommand}：获取机器人的日志文件。方便获取崩溃报告（仅限所有者和 Sudo）。
+/{BotCommands.ShellCommand}：运行 shell 命令（仅限所有者）。
+/{BotCommands.AExecCommand}：执行异步函数（仅限所有者）。
+/{BotCommands.ExecCommand}：执行同步函数（仅限所有者）。
+/{BotCommands.ClearLocalsCommand}：清除 {BotCommands.AExecCommand} 或 {BotCommands.ExecCommand} 本地变量（仅限所有者）。
+/{BotCommands.RssCommand}：RSS 菜单。
 """

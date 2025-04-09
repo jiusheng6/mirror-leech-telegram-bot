@@ -11,24 +11,24 @@ SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB"]
 
 
 class MirrorStatus:
-    STATUS_UPLOAD = "Upload"
-    STATUS_DOWNLOAD = "Download"
-    STATUS_CLONE = "Clone"
-    STATUS_QUEUEDL = "QueueDl"
-    STATUS_QUEUEUP = "QueueUp"
-    STATUS_PAUSED = "Pause"
-    STATUS_ARCHIVE = "Archive"
-    STATUS_EXTRACT = "Extract"
-    STATUS_SPLIT = "Split"
-    STATUS_CHECK = "CheckUp"
-    STATUS_SEED = "Seed"
-    STATUS_SAMVID = "SamVid"
-    STATUS_CONVERT = "Convert"
+    STATUS_UPLOAD = "上传"
+    STATUS_DOWNLOAD = "下载"
+    STATUS_CLONE = "克隆"
+    STATUS_QUEUEDL = "下载队列"
+    STATUS_QUEUEUP = "上传队列"
+    STATUS_PAUSED = "暂停"
+    STATUS_ARCHIVE = "压缩"
+    STATUS_EXTRACT = "解压"
+    STATUS_SPLIT = "分割"
+    STATUS_CHECK = "检查"
+    STATUS_SEED = "做种"
+    STATUS_SAMVID = "视频采样"
+    STATUS_CONVERT = "转换"
     STATUS_FFMPEG = "FFmpeg"
 
 
 STATUSES = {
-    "ALL": "All",
+    "ALL": "全部",
     "DL": MirrorStatus.STATUS_DOWNLOAD,
     "UP": MirrorStatus.STATUS_UPLOAD,
     "QD": MirrorStatus.STATUS_QUEUEDL,
@@ -57,7 +57,7 @@ async def get_task_by_gid(gid: str):
 
 
 async def get_specific_tasks(status, user_id):
-    if status == "All":
+    if status == "全部":
         if user_id:
             return [tk for tk in task_dict.values() if tk.listener.user_id == user_id]
         else:
@@ -103,7 +103,7 @@ def get_readable_file_size(size_in_bytes):
 
 
 def get_readable_time(seconds: int):
-    periods = [("d", 86400), ("h", 3600), ("m", 60), ("s", 1)]
+    periods = [("天", 86400), ("小时", 3600), ("分钟", 60), ("秒", 1)]
     result = ""
     for period_name, period_seconds in periods:
         if seconds >= period_seconds:
@@ -156,7 +156,7 @@ def get_progress_bar_string(pct):
     return f"[{p_str}]"
 
 
-async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=1):
+async def get_readable_message(sid, is_user, page_no=1, status="全部", page_step=1):
     msg = ""
     button = None
 
@@ -176,7 +176,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
     for index, task in enumerate(
         tasks[start_position : STATUS_LIMIT + start_position], start=1
     ):
-        if status != "All":
+        if status != "全部":
             tstatus = status
         elif iscoroutinefunction(task.status):
             tstatus = await task.status()
@@ -202,52 +202,52 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             else:
                 subsize = ""
                 count = ""
-            msg += f"\n<b>Processed:</b> {task.processed_bytes()}{subsize}"
+            msg += f"\n<b>已处理:</b> {task.processed_bytes()}{subsize}"
             if count:
-                msg += f"\n<b>Count:</b> {count}"
-            msg += f"\n<b>Size:</b> {task.size()}"
-            msg += f"\n<b>Speed:</b> {task.speed()}"
-            msg += f"\n<b>ETA:</b> {task.eta()}"
+                msg += f"\n<b>数量:</b> {count}"
+            msg += f"\n<b>大小:</b> {task.size()}"
+            msg += f"\n<b>速度:</b> {task.speed()}"
+            msg += f"\n<b>剩余时间:</b> {task.eta()}"
             if (
                 tstatus == MirrorStatus.STATUS_DOWNLOAD
                 and task.listener.is_torrent
                 or task.listener.is_qbit
             ):
                 try:
-                    msg += f"\n<b>Seeders:</b> {task.seeders_num()} | <b>Leechers:</b> {task.leechers_num()}"
+                    msg += f"\n<b>做种者:</b> {task.seeders_num()} | <b>下载者:</b> {task.leechers_num()}"
                 except:
                     pass
         elif tstatus == MirrorStatus.STATUS_SEED:
-            msg += f"\n<b>Size: </b>{task.size()}"
-            msg += f"\n<b>Speed: </b>{task.seed_speed()}"
-            msg += f"\n<b>Uploaded: </b>{task.uploaded_bytes()}"
-            msg += f"\n<b>Ratio: </b>{task.ratio()}"
-            msg += f" | <b>Time: </b>{task.seeding_time()}"
+            msg += f"\n<b>大小: </b>{task.size()}"
+            msg += f"\n<b>速度: </b>{task.seed_speed()}"
+            msg += f"\n<b>已上传: </b>{task.uploaded_bytes()}"
+            msg += f"\n<b>分享率: </b>{task.ratio()}"
+            msg += f" | <b>时间: </b>{task.seeding_time()}"
         else:
-            msg += f"\n<b>Size: </b>{task.size()}"
+            msg += f"\n<b>大小: </b>{task.size()}"
         msg += f"\n<b>Gid: </b><code>{task.gid()}</code>\n\n"
 
     if len(msg) == 0:
-        if status == "All":
+        if status == "全部":
             return None, None
         else:
-            msg = f"No Active {status} Tasks!\n\n"
+            msg = f"没有活跃的{status}任务！\n\n"
     buttons = ButtonMaker()
     if not is_user:
         buttons.data_button("📜", f"status {sid} ov", position="header")
     if len(tasks) > STATUS_LIMIT:
-        msg += f"<b>Page:</b> {page_no}/{pages} | <b>Tasks:</b> {tasks_no} | <b>Step:</b> {page_step}\n"
+        msg += f"<b>页码:</b> {page_no}/{pages} | <b>任务:</b> {tasks_no} | <b>步长:</b> {page_step}\n"
         buttons.data_button("<<", f"status {sid} pre", position="header")
         buttons.data_button(">>", f"status {sid} nex", position="header")
         if tasks_no > 30:
             for i in [1, 2, 4, 6, 8, 10, 15]:
                 buttons.data_button(i, f"status {sid} ps {i}", position="footer")
-    if status != "All" or tasks_no > 20:
+    if status != "全部" or tasks_no > 20:
         for label, status_value in list(STATUSES.items()):
             if status_value != status:
                 buttons.data_button(label, f"status {sid} st {status_value}")
     buttons.data_button("♻️", f"status {sid} ref", position="header")
     button = buttons.build_menu(8)
-    msg += f"<b>CPU:</b> {cpu_percent()}% | <b>FREE:</b> {get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)}"
-    msg += f"\n<b>RAM:</b> {virtual_memory().percent}% | <b>UPTIME:</b> {get_readable_time(time() - bot_start_time)}"
+    msg += f"<b>CPU:</b> {cpu_percent()}% | <b>可用空间:</b> {get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)}"
+    msg += f"\n<b>内存:</b> {virtual_memory().percent}% | <b>运行时间:</b> {get_readable_time(time() - bot_start_time)}"
     return msg, button
