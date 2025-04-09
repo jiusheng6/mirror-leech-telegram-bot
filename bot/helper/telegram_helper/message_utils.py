@@ -121,7 +121,7 @@ async def get_tg_link_message(link):
             r"tg:\/\/openmessage\?user_id=([0-9]+)&message_id=([0-9-]+)", link
         )
         if not TgClient.user:
-    raise TgLinkException("该私人链接需要 USER_SESSION_STRING!")
+            raise TgLinkException("该私人链接需要 USER_SESSION_STRING!")
 
     chat = msg[1]
     msg_id = msg[2]
