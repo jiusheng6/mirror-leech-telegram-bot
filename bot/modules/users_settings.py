@@ -297,7 +297,7 @@ Rclone 参数为 <code>{rcflags}</code>"""
             ffc = "None"
 
         if user_dict:
-        buttons.data_button("重置所有", f"userset {user_id} reset all")
+            buttons.data_button("重置所有", f"userset {user_id} reset all")
 
         buttons.data_button("关闭", f"userset {user_id} close")
 
