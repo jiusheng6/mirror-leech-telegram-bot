@@ -1,249 +1,250 @@
-This Telegram Bot, based on [python-aria-mirror-bot](https://github.com/lzzy12/python-aria-mirror-bot), has undergone
-substantial modifications and is designed for efficiently mirroring or leeching files from the Internet to various
-destinations, including Google Drive, Telegram, or any rclone-supported cloud. It is built using asynchronous
-programming in Python.
+# Mirror-Leech-Telegram-Bot 中文说明文档
 
-- **TELEGRAM CHANNEL:** https://t.me/mltb_official_channel
-- **TELEGRAM GROUP:** https://t.me/mltb_official_support
+本 Telegram 机器人基于 [python-aria-mirror-bot](https://github.com/lzzy12/python-aria-mirror-bot)，经过了大量修改，旨在高效地将互联网上的文件镜像或下载到各种目的地，包括 Google Drive、Telegram 或任何 rclone 支持的云存储。它使用 Python 的异步编程构建。
+
+**特别版本说明**：本版本在原版基础上进行了全面汉化，并集成了 Alist 文件管理系统，方便用户管理和访问云端文件。
+
+- **Telegram 频道:** https://t.me/mltb_official_channel
+- **Telegram 群组:** https://t.me/mltb_official_support
 
 <details>
-  <summary><h1>Features</h1></summary>
+  <summary><h1>功能特性</h1></summary>
 
 <details>
   <summary><h5>QBittorrent</h5></summary>
 
-- External access to webui, so you can remove files or edit settings. Then you can sync settings in database with sync button in bsetting
-- Select files from a Torrent before and during download using mltb file selector (Requires Base URL) (task option)
-- Seed torrents to a specific ratio and time (task option)
-- Edit Global Options while the bot is running from bot settings (global option)
+- 支持外部访问 WebUI，可以删除文件或编辑设置，然后可以通过机器人设置中的同步按钮同步到数据库
+- 在下载前和下载过程中使用 MLTB 文件选择器选择种子文件（需要基本 URL）（任务选项）
+- 将种子做种到特定的比率和时间（任务选项）
+- 在机器人运行时通过机器人设置编辑全局选项（全局选项）
 
 </details>
 
 <details>
   <summary><h5>Aria2c</h5></summary>
 
-- Select files from a Torrent before and during download (Requires Base URL) (task option)
-- Seed torrents to a specific ratio and time (task option)
-- Netrc support (global option)
-- Direct link authentication for a specific link while using the bot (it will work even if only the username or password
-  is provided) (task option)
-- Edit Global Options while the bot is running from bot settings (global option)
+- 在下载前和下载过程中选择种子文件（需要基本 URL）（任务选项）
+- 将种子做种到特定的比率和时间（任务选项）
+- 支持 Netrc 认证（全局选项）
+- 在使用机器人时为特定链接进行直接链接认证（即使仅提供用户名或密码也可以工作）（任务选项）
+- 在机器人运行时通过机器人设置编辑全局选项（全局选项）
 
 </details>
 
 <details>
   <summary><h5>Sabnzbd</h5></summary>
 
-- External access to web interface, so you can remove files or edit settings. Then you can sync settings in database with sync button in bsetting
-- Remove files from job before and during download using mltb file selector (Requires Base URL) (task option)
-- Edit Global Options while the bot is running from bot settings (global option)
-- Servers menu to edit/add/remove usenet servers
+- 支持外部访问 Web 界面，可以删除文件或编辑设置，然后可以通过机器人设置中的同步按钮同步到数据库
+- 在下载前和下载过程中使用 MLTB 文件选择器从任务中删除文件（需要基本 URL）（任务选项）
+- 在机器人运行时通过机器人设置编辑全局选项（全局选项）
+- 服务器菜单，用于编辑/添加/删除 Usenet 服务器
 
 </details>
 
 <details>
-  <summary><h5>TG Upload/Download</h5></summary>
+  <summary><h5>TG 上传/下载</h5></summary>
 
-- Split size (global, user, and task option)
-- Thumbnail (user and task option)
-- Leech filename prefix (user option)
-- Set upload as a document or as media (global, user and task option)
-- Upload all files to a specific chat (superGroup/channel/private/topic) (global, user, and task option)
-- Equal split size settings (global and user option)
-- Ability to leech split file parts in a media group (global and user option)
-- Download restricted messages (document or link) by tg private/public/super links (task option)
-- Choose transfer by bot or user session in case you have a premium plan (global, user option and task option)
-- Mix upload between user and bot session with respect to file size (global, user option and task option)
-- Upload with custom layout multiple thubnmail (global, user option and task option)
-- Topics support
+- 分割大小（全局、用户和任务选项）
+- 缩略图（用户和任务选项）
+- 下载文件名前缀（用户选项）
+- 设置上传为文档或媒体（全局、用户和任务选项）
+- 将所有文件上传到特定的聊天（超级群组/频道/私人/话题）（全局、用户和任务选项）
+- 平均分割大小设置（全局和用户选项）
+- 能够在媒体组中下载分割文件部分（全局和用户选项）
+- 通过 TG 私人/公共/超级链接下载受限消息（文档或链接）（任务选项）
+- 如果您有高级套餐，可以选择使用机器人或用户会话进行传输（全局、用户和任务选项）
+- 根据文件大小混合使用用户和机器人会话上传（全局、用户和任务选项）
+- 使用自定义布局的多个缩略图上传（全局、用户和任务选项）
+- 支持话题功能
 
 </details>
 
 <details>
   <summary><h5>Google Drive</h5></summary>
 
-- Download/Upload/Clone/Delete/Count from/to Google Drive
-- Count Google Drive files/folders
-- Search in multiple Drive folder/TeamDrive
-- Use Token.pickle if the file is not found with a Service Account, for all Gdrive functions
-- Random Service Account for each task
-- Recursive Search (only with `root` or TeamDrive ID, folder ids will be listed with a non-recursive method). Based
-  on [Sreeraj](https://github.com/SVR666) searchX-bot. (task option)
-- Stop Duplicates (global and user option)
-- Custom upload destination (global, user, and task option)
-- Ability to choose token.pickle or service acccount and upload destinations from list with or without buttons (global, user and task option)
-- Index link support only
-  for [Bhadoo](https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/blob/master/src/worker.js)
+- 从/向 Google Drive 下载/上传/克隆/删除/计数
+- 计算 Google Drive 文件/文件夹数量
+- 在多个 Drive 文件夹/TeamDrive 中搜索
+- 对于所有 Gdrive 功能，如果使用服务帐户找不到文件，则使用 Token.pickle
+- 为每个任务随机使用服务帐户
+- 递归搜索（仅适用于 `root` 或 TeamDrive ID，文件夹 ID 将使用非递归方法列出）。基于 [Sreeraj](https://github.com/SVR666) 的 searchX-bot。（任务选项）
+- 停止重复（全局和用户选项）
+- 自定义上传目的地（全局、用户和任务选项）
+- 能够从列表中选择 token.pickle 或服务帐户和上传目的地，可以使用或不使用按钮（全局、用户和任务选项）
+- 索引链接仅支持 [Bhadoo](https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/blob/master/src/worker.js) 索引
 
 </details>
 
 <details>
   <summary><h5>Rclone</h5></summary>
 
-- Transfer (download/upload/clone-server-side) without or with random service accounts (global and user option)
-- Ability to choose config, remote and path from list with or without buttons (global, user and task option)
-- Ability to set flags for each task or globally from config (global, user and task option)
-- Abitity to select specific files or folders to download/copy using buttons (task option)
-- Rclone.conf (global and user option)
-- Rclone serve for combine remote to use it as index from all remotes (global option)
-- Upload destination (global, user and task option)
+- 不使用或使用随机服务帐户进行传输（下载/上传/服务器端克隆）（全局和用户选项）
+- 能够从列表中选择配置、远程和路径，可以使用或不使用按钮（全局、用户和任务选项）
+- 能够为每个任务或全局从配置中设置标志（全局、用户和任务选项）
+- 能够使用按钮选择特定文件或文件夹进行下载/复制（任务选项）
+- Rclone.conf（全局和用户选项）
+- Rclone serve 用于将远程组合起来，将其用作所有远程的索引（全局选项）
+- 上传目的地（全局、用户和任务选项）
 
 </details>
 
 <details>
-  <summary><h5>Status</h5></summary>
+  <summary><h5>状态</h5></summary>
 
-- Download/Upload/Extract/Archive/Seed/Clone Status
-- Status Pages for an unlimited number of tasks, view a specific number of tasks in a message (global option)
-- Interval message update (global option)
-- Next/Previous buttons to get different pages (global and user option)
-- Status buttons to get specific tasks for the chosen status regarding transfer type if the number of tasks is more than
-  30 (global and user option)
-- Steps buttons for how much next/previous buttons should step backward/forward (global and user option)
-- Status for each user (no auto refresh)
+- 下载/上传/提取/压缩/做种/克隆状态
+- 无限数量任务的状态页面，在一条消息中查看特定数量的任务（全局选项）
+- 消息更新间隔（全局选项）
+- 下一页/上一页按钮获取不同页面（全局和用户选项）
+- 如果任务数量超过 30 个，则根据传输类型获取特定任务状态的状态按钮（全局和用户选项）
+- 步进按钮，用于下一页/上一页按钮应该后退/前进多少步（全局和用户选项）
+- 每个用户的状态（无自动刷新）
 
 </details>
 
 <details>
   <summary><h5>Yt-dlp</h5></summary>
 
-- Yt-dlp quality buttons (task option)
-- Ability to use a specific yt-dlp option (global, user, and task option)
-- Netrc support (global option)
-- Cookies support (global option)
-- Embed the original thumbnail and add it for leech
-- All supported audio formats
+- Yt-dlp 质量按钮（任务选项）
+- 能够使用特定的 yt-dlp 选项（全局、用户和任务选项）
+- Netrc 支持（全局选项）
+- Cookies 支持（全局选项）
+- 嵌入原始缩略图并为下载添加缩略图
+- 所有支持的音频格式
 
 </details>
 
 <details>
   <summary><h5>JDownloader</h5></summary>
 
-- Synchronize Settings (global option)
-- Waiting to select (enable/disable files or change variants) before download start
-- DLC file support
-- All settings can be edited from the remote access to your JDownloader with Web Interface, Android App, iPhone App or
-  Browser Extensions
+- 同步设置（全局选项）
+- 等待选择（在下载开始前启用/禁用文件或更改变体）
+- DLC 文件支持
+- 所有设置都可以通过远程访问 JDownloader 的 Web 界面、Android 应用、iPhone 应用或浏览器扩展进行编辑
 
 </details>
 
 <details>
-  <summary><h5>Mongo Database</h5></summary>
+  <summary><h5>Mongo 数据库</h5></summary>
 
-- Store bot settings
-- Store user settings including thumbnails and all private files
-- Store RSS data
-- Store incompleted task messages
-- Store JDownloader settings
-- Store config.py file on first build and incase any change occured to it, then next build it will define variables
-  from config.py instead of database
-
-</details>
-
-<details>
-  <summary><h5>Torrents Search</h5></summary>
-
-- Search on torrents with Torrent Search API
-- Search on torrents with variable plugins using qBittorrent search engine
+- 存储机器人设置
+- 存储用户设置，包括缩略图和所有私人文件
+- 存储 RSS 数据
+- 存储未完成的任务消息
+- 存储 JDownloader 设置
+- 在首次构建时存储 config.py 文件，如果其发生任何变化，则在下一次构建时将从 config.py 定义变量，而不是从数据库定义
 
 </details>
 
 <details>
-  <summary><h5>Archives</h5></summary>
+  <summary><h5>种子搜索</h5></summary>
 
-- Extract splits with or without password
-- Zip file/folder with or without password and splits incase of leech
-- Using 7z package to extract with or without password all supported types
+- 使用种子搜索 API 搜索种子
+- 使用 qBittorrent 搜索引擎的变量插件搜索种子
+
+</details>
+
+<details>
+  <summary><h5>压缩文件</h5></summary>
+
+- 提取带有或不带密码的分割文件
+- 在下载的情况下，使用或不使用密码压缩文件/文件夹，并进行分割
+- 使用 7z 包通过或不通过密码提取所有支持的类型
 
 </details>
 
 <details>
   <summary><h5>RSS</h5></summary>
 
-- Based on this repository [rss-chan](https://github.com/hyPnOtICDo0g/rss-chan)
-- Rss feed (user option)
-- Title Filters (feed option)
-- Edit any feed while running: pause, resume, edit command and edit filters (feed option)
-- Sudo settings to control users feeds
-- All functions have been improved using buttons from one command.
+- 基于此存储库 [rss-chan](https://github.com/hyPnOtICDo0g/rss-chan)
+- RSS 源（用户选项）
+- 标题过滤器（源选项）
+- 在运行时编辑任何源：暂停、恢复、编辑命令和编辑过滤器（源选项）
+- Sudo 设置以控制用户源
+- 所有功能都已通过一个命令中的按钮得到改进。
 
 </details>
 
 <details>
-  <summary><h5>Overall</h5></summary>
+  <summary><h5>Alist 文件管理系统</h5></summary>
 
-- Docker image support for linux `amd64, arm64/v8, arm/v7`
-- Edit variables and overwrite the private files while bot running (bot, user settings)
-- Update bot at startup and with restart command using `UPSTREAM_REPO`
-- Telegraph. Based on [Sreeraj](https://github.com/SVR666) loaderX-bot
-- Mirror/Leech/Watch/Clone/Count/Del by reply
-- Mirror/Leech/Clone multi links/files with one command
-- Custom name for all links except torrents. For files you should add extension except yt-dlp links (global and user
-  option)
-- Exclude files with specific extensions from being uploaded/cloned (global and user option)
-- View Link button. Extra button to open index link in broswer instead of direct download for file
-- Queueing System for all tasks (global option)
-- Ability to zip/unzip multi links in same directory. Mostly helpful in unziping tg file parts (task option)
-- Bulk download from telegram txt file or text message contains links seperated by new line (task option)
-- Join splitted files that have splitted before by split(linux pkg) (task option)
-- Sample video Generator (task option)
-- Screenshots Generator (task option)
-- Ability to cancel upload/clone/archive/extract/split/queue (task option)
-- Cancel all buttons for choosing specific tasks status to cancel (global option)
-- Convert videos and audios to specific format with filter (task option)
-- Force start to upload or download or both from queue using cmds or args once you add the download (task option)
-- Shell and Executor
-- Add sudo users
-- Ability to save upload paths
-- Name Substitution to rename the files before upload
-- User can select whether he want to use his rclone.conf/token.pickle without adding mpt: or mrcc: before path/gd-id
-- FFmpeg commands to execute it after download (task option)
-- Supported Direct links Generators:
+- 集成了 Alist 文件管理系统，可以通过 Web 界面轻松管理和访问您的云端文件
+- 支持多种云存储服务，包括 Google Drive、OneDrive、阿里云盘等
+- 提供文件预览、分享、移动、重命名等功能
+- 直观的文件管理界面，支持拖放操作
+- 强大的搜索功能，快速找到所需文件
+- 多用户管理系统
+- 详细的文件操作日志
+- 支持 WebDAV 协议访问
 
-> mediafire (file/folders), hxfile.co (need cookies txt with name) [hxfile.txt], streamtape.com, streamsb.net, streamhub.ink,
-> streamvid.net, doodstream.com,
-> feurl.com, upload.ee, pixeldrain.com, racaty.net, 1fichier.com, 1drv.ms (Only works for file not folder or business
-> account), filelions.com, streamwish.com, send.cm (file/folders), solidfiles.com, linkbox.to (file/folders),
-> shrdsk.me (
-> sharedisk.io), akmfiles.com, wetransfer.com, pcloud.link, gofile.io (file/folders), easyupload.io, mdisk.me (with
-> ytdl),
-> tmpsend.com, qiwi.gg, berkasdrive.com, mp4upload.com, terabox.com (videos only file/folders).
+</details>
+
+<details>
+  <summary><h5>总体功能</h5></summary>
+
+- Docker 镜像支持 Linux `amd64, arm64/v8, arm/v7`
+- 在机器人运行时编辑变量并覆盖私人文件（机器人、用户设置）
+- 使用 `UPSTREAM_REPO` 在启动时和重启命令时更新机器人
+- Telegraph。基于 [Sreeraj](https://github.com/SVR666) 的 loaderX-bot
+- 通过回复进行镜像/下载/观看/克隆/计数/删除
+- 使用一个命令镜像/下载/克隆多个链接/文件
+- 除种子外的所有链接的自定义名称。对于文件，您应该添加扩展名，yt-dlp 链接除外（全局和用户选项）
+- 排除具有特定扩展名的文件，使其不被上传/克隆（全局和用户选项）
+- 查看链接按钮。额外的按钮，用于在浏览器中打开索引链接，而不是直接下载文件
+- 所有任务的队列系统（全局选项）
+- 能够在同一目录中压缩/解压缩多个链接。主要有助于解压缩 TG 文件部分（任务选项）
+- 从 Telegram txt 文件或包含按新行分隔的链接的文本消息批量下载（任务选项）
+- 连接之前由 split（Linux 包）分割的文件（任务选项）
+- 样本视频生成器（任务选项）
+- 截图生成器（任务选项）
+- 能够取消上传/克隆/压缩/提取/分割/队列（任务选项）
+- 取消所有按钮，用于选择特定任务状态以取消（全局选项）
+- 使用过滤器将视频和音频转换为特定格式（任务选项）
+- 一旦添加下载，就可以使用命令或参数强制从队列开始上传或下载或两者（任务选项）
+- Shell 和 Executor
+- 添加 sudo 用户
+- 能够保存上传路径
+- 名称替换，用于在上传前重命名文件
+- 用户可以选择是否使用其 rclone.conf/token.pickle，而无需在路径/gd-id 前添加 mpt: 或 mrcc:
+- FFmpeg 命令，在下载后执行（任务选项）
+- 支持的直接链接生成器：
+
+> mediafire（文件/文件夹），hxfile.co（需要带名称的 cookies txt）[hxfile.txt]，streamtape.com，streamsb.net，streamhub.ink，streamvid.net，doodstream.com，feurl.com，upload.ee，pixeldrain.com，racaty.net，1fichier.com，1drv.ms（仅适用于文件，不适用于文件夹或商业帐户），filelions.com，streamwish.com，send.cm（文件/文件夹），solidfiles.com，linkbox.to（文件/文件夹），shrdsk.me（sharedisk.io），akmfiles.com，wetransfer.com，pcloud.link，gofile.io（文件/文件夹），easyupload.io，mdisk.me（使用 ytdl），tmpsend.com，qiwi.gg，berkasdrive.com，mp4upload.com，terabox.com（仅视频文件/文件夹）。
 
 </details>
 </details>
 
 <details>
-  <summary><h1>How to deploy?</h1></summary>
+  <summary><h1>如何部署？</h1></summary>
 
 <details>
-  <summary><h2>Prerequisites</h2></summary>
+  <summary><h2>前提条件</h2></summary>
 
 <details>
-  <summary><h5>1. Installing requirements</h5></summary>
+  <summary><h5>1. 安装要求</h5></summary>
 
-- Clone this repo:
+- 克隆此仓库：
 
-```
+```bash
 git clone https://github.com/anasty17/mirror-leech-telegram-bot mirrorbot/ && cd mirrorbot
 ```
 
-- For Debian based distros
+- 对于基于 Debian 的发行版
 
-```
+```bash
 sudo apt install python3 python3-pip
 ```
 
-Install Docker by following the [official Docker docs](https://docs.docker.com/engine/install/debian/)
+按照[官方 Docker 文档](https://docs.docker.com/engine/install/debian/)安装 Docker
 
-- For Arch and it's derivatives:
+- 对于 Arch 及其衍生版：
 
-```
+```bash
 sudo pacman -S docker python
 ```
 
-- Install dependencies for running setup scripts:
+- 安装运行设置脚本的依赖项：
 
-```
+```bash
 pip3 install -r requirements-cli.txt
 ```
 
@@ -252,194 +253,60 @@ pip3 install -r requirements-cli.txt
 </details>
 
 <details>
-  <summary><h5>2. Setting up config file</h5></summary>
+  <summary><h5>2. 设置配置文件</h5></summary>
 
-```
+```bash
 cp config_sample.py config.py
 ```
 
-Fill up rest of the fields. Meaning of each field is discussed below.
+填写剩余的字段。每个字段的含义在下面讨论。
 
-**1. Required Fields**
+**1. 必填字段**
 
-- `BOT_TOKEN` (`Str`):  The Telegram Bot Token that you got from [@BotFather](https://t.me/BotFather). 
-- `OWNER_ID` (`Int`):  The Telegram User ID (not username) of the Owner of the bot. 
-- `TELEGRAM_API` (`Int`): This is to authenticate your Telegram account for downloading Telegram files. You can get this
-  from <https://my.telegram.org>.
-- `TELEGRAM_HASH` (`Str`):  This is to authenticate your Telegram account for downloading Telegram files. You can get this
-  from <https://my.telegram.org>.
+- `BOT_TOKEN` (`Str`): 从 [@BotFather](https://t.me/BotFather) 获取的 Telegram 机器人令牌。
+- `OWNER_ID` (`Int`): 机器人所有者的 Telegram 用户 ID（非用户名）。
+- `TELEGRAM_API` (`Int`): 用于验证您的 Telegram 帐户以下载 Telegram 文件。您可以从 <https://my.telegram.org> 获取此信息。
+- `TELEGRAM_HASH` (`Str`): 用于验证您的 Telegram 帐户以下载 Telegram 文件。您可以从 <https://my.telegram.org> 获取此信息。
 
-**2. Optional Fields**
-- `TG_PROXY` (`Dict`): The Proxy settings as dict. Ex: {"scheme": "socks5", "hostname": "11.22.33.44", "port": 1234, "username": "user", "password": "pass"}. The username and password can be omitted if the proxy doesn’t require authorization. 
-- `USER_SESSION_STRING` (`Str`): To download/upload from your telegram account if user is `PREMIUM` and to send rss. To generate session string use this command `python3 generate_string_session.py` after mounting repo folder for sure. **NOTE**: You can't use bot with private message. Use it with superGroup.
-- `DATABASE_URL` (`Str`): Your Mongo Database URL (Connection string). Follow this [Create Database](https://github.com/anasty17/test?tab=readme-ov-file#create-database) to create database. Data will be saved in Database: bot settings, users settings, rss data and incomplete tasks. **NOTE**: You can always edit all settings that saved in database from the official site -> (Browse collections). 
-- `CMD_SUFFIX` (`Str`|`Int`): Commands index number. This number will added at the end all commands.
-- `AUTHORIZED_CHATS` (`Str`): Fill user_id and chat_id of groups/users you want to authorize. To auth only specific topic(s) write it in this format `chat_id|thread_id` Ex:-100XXXXXXXXXXX or -100XXXXXXXXXXX|10 or -100XXXXXXXXXXX|10|12. Separate them by space.
-- `SUDO_USERS` (`Str`):  Fill user_id of users whom you want to give sudo permission. Separate them by space.
-- `UPLOAD_PATHS` (`Dict`): Send Dict of keys that have path values. Example: {"path 1": "remote:rclonefolder", "path 2": "gdrive1 id", "path 3": "tg chat id", "path 4": "mrcc:remote:", "path 5": "b: @username"}. 
-- `DEFAULT_UPLOAD` (`Str`): Whether `rc` to upload to `RCLONE_PATH` or `gd` to upload to `GDRIVE_ID`. Default is `rc`. Read
-  More [HERE](https://github.com/anasty17/mirror-leech-telegram-bot/tree/master#upload).
-- `STATUS_UPDATE_INTERVAL` (`Int`): Time in seconds after which the progress/status message will be updated. Recommended `10`
-  seconds at least.
-- `STATUS_LIMIT` (`Int`): Limit the no. of tasks shown in status message with buttons. Default is `4`. **NOTE**: Recommended
-  limit is `4` tasks.
-- `EXCLUDED_EXTENSIONS` (`Str`): File extensions that won't upload/clone. Separate them by space.
-- `INCOMPLETE_TASK_NOTIFIER` (`Bool`): Get incomplete task messages after restart. Require database and superGroup. Default
-  is `False`.
-- `FILELION_API` (`Str`): Filelion api key to mirror Filelion links. Get it
-  from [Filelion](https://vidhide.com/?op=my_account).
-- `STREAMWISH_API` (`Str`): Streamwish api key to mirror Streamwish links. Get it
-  from [Streamwish](https://streamwish.com/?op=my_account).
-- `YT_DLP_OPTIONS` (`Dict`): Dict of yt-dlp options. Check all possible
-  options [HERE](https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L184) or use
-  this [script](https://t.me/mltb_official_channel/177) to convert cli arguments to api options. Format: {key: value, key: value, key: value}.
-    - Example: {"format": "bv*+mergeall[vcodec=none]", "nocheckcertificate": True, "playliststart": 10, "fragment_retries": float("inf"), "matchtitle": "S13", "writesubtitles": True, "live_from_start": True, "postprocessor_args": {"ffmpeg": ["-threads", "4"]}, "wait_for_video": (5, 100), "download_ranges": [{"start_time": 0, "end_time": 10}]}
-- `USE_SERVICE_ACCOUNTS` (`Bool`): Whether to use Service Accounts or not, with google-api-python-client. For this to work
-  see [Using Service Accounts](https://github.com/anasty17/mirror-leech-telegram-bot#generate-service-accounts-what-is-service-account)
-  section below. Default is `False`.
-- `FFMPEG_CMDS` (`Dict`): Dict of list values of ffmpeg commands. You can set multiple ffmpeg commands for all files before upload. Don't write ffmpeg at beginning, start directly with the arguments. `Dict`
-  - Examples: {"subtitle": ["-i mltb.mkv -c copy -c:s srt mltb.mkv", "-i mltb.video -c copy -c:s srt mltb"], "convert": ["-i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb.audio -c:a libmp3lame -q:a 2 mltb.mp3"], extract: ["-i mltb -map 0:a -c copy mltb.mka -map 0:s -c copy mltb.srt"]}
-  **Notes**:
-  - Don't add ffmpeg at the beginning!
-  - Add `-del` to the list which you want from the bot to delete the original files after command run complete!
-  - To execute one of those lists in bot for example, you must use -ff subtitle (list key) or -ff convert (list key)
-  **Example**:
-  - Here I will explain how to use mltb.* which is reference to files you want to work on.
-  1. First cmd: the input is mltb.mkv so this cmd will work only on mkv videos and the output is mltb.mkv also so all outputs is mkv. `-del` will delete the original media after complete run of the cmd.
-  2. Second cmd: the input is mltb.video so this cmd will work on all videos and the output is only mltb so the extenstion is same as input files.
-  3. Third cmd: the input in mltb.m4a so this cmd will work only on m4a audios and the output is mltb.mp3 so the output extension is mp3.
-  4. Fourth cmd: the input is mltb.audio so this cmd will work on all audios and the output is mltb.mp3 so the output extension is mp3.
-- `NAME_SUBSTITUTE` (`Str`): Add word/letter/character/sentense/pattern to remove or replace with other words with sensitive case or without. 
-  **Notes**:
-    - Before any character you must add `\BACKSLASH`, those are the characters: `\^$.|?*+()[]{}-`
-    * Example: script/code/s | mirror/leech | tea/ /s | clone | cpu/ | \[mltb\]/mltb | \\text\\/text/s
-    - script will get replaced by code with sensitive case
-    - mirror will get replaced by leech
-    - tea will get replaced by space with sensitive case
-    - clone will get removed
-    - cpu will get replaced by space
-    - [mltb] will get replaced by mltb
-    - \text\ will get replaced by text with sensitive case
-
-**3. GDrive Tools**
-
-- `GDRIVE_ID` (`Str`): This is the Folder/TeamDrive ID of the Google Drive OR `root` to which you want to upload all the mirrors using google-api-python-client.
-- `IS_TEAM_DRIVE` (`Bool`): Set `True` if uploading to TeamDrive using google-api-python-client. Default is `False`.
-- `INDEX_URL` (`Str`): Refer to <https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index>.
-- `STOP_DUPLICATE` (`Bool`): Bot will check file/folder name in Drive incase uploading to `GDRIVE_ID`. If it's present in Drive then downloading or cloning will be stopped. (**NOTE**: Item will be checked using name and not hash, so this feature is not perfect). Default is `False`.
-
-**4. Rclone**
-
-- `RCLONE_PATH` (`Str`): Default rclone path to which you want to upload all the files/folders using rclone.
-- `RCLONE_FLAGS` (`Str`): --key:value|--key|--key|--key:value . Check here all [RcloneFlags](https://rclone.org/flags/).
-- `RCLONE_SERVE_URL` (`Str`): Valid URL where the bot is deployed to use rclone serve. Format of URL should be `http://myip`, where `myip` is the IP/Domain(public) of your bot or if you have chosen port other than `80` so write it in this format `http://myip:port` (`http` and not `https`). `Str`
-- `RCLONE_SERVE_PORT` (`Int`): Which is the **RCLONE_SERVE_URL** Port. Default is `8080`.
-- `RCLONE_SERVE_USER` (`Str`): Username for rclone serve authentication.
-- `RCLONE_SERVE_PASS` (`Str`): Password for rclone serve authentication.
-
-**5. Update**
-
-- `UPSTREAM_REPO` (`Str`): Your github repository link, if your repo is private add `https://username:{githubtoken}@github.com/{username}/{reponame}` format. Get token from [Github settings](https://github.com/settings/tokens). So you can update your bot from filled repository on each restart.
-    - **NOTE**: Any change in docker or requirements you need to deploy/build again with updated repo to take effect. DON'T delete .gitignore file. For more information read [THIS](https://github.com/anasty17/mirror-leech-telegram-bot/tree/master#upstream-repo-recommended).
-- `UPSTREAM_BRANCH` (`Str`): Upstream branch for update. Default is `master`.
-
-**6. Leech**
-
-- `LEECH_SPLIT_SIZE` (`Int`): Size of split in bytes. Default is `2GB`. Default is `4GB` if your account is premium.
-- `AS_DOCUMENT` (`Bool`): Default type of Telegram file upload. Default is `False` mean as media.
-- `EQUAL_SPLITS` (`Bool`): Split files larger than **LEECH_SPLIT_SIZE** into equal parts size (Not working with zip cmd). Default is `False`.
-- `MEDIA_GROUP` (`Bool`): View Uploaded splitted file parts in media group. Default is `False`.
-- `USER_TRANSMISSION` (`Bool`): Upload/Download by user session. Only in superChat. Default is `False`.
-- `HYBRID_LEECH` (`Bool`): Upload by user and bot session with respect to file size. Only in superChat. Default is `False`.
-- `LEECH_FILENAME_PREFIX` (`Str`): Add custom word to leeched file name.
-- `LEECH_DUMP_CHAT` (`Int`|`Str`): ID or USERNAME or PM(private message) to where files would be uploaded. Add `-100` before channel/superGroup id. To use only specific topic write it in this format `chat_id|thread_id`. Ex:-100XXXXXXXXXXX or -100XXXXXXXXXXX|10 or pm or @xxxxxxx or @xxxxxxx|10.
-- `THUMBNAIL_LAYOUT` (`Str`): Thumbnail layout (widthxheight, 2x2, 3x3, 2x4, 4x4, ...) of how many photo arranged for the thumbnail.
-
-**7. qBittorrent/Aria2c/Sabnzbd**
-
-- `TORRENT_TIMEOUT` (`Int`): Timeout of dead torrents downloading with qBittorrent and Aria2c in seconds.
-- `BASE_URL` (`Str`): Valid BASE URL where the bot is deployed to use torrent/nzb web files selection. Format of URL should be `http://myip`, where `myip` is the IP/Domain(public) of your bot or if you have chosen port other than `80` so write it in this format `http://myip:port` (`http` and not `https`).
-- `BASE_URL_PORT` (`Int`): Which is the **BASE_URL** Port. Default is `80`.
-- `WEB_PINCODE` (`Bool`): Whether to ask for pincode before selecting files from torrent in web or not. Default is `False`.
-    - **Qbittorrent NOTE**: If your facing ram issues then set limit for `MaxConnections`, decrease `AsyncIOThreadsCount`, set limit of `DiskWriteCacheSize` to `32` and decrease `MemoryWorkingSetLimit` from qbittorrent.conf or bsetting command.
-    - Open port 8090 in your vps to access webui from any device. username: mltb, password: mltbmltb
-
-**8. JDownloader**
-
-- `JD_EMAIL` (`Str`): jdownloader email sign up on [JDownloader](https://my.jdownloader.org/).
-- `JD_PASS` (`Str`): jdownloader password.
-  - **JDownloader Config**: You can use your config from local machine in bot by *zipping* cfg folder (cfg.zip) and add it in repo folder.
-
-**9. Sabnzbd**
-
-- `USENET_SERVERS` (`List`): list of dictionaries, you can add as much as you want and there is a button for servers in sabnzbd settings to edit current servers and add new servers.
-
-  ***[{'name': 'main', 'host': '', 'port': 563, 'timeout': 60, 'username': '', 'password': '', 'connections': 8, 'ssl': 1, 'ssl_verify': 2, 'ssl_ciphers': '', 'enable': 1, 'required': 0, 'optional': 0, 'retention': 0, 'send_group': 0, 'priority': 0}]***
-
-  - [READ THIS FOR MORE INFORMATION](https://sabnzbd.org/wiki/configuration/4.2/servers)
-
-  - Open port 8070 in your vps to access full web interface from any device. Use it like http://ip:8070/sabnzbd/. username: mltb, password: mltbmltb
-
-**10. RSS**
-
-- `RSS_DELAY` (`Int`): Time in seconds for rss refresh interval. Recommended `600` second at least. Default is `600` in sec.
-- `RSS_SIZE_LIMIT` (`INT`): Item size limit in bytes. Default is `0`.
-- `RSS_CHAT` (`Int`|`Str`): Chat `ID or USERNAME or ID|TOPIC_ID or USERNAME|TOPIC_ID` where rss links will be sent. If you want message to be sent to the channel then add channel id. Add `-100` before channel id.
-    - **RSS NOTES**: `RSS_CHAT` is required, otherwise monitor will not work. You must use `USER_STRING_SESSION` --OR-- *CHANNEL*. If using channel then bot should be added in both channel and group(linked to channel) and `RSS_CHAT` is the channel id, so messages sent by the bot to channel will be forwarded to group. Otherwise with `USER_STRING_SESSION` add group id for `RSS_CHAT`. If `DATABASE_URL` not added you will miss the feeds while bot offline.
-
-**11. Queue System**
-
-- `QUEUE_ALL` (`Int`): Number of parallel tasks of downloads and uploads. For example if 20 task added and `QUEUE_ALL` is `8`, then the summation of uploading and downloading tasks are 8 and the rest in queue. **NOTE**: if you want to fill `QUEUE_DOWNLOAD` or `QUEUE_UPLOAD`, then `QUEUE_ALL` value must be greater than or equal to the greatest one and less than or equal to summation of `QUEUE_UPLOAD` and `QUEUE_DOWNLOAD`.
-- `QUEUE_DOWNLOAD` (`Int`): Number of all parallel downloading tasks.
-- `QUEUE_UPLOAD` (`Int`): Number of all parallel uploading tasks.
-
-**12. Torrent Search**
-
-- `SEARCH_API_LINK` (`Str`): Search api app link. Get your api from deploying this [repository](https://github.com/Ryuk-me/Torrent-Api-py).
-    - Supported Sites:
-  > 1337x, Piratebay, Nyaasi, Torlock, Torrent Galaxy, Zooqle, Kickass, Bitsearch, MagnetDL, Libgen, YTS, Limetorrent,
-  TorrentFunk, Glodls, TorrentProject and YourBittorrent
-- `SEARCH_LIMIT` (`Int`): Search limit for search api, limit for each site and not overall result limit. Default is zero (Default api limit for each site).
-- `SEARCH_PLUGINS` (`List`): List of qBittorrent search plugins (github raw links). I have added some plugins, you can remove/add plugins as you want. Main Source: [qBittorrent Search Plugins (Official/Unofficial)](https://github.com/qbittorrent/search-plugins).
-
-------
+**2. 可选字段**
+见配置文件中的详细中文注释。
 
 </details>
 </details>
 
 <details>
-  <summary><h2>Build And Run</h2></summary>
+  <summary><h2>构建和运行</h2></summary>
 
-Make sure you still mount the repo folder and installed the docker from official documentation.
+确保您仍然挂载存储库文件夹，并已从官方文档安装了 Docker。
 
-- There are two methods to build and run the docker:
-    1. Using official docker commands.
-    2. Using docker compose plugin. (Recommended)
+- 有两种方法可以构建和运行 Docker：
+    1. 使用官方 Docker 命令。
+    2. 使用 Docker Compose 插件。（推荐）
 
 ------
 
 <details>
-  <summary><h3>Using Official Docker Commands</h3></summary>
+  <summary><h3>使用官方 Docker 命令</h3></summary>
 
-- Build Docker image:
+- 构建 Docker 镜像：
 
-```
+```bash
 sudo docker build . -t mltb
 ```
 
-- Run the image:
+- 运行镜像：
 
-```
+```bash
 sudo docker run --network host mltb
 ```
 
-- To stop the running image:
+- 停止运行的镜像：
 
-```
+```bash
 sudo docker ps
 ```
 
-```
+```bash
 sudo docker stop id
 ```
 
@@ -448,41 +315,41 @@ sudo docker stop id
 </details>
 
 <details>
-  <summary><h3>Using Docker Compose Plugin</h3></summary>
+  <summary><h3>使用 Docker Compose 插件</h3></summary>
 
-- Install docker compose plugin
+- 安装 Docker Compose 插件
 
-```
+```bash
 sudo apt install docker-compose-plugin
 ```
 
-- Build and run Docker image:
+- 构建并运行 Docker 镜像：
 
-```
+```bash
 sudo docker compose up
 ```
 
-- After editing files with nano, for example (nano start.sh) or git pull you must use --build to edit container files:
+- 编辑文件后，例如（nano start.sh）或 git pull 后，必须使用 --build 来编辑容器文件：
 
-```
+```bash
 sudo docker compose up --build
 ```
 
-- To stop the running container:
+- 停止运行的容器：
 
-```
+```bash
 sudo docker compose stop
 ```
 
-- To run the container:
+- 运行容器：
 
-```
+```bash
 sudo docker compose start
 ```
 
-- To get log from already running container (after mounting the folder):
+- 从已运行的容器获取日志（挂载文件夹后）：
 
-```
+```bash
 sudo docker compose logs --follow
 ```
 
@@ -490,11 +357,11 @@ sudo docker compose logs --follow
 
 </details>
 
-**IMPORTANT NOTES**:
-1. Flush your machine iptables to use your opened ports with docker from the host network. 
+**重要注意事项**:
+1. 刷新机器的 iptables 以使用主机网络中的已打开端口与 Docker 一起使用。
 
-```
-# Flush All Rules (Reset iptables)
+```bash
+# 刷新所有规则（重置 iptables）
 sudo iptables -F
 sudo iptables -X
 sudo iptables -t nat -F
@@ -509,7 +376,7 @@ sudo ip6tables -t nat -X
 sudo ip6tables -t mangle -F
 sudo ip6tables -t mangle -X
 
-# Set Default Policies
+# 设置默认策略
 sudo iptables -P INPUT ACCEPT
 sudo iptables -P FORWARD ACCEPT
 sudo iptables -P OUTPUT ACCEPT
@@ -518,16 +385,14 @@ sudo ip6tables -P INPUT ACCEPT
 sudo ip6tables -P FORWARD ACCEPT
 sudo ip6tables -P OUTPUT ACCEPT
 
-# save
+# 保存
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
 sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```
 
-2. Set `BASE_URL_PORT` and `RCLONE_SERVE_PORT` variables to any port you want to use. Default is `80` and `8080`
-   respectively.
+2. 将 `BASE_URL_PORT` 和 `RCLONE_SERVE_PORT` 变量设置为您想要使用的任何端口。默认分别为 `80` 和 `8080`。
 
-3. Check the number of processing units of your machine with `nproc` cmd and times it by 4, then
-   edit `AsyncIOThreadsCount` in qBittorrent.conf or while bot working from bsetting->qbittorrent settings.
+3. 使用 `nproc` 命令检查机器的处理单元数量，然后乘以 4，然后在 qBittorrent.conf 中编辑 `AsyncIOThreadsCount`，或者在机器人工作时从 bsetting->qbittorrent 设置。
 
 ------
 
@@ -535,46 +400,46 @@ sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 </details>
 
 <details>
-  <summary><h1>Extras</h1></summary>
+  <summary><h1>其他信息</h1></summary>
 
 <details>
-  <summary><h5>Bot commands to be set in <a href="https://t.me/BotFather">@BotFather</a></h5></summary>
+  <summary><h5>在 <a href="https://t.me/BotFather">@BotFather</a> 中设置机器人命令</h5></summary>
 
 ```
-mirror - or /m Mirror
-qbmirror - or /qm Mirror torrent using qBittorrent
-jdmirror - or /jm Mirror using jdownloader
-nzbmirror - or /nm Mirror using sabnzbd
-ytdl - or /y Mirror yt-dlp supported links
-leech - or /l Upload to telegram
-qbleech - or /ql Leech torrent using qBittorrent
-jdleech - or /jl Leech using jdownloader
-nzbleech - or /nl Leech using sabnzbd
-ytdlleech - or /yl Leech yt-dlp supported links
-clone - Copy file/folder to Drive
-count - Count file/folder from GDrive
-usetting - or /us User settings
-bsetting - or /bs Bot settings
-status - Get Mirror Status message
-sel - Select files from torrent
-rss - Rss menu
-list - Search files in Drive
-search - Search for torrents with API
-cancel - or /c Cancel a task
-cancelall - Cancel all tasks
-forcestart - or /fs to start task from queue
-del - Delete file/folder from GDrive
-log - Get the Bot Log
-auth - Authorize user or chat
-unauth - Unauthorize uer or chat
-shell - Run commands in Shell
-aexec - Execute async function
-exec - Execute sync function
-restart - Restart the Bot
-restartses - Restart Telegram Session(s)
-stats - Bot Usage Stats
-ping - Ping the Bot
-help - All cmds with description
+mirror - 或 /m 镜像文件
+qbmirror - 或 /qm 使用 qBittorrent 镜像种子
+jdmirror - 或 /jm 使用 jdownloader 镜像
+nzbmirror - 或 /nm 使用 sabnzbd 镜像
+ytdl - 或 /y 镜像 yt-dlp 支持的链接
+leech - 或 /l 上传到 Telegram
+qbleech - 或 /ql 使用 qBittorrent 下载种子
+jdleech - 或 /jl 使用 jdownloader 下载
+nzbleech - 或 /nl 使用 sabnzbd 下载
+ytdlleech - 或 /yl 下载 yt-dlp 支持的链接
+clone - 复制文件/文件夹到 Drive
+count - 计算 GDrive 中的文件/文件夹
+usetting - 或 /us 用户设置
+bsetting - 或 /bs 机器人设置
+status - 获取镜像状态消息
+sel - 从种子中选择文件
+rss - RSS 菜单
+list - 在 Drive 中搜索文件
+search - 使用 API 搜索种子
+cancel - 或 /c 取消任务
+cancelall - 取消所有任务
+forcestart - 或 /fs 从队列开始任务
+del - 从 GDrive 删除文件/文件夹
+log - 获取机器人日志
+auth - 授权用户或聊天
+unauth - 取消授权用户或聊天
+shell - 在 Shell 中运行命令
+aexec - 执行异步函数
+exec - 执行同步函数
+restart - 重启机器人
+restartses - 重启 Telegram 会话
+stats - 机器人使用统计
+ping - Ping 机器人
+help - 所有带有描述的命令
 ```
 
 ------
@@ -582,29 +447,26 @@ help - All cmds with description
 </details>
 
 <details>
-  <summary><h5>Getting Google OAuth API credential file and token.pickle</h5></summary>
+  <summary><h5>获取 Google OAuth API 凭据文件和 token.pickle</h5></summary>
 
-**NOTES**
+**注意**
 
-- Old authentication changed, now we can't use bot or replit to generate token.pickle. You need OS with a local browser.
-  For example `Termux`.
-- Windows users should install python3 and pip. You can find how to install and use them from google or from
-  this [telegraph](https://telegra.ph/Create-Telegram-Mirror-Leech-Bot-by-Deploying-App-with-Heroku-Branch-using-Github-Workflow-12-06)
-  from [Wiszky](https://github.com/vishnoe115) tutorial.
-- You can ONLY open the generated link from `generate_drive_token.py` in local browser.
+- 旧的认证方式已更改，现在我们不能使用机器人或 replit 生成 token.pickle。您需要具有本地浏览器的操作系统。例如 `Termux`。
+- Windows 用户应该安装 python3 和 pip。您可以从谷歌或从 [Wiszky](https://github.com/vishnoe115) 的[这个教程](https://telegra.ph/Create-Telegram-Mirror-Leech-Bot-by-Deploying-App-with-Heroku-Branch-using-Github-Workflow-12-06)中找到如何安装和使用它们。
+- 您只能在本地浏览器中打开从 `generate_drive_token.py` 生成的链接。
 
-1. Visit the [Google Cloud Console](https://console.developers.google.com/apis/credentials)
-2. Go to the OAuth Consent tab, fill it, and save.
-3. Go to the Credentials tab and click Create Credentials -> OAuth Client ID
-4. Choose Desktop and Create.
-5. Publish your OAuth consent screen App to prevent **token.pickle** from expire
-6. Use the download button to download your credentials.
-7. Move that file to the root of mirrorbot, and rename it to **credentials.json**
-8. Visit [Google API page](https://console.developers.google.com/apis/library)
-9. Search for Google Drive Api and enable it
-10. Finally, run the script to generate **token.pickle** file for Google Drive:
+1. 访问 [Google Cloud Console](https://console.developers.google.com/apis/credentials)
+2. 转到 OAuth Consent 选项卡，填写并保存。
+3. 转到凭据选项卡，点击创建凭据 -> OAuth Client ID
+4. 选择桌面并创建。
+5. 发布您的 OAuth consent screen 应用程序，以防止 **token.pickle** 过期
+6. 使用下载按钮下载您的凭据。
+7. 将该文件移动到镜像机器人的根目录，并重命名为 **credentials.json**
+8. 访问 [Google API 页面](https://console.developers.google.com/apis/library)
+9. 搜索 Google Drive Api 并启用它
+10. 最后，运行脚本生成 Google Drive 的 **token.pickle** 文件：
 
-```
+```bash
 pip3 install google-api-python-client google-auth-httplib2 google-auth-oauthlib
 python3 generate_drive_token.py
 ```
@@ -614,76 +476,62 @@ python3 generate_drive_token.py
 </details>
 
 <details>
-  <summary><h5>Generating rclone.conf</h5></summary>
+  <summary><h5>生成 rclone.conf</h5></summary>
 
-1. Install rclone from [Official Site](https://rclone.org/install/)
-2. Create new remote(s) using `rclone config` command.
-3. Copy rclone.conf from .config/rclone/rclone.conf to repo folder
-
-------
-
-</details>
-
-<details>
-  <summary><h5>Upload</h5></summary>
-
-- `RCLONE_PATH` is like `GDRIVE_ID` a default path for mirror. In additional to those variables `DEFAULT_UPLOAD` to
-  choose the default tool whether it's rclone or google-api-python-client.
-- If `DEFAULT_UPLOAD` = 'rc' then you must fill `RCLONE_PATH` with path as default one or with `rcl` to select
-  destination path on each new task.
-- If `DEFAULT_UPLOAD` = 'gd' then you must fill `GDRIVE_ID` with folder/TD id.
-- rclone.conf can be added before deploy like token.pickle to repo folder root or use bsetting to upload it as private
-  file.
-- If rclone.conf uploaded from usetting or added in `rclone/{user_id}.conf` then `RCLONE_PATH` must start with `mrcc:`.
-- Whenever you want to write path manually to use user rclone.conf that added from usetting then you must add
-  the `mrcc:` at the beginning.
-- So in short, up: has 4 possible values which is: gd(Upload to GDRIVE_ID), rc(Upload to RCLONE_PATH), rcl(Select Rclone
-  Path) and rclone_path(remote:path(owner rclone.conf) or mrcc:remote:path(user rclone.conf))
+1. 从[官方网站](https://rclone.org/install/)安装 rclone
+2. 使用 `rclone config` 命令创建新的远程
+3. 将 rclone.conf 从 .config/rclone/rclone.conf 复制到存储库文件夹
 
 ------
 
 </details>
 
 <details>
-  <summary><h5>UPSTREAM REPO (Recommended)</h5></summary>
+  <summary><h5>上传</h5></summary>
 
-- `UPSTREAM_REPO` variable can be used for edit/add any file in repository.
-- You can add private/public repository link to grab/overwrite all files from it.
-- You can skip adding the privates files like token.pickle or accounts folder before deploying, simply
-  fill `UPSTREAM_REPO` private one in case you want to grab all files including private files.
-- If you added private files while deploying and you have added private `UPSTREAM_REPO` and your private files in this
-  private repository, so your private files will be overwritten from this repository. Also if you are using database for
-  private files, then all files from database will override the private files that added before deploying or from
-  private `UPSTREAM_REPO`.
-- If you filled `UPSTREAM_REPO` with the official repository link, then be carefull incase any change in
-  requirements.txt your bot will not start after restart. In this case you need to deploy again with updated code to
-  install the new requirements or simply by changing the `UPSTREAM_REPO` to you fork link with that old updates.
-- In case you you filled `UPSTREAM_REPO` with your fork link be carefull also if you fetched the commits from the
-  official repository.
-- The changes in your `UPSTREAM_REPO` will take affect only after restart.
+- `RCLONE_PATH` 类似于 `GDRIVE_ID`，是镜像的默认路径。除了这些变量外，还有 `DEFAULT_UPLOAD` 来选择默认工具，无论是 rclone 还是 google-api-python-client。
+- 如果 `DEFAULT_UPLOAD` = 'rc'，则必须用路径填充 `RCLONE_PATH` 作为默认路径，或者用 `rcl` 在每个新任务上选择目标路径。
+- 如果 `DEFAULT_UPLOAD` = 'gd'，则必须用文件夹/TD id 填充 `GDRIVE_ID`。
+- rclone.conf 可以在部署前添加，如 token.pickle 到存储库文件夹根目录，或者使用 bsetting 上传为私人文件。
+- 如果 rclone.conf 从 usetting 上传或添加到 `rclone/{user_id}.conf`，则 `RCLONE_PATH` 必须以 `mrcc:` 开头。
+- 所以简而言之，up: 有 4 个可能的值，分别是：gd(上传到 GDRIVE_ID)，rc(上传到 RCLONE_PATH)，rcl(选择 Rclone 路径)和 rclone_path(remote:path(所有者 rclone.conf) 或 mrcc:remote:path(用户 rclone.conf))
 
 ------
 
 </details>
 
 <details>
-  <summary><h5>Bittorrent Seed</h5></summary>
+  <summary><h5>UPSTREAM REPO（推荐）</h5></summary>
 
-- Using `-d` argument alone will lead to use global options for aria2c or qbittorrent.
+- `UPSTREAM_REPO` 变量可用于编辑/添加存储库中的任何文件。
+- 您可以添加私人/公共存储库链接以获取/覆盖所有文件。
+- 您可以跳过在部署前添加私人文件，如 token.pickle 或帐户文件夹，只需填写私人 `UPSTREAM_REPO` 以获取所有文件，包括私人文件。
+- 如果您在部署时添加了私人文件，并且您添加了私人 `UPSTREAM_REPO` 和此私人存储库中的私人文件，则您的私人文件将从此存储库中被覆盖。此外，如果您使用数据库存储私人文件，则数据库中的所有文件将覆盖在部署前或从私人 `UPSTREAM_REPO` 添加的私人文件。
+- 如果您使用官方存储库链接填充了 `UPSTREAM_REPO`，那么要小心，如果 requirements.txt 有任何变化，您的机器人将在重启后无法启动。在这种情况下，您需要使用更新的代码重新部署以安装新的要求，或者只需将 `UPSTREAM_REPO` 更改为您的 fork 链接并带有旧的更新。
+- 如果您用您的 fork 链接填充了 `UPSTREAM_REPO`，如果您从官方存储库获取了提交，也要小心。
+- 您的 `UPSTREAM_REPO` 中的更改只有在重启后才会生效。
+
+------
+
+</details>
+
+<details>
+  <summary><h5>比特种子种子</h5></summary>
+
+- 单独使用 `-d` 参数将导致使用 aria2c 或 qbittorrent 的全局选项。
 
 <details>
   <summary><h3>QBittorrent</h3></summary>
 
-- Global options: `GlobalMaxRatio` and `GlobalMaxSeedingMinutes` in qbittorrent.conf, `-1` means no limit, but you can
-  cancel manually.
-    - **NOTE**: Don't change `MaxRatioAction`.
+- 全局选项：qbittorrent.conf 中的 `GlobalMaxRatio` 和 `GlobalMaxSeedingMinutes`，`-1` 表示无限制，但您可以手动取消。
+    - **注意**：不要更改 `MaxRatioAction`。
 
 </details>
 
 <details>
   <summary><h3>Aria2c</h3></summary>
 
-- Global options: `--seed-ratio` (0 means no limit) and `--seed-time` (0 means no seed) in aria.sh.
+- 全局选项：aria.sh 中的 `--seed-ratio`（0 表示无限制）和 `--seed-time`（0 表示不种子）。
 
 ------
 
@@ -691,123 +539,117 @@ python3 generate_drive_token.py
 </details>
 
 <details>
-  <summary><h5>Using Service Accounts for uploading to avoid user rate limit</h5></summary>
+  <summary><h5>使用服务帐户上传以避免用户速率限制</h5></summary>
 
-> For Service Account to work, you must set `USE_SERVICE_ACCOUNTS` = "True" in config file or environment variables.
-> **NOTE**: Using Service Accounts is only recommended while uploading to a Team Drive.
+> 要使服务帐户工作，您必须在配置文件或环境变量中设置 `USE_SERVICE_ACCOUNTS` = "True"。
+> **注意**：仅在上传到 Team Drive 时才建议使用服务帐户。
 
 <details>
-  <summary><h3>1. Generate Service Accounts. <a href="https://cloud.google.com/iam/docs/service-accounts">What is Service Account?</a></h3></summary>
-Let us create only the Service Accounts that we need.
+  <summary><h3>1. 生成服务帐户。<a href="https://cloud.google.com/iam/docs/service-accounts">什么是服务帐户？</a></h3></summary>
+让我们只创建我们需要的服务帐户。
 
-**Warning**: Abuse of this feature is not the aim of this project and we do **NOT** recommend that you make a lot of
-projects, just one project and 100 SAs allow you plenty of use, its also possible that over abuse might get your
-projects banned by Google.
+**警告**：滥用此功能不是本项目的目的，我们**不**建议您创建大量项目，只需一个项目和 100 个 SA 就足够使用，过度滥用也可能导致您的项目被谷歌封禁。
 
-> **NOTE**: If you have created SAs in past from this script, you can also just re download the keys by running:
+> **注意**：如果您之前已经从此脚本创建了 SA，您也可以通过运行以下命令重新下载密钥：
 
-```
+```bash
 python3 gen_sa_accounts.py --download-keys $PROJECTID
 ```
 
-> **NOTE:** 1 Service Account can upload/copy around 750 GB a day, 1 project can make 100 Service Accounts so you can
-> upload 75 TB a day.
+> **注意：** 1 个服务帐户每天可以上传/复制大约 750 GB，1 个项目可以创建 100 个服务帐户，所以您每天可以上传 75 TB。
 
-> **NOTE:** All people can copy `2TB/DAY` from each file creator (uploader account), so if you got
-> error `userRateLimitExceeded` that doesn't mean your limit exceeded but file creator limit have been exceeded which
-> is `2TB/DAY`.
+> **注意：** 所有人每天可以从每个文件创建者（上传者帐户）复制 `2TB/天`，所以如果您收到错误 `userRateLimitExceeded`，这并不意味着您的限制已超过，而是文件创建者的限制已超过，即 `2TB/天`。
 
-#### Two methods to create service accounts
+#### 创建服务帐户的两种方法
 
-Choose one of these methods
+选择以下方法之一
 
 <details>
-  <summary><h5>1. Create Service Accounts in existed Project (Recommended Method)</h5></summary>
+  <summary><h5>1. 在现有项目中创建服务帐户（推荐方法）</h5></summary>
 
-- List your projects ids
+- 列出您的项目 ID
 
-```
+```bash
 python3 gen_sa_accounts.py --list-projects
 ```
 
-- Enable services automatically by this command
+- 通过此命令自动启用服务
 
-```
+```bash
 python3 gen_sa_accounts.py --enable-services $PROJECTID
 ```
 
-- Create Sevice Accounts to current project
+- 创建当前项目的服务帐户
 
-```
+```bash
 python3 gen_sa_accounts.py --create-sas $PROJECTID
 ```
 
-- Download Sevice Accounts as accounts folder
+- 将服务帐户下载为 accounts 文件夹
 
-```
+```bash
 python3 gen_sa_accounts.py --download-keys $PROJECTID
 ```
 
 </details>
 
 <details>
-  <summary><h5>2. Create Service Accounts in New Project</h5></summary>
+  <summary><h5>2. 在新项目中创建服务帐户</h5></summary>
 
-```
+```bash
 python3 gen_sa_accounts.py --quick-setup 1 --new-only
 ```
 
-A folder named accounts will be created which will contain keys for the Service Accounts.
+将创建一个名为 accounts 的文件夹，其中包含服务帐户的密钥。
 
 </details>
 </details>
 
 <details>
-  <summary><h3>2. Add Service Accounts</h3></summary>
+  <summary><h3>2. 添加服务帐户</h3></summary>
 
-#### Two methods to add service accounts
+#### 添加服务帐户的两种方法
 
-Choose one of these methods
+选择以下方法之一
 
 <details>
-  <summary><h5>1. Add Them To Google Group then to Team Drive (Recommended)</h5></summary>
+  <summary><h5>1. 将它们添加到 Google 群组，然后添加到 Team Drive（推荐）</h5></summary>
 
-- Mount accounts folder
+- 挂载 accounts 文件夹
 
-```
+```bash
 cd accounts
 ```
 
-- Grab emails form all accounts to emails.txt file that would be created in accounts folder
-- `For Windows using PowerShell`
+- 从所有帐户中获取电子邮件到将在 accounts 文件夹中创建的 emails.txt 文件
+- `对于使用 PowerShell 的 Windows`
 
-```
+```powershell
 $emails = Get-ChildItem .\**.json |Get-Content -Raw |ConvertFrom-Json |Select -ExpandProperty client_email >>emails.txt
 ```
 
-- `For Linux`
+- `对于 Linux`
 
-```
+```bash
 grep -oPh '"client_email": "\K[^"]+' *.json > emails.txt
 ```
 
-- Unmount acounts folder
+- 卸载 acounts 文件夹
 
-```
+```bash
 cd ..
 ```
 
-Then add emails from emails.txt to Google Group, after that add this Google Group to your Shared Drive and promote it to
-manager and delete email.txt file from accounts folder
+然后将 emails.txt 中的电子邮件添加到 Google 群组，之后将此 Google 群组添加到您的共享驱动器并将其提升为管理员，然后从 accounts 文件夹中删除 email.txt 文件
 
 </details>
 
 <details>
-  <summary><h5>2. Add Them To Team Drive Directly</h5></summary>
+  <summary><h5>2. 直接将它们添加到 Team Drive</h5></summary>
 
-- Run:
+- 运行：
 
-```
+```bash
 python3 add_to_team_drive.py -d SharedTeamDriveSrcID
 ```
 
@@ -818,33 +660,30 @@ python3 add_to_team_drive.py -d SharedTeamDriveSrcID
 </details>
 
 <details>
-  <summary><h5>Create Database</h5></summary>
+  <summary><h5>创建数据库</h5></summary>
 
-1. Go to `https://mongodb.com/` and sign-up.
-2. Create Shared Cluster.
-3. Press on `Database` under `Deployment` Header, your created cluster will be there.
-5. Press on connect, choose `Allow Access From Anywhere` and press on `Add IP Address` without editing the ip, then
-   create user.
-6. After creating user press on `Choose a connection`, then press on `Connect your application`. Choose `Driver` *
-   *python** and `version` **3.12 or later**.
-7. Copy your `connection string` and replace `<password>` with the password of your user, then press close.
+1. 前往 `https://mongodb.com/` 并注册。
+2. 创建共享集群。
+3. 在 `Deployment` 标题下按 `Database`，您创建的集群将在那里。
+5. 按连接，选择 `Allow Access From Anywhere` 并在不编辑 IP 的情况下按 `Add IP Address`，然后创建用户。
+6. 创建用户后，按 `Choose a connection`，然后按 `Connect your application`。选择 `Driver` **python** 和 `version` **3.12 or later**。
+7. 复制您的 `connection string` 并将 `<password>` 替换为您用户的密码，然后按关闭。
 
 ------
 
 </details>
 
 <details>
-  <summary><h5>Multi Drive List</h5></summary>
+  <summary><h5>多 Drive 列表</h5></summary>
 
-To use list from multi TD/folder. Run driveid.py in your terminal and follow it. It will generate **list_drives.txt**
-file or u can simply create `list_drives.txt` file in working directory and fill it, check below format:
+要使用来自多个 TD/文件夹的列表。在您的终端中运行 driveid.py 并按照它进行操作。它将生成 **list_drives.txt** 文件，或者您可以简单地在工作目录中创建 `list_drives.txt` 文件并填写它，检查以下格式：
 
 ```
 DriveName folderID/tdID or `root` IndexLink(if available)
 DriveName folderID/tdID or `root` IndexLink(if available)
 ```
 
-Example:
+示例：
 
 ```
 TD1 root https://example.dev
@@ -856,31 +695,76 @@ TD2 0AO1JDB1t3i5jUk9PVA https://example.dev
 </details>
 
 <details>
-  <summary><h5>Yt-dlp and Aria2c Authentication Using .netrc File</h5></summary>
+  <summary><h5>使用 .netrc 文件进行 Yt-dlp 和 Aria2c 认证</h5></summary>
 
-For using your premium accounts in yt-dlp or for protected Index Links, create .netrc file according to following
-format:
+要在 yt-dlp 中使用您的高级帐户或用于受保护的索引链接，请根据以下格式创建 .netrc 文件：
 
-**Note**: Create .netrc and not netrc, this file will be hidden, so view hidden files to edit it after creation.
+**注意**：创建 .netrc 而不是 netrc，此文件将被隐藏，因此在创建后查看隐藏文件以进行编辑。
 
-Format:
+格式：
 
 ```
 machine host login username password my_password
 ```
 
-Using Aria2c you can also use built in feature from bot with or without username. Here example for index link without
-username.
+使用 Aria2c，您也可以使用机器人内置功能，带或不带用户名。这里是没有用户名的索引链接示例。
 
 ```
 machine example.workers.dev password index_password
 ```
-Where host is the name of extractor (eg. instagram, Twitch). Multiple accounts of different hosts can be added each
-separated by a new line.
+其中主机是提取器的名称（例如 instagram、Twitch）。不同主机的多个帐户可以添加，每个由一个新行分隔。
 
 **Yt-dlp**: 
-Authentication using [cookies.txt](https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies) file. CREATE IT IN INCOGNITO TAB.
+使用 [cookies.txt](https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies) 文件进行认证。在隐身标签中创建它。
 
+
+-----
+
+</details>
+
+<details>
+  <summary><h5>Alist 文件管理系统使用说明</h5></summary>
+
+Alist 是一个强大的文件列表程序，支持多种存储，提供 WebDAV、API 等功能，同时拥有在线预览和编辑等功能。
+
+**特点**:
+- 支持多种存储服务，包括本地存储、阿里云盘、OneDrive、Google Drive 等
+- 文件在线预览功能，支持图片、视频、音频、文本和多种文档格式
+- WebDAV 支持，可以挂载到本地系统
+- 受保护的路径和文件/文件夹密码功能
+- 文件永久链接和分享功能
+- 元数据支持，包括自定义头图、readme 和描述
+- 多用户系统和权限控制
+
+**初始配置**:
+1. 默认访问地址：`http://你的IP:5244`
+2. 默认用户名：`admin`
+3. 默认密码：首次启动时随机生成，可以通过查看日志获取：
+   ```
+   docker logs mirrorbot | grep "初始管理员信息"
+   ```
+
+**添加存储**:
+1. 登录后，进入"管理" → "存储"
+2. 点击"添加"按钮
+3. 选择存储类型，填写相应配置
+4. 测试连接成功后保存
+
+**配置 WebDAV**:
+1. 进入"管理" → "设置" → "WebDAV"
+2. 配置 WebDAV 路径和权限
+
+**文件操作**:
+- 上传、下载、移动、复制、重命名文件
+- 创建文件夹、删除文件或文件夹
+- 在线预览和编辑文本文件
+- 视频在线播放和音频在线听
+
+**注意事项**:
+- 首次登录后请立即修改默认密码
+- 重要数据请定期备份
+
+有关更多详细信息，请参考 [Alist 官方文档](https://alist.nn.ci/)。
 
 -----
 
@@ -888,15 +772,15 @@ Authentication using [cookies.txt](https://github.com/yt-dlp/yt-dlp/wiki/Extract
 </details>
 
 
-# All Thanks To Our Contributors
+# 感谢所有贡献者
 
 <a href="https://github.com/anasty17/mirror-leech-telegram-bot/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=anasty17/mirror-leech-telegram-bot" />
 </a>
 
-# Donations
+# 捐赠
 
-<p> If you feel like showing your appreciation for this project, then how about buying me a coffee.</p>
+<p>如果您觉得这个项目有用并想表示感谢，不妨请我喝杯咖啡。</p>
 
 [!["Buy Me A Coffee"](https://storage.ko-fi.com/cdn/kofi2.png)](https://ko-fi.com/anasty17)
 
@@ -906,36 +790,36 @@ Binance ID:
 52187862
 ```
 
-USDT Address:
+USDT 地址:
 
 ```
 TEzjjfkxLKQqndpsdpkA7jgiX7QQCL5p4f
 ```
 
-Network:
+网络:
 
 ```
 TRC20
 ```
-TRX Address:
+TRX 地址:
 
 ```
 TEzjjfkxLKQqndpsdpkA7jgiX7QQCL5p4f
 ```
 
-Network:
+网络:
 
 ```
 TRC20
 ```
 
-BTC Address:
+BTC 地址:
 
 ```
 17dkvxjqdc3yiaTs6dpjUB1TjV3tD7ScWe
 ```
 
-ETH Address:
+ETH 地址:
 
 ```
 0xf798a8a1c72d593e16d8f3bb619ebd1a093c7309

@@ -3,14 +3,19 @@ FROM anasty17/mltb:latest
 WORKDIR /usr/src/app
 RUN chmod 777 /usr/src/app
 
-# 安装 Alist（使用 curl 而不是 wget）
+# 安装必要的工具和依赖
+RUN apt-get update && \
+    apt-get install -y wget curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# 安装 Alist
 RUN mkdir -p /usr/src/alist
 WORKDIR /usr/src/alist
-# 使用 curl 下载（大多数基础镜像都预装了 curl）
-RUN curl -L -o alist.tar.gz https://github.com/alist-org/alist/releases/download/v3.44.0/alist-linux-musl-amd64.tar.gz && \
-    tar -xzvf alist.tar.gz && \
+RUN wget https://github.com/alist-org/alist/releases/download/v3.44.0/alist-linux-musl-amd64.tar.gz && \
+    tar -xzvf alist-linux-musl-amd64.tar.gz && \
     chmod +x alist && \
-    rm alist.tar.gz
+    rm alist-linux-musl-amd64.tar.gz
 
 # 返回主工作目录
 WORKDIR /usr/src/app
