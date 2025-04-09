@@ -163,8 +163,8 @@ async def get_user_settings(from_user, stype="main"):
         else:
             thumb_layout = "None"
 
-        buttons.data_button("Back", f"userset {user_id} back")
-        buttons.data_button("Close", f"userset {user_id} close")
+        buttons.data_button("返回", f"userset {user_id} back")
+        buttons.data_button("关闭", f"userset {user_id} close")
 
         text = f"""<u>Leech Settings for {name}</u>
 Leech Type is <b>{ltype}</b>
@@ -237,9 +237,9 @@ Gdrive ID is <code>{gdrive_id}</code>
 Index URL is <code>{index}</code>
 Stop Duplicate is <b>{sd_msg}</b>"""
     else:
-        buttons.data_button("Leech", f"userset {user_id} leech")
+        buttons.data_button("下载", f"userset {user_id} leech")
         buttons.data_button("Rclone", f"userset {user_id} rclone")
-        buttons.data_button("Gdrive API", f"userset {user_id} gdrive")
+        buttons.data_button("谷歌云API", f"userset {user_id} gdrive")
 
         upload_paths = user_dict.get("UPLOAD_PATHS", {})
         if not upload_paths and "UPLOAD_PATHS" not in user_dict and Config.UPLOAD_PATHS:
@@ -247,7 +247,7 @@ Stop Duplicate is <b>{sd_msg}</b>"""
         else:
             upload_paths = "None"
 
-        buttons.data_button("Upload Paths", f"userset {user_id} menu UPLOAD_PATHS")
+        buttons.data_button("上传路径", f"userset {user_id} menu UPLOAD_PATHS")
 
         if user_dict.get("DEFAULT_UPLOAD", ""):
             default_upload = user_dict["DEFAULT_UPLOAD"]
@@ -277,10 +277,10 @@ Stop Duplicate is <b>{sd_msg}</b>"""
         else:
             ex_ex = "None"
 
-        ns_msg = "Added" if user_dict.get("NAME_SUBSTITUTE", False) else "None"
-        buttons.data_button("Name Subtitute", f"userset {user_id} menu NAME_SUBSTITUTE")
+        ns_msg = "已添加" if user_dict.get("NAME_SUBSTITUTE", False) else "无"
+        buttons.data_button("名称替换", f"userset {user_id} menu NAME_SUBSTITUTE")
 
-        buttons.data_button("YT-DLP Options", f"userset {user_id} menu YT_DLP_OPTIONS")
+        buttons.data_button("YT-DLP 选项", f"userset {user_id} menu YT_DLP_OPTIONS")
         if user_dict.get("YT_DLP_OPTIONS", False):
             ytopt = user_dict["YT_DLP_OPTIONS"]
         elif "YT_DLP_OPTIONS" not in user_dict and Config.YT_DLP_OPTIONS:
@@ -288,7 +288,7 @@ Stop Duplicate is <b>{sd_msg}</b>"""
         else:
             ytopt = "None"
 
-        buttons.data_button("FFmpeg Cmds", f"userset {user_id} menu FFMPEG_CMDS")
+        buttons.data_button("FFmpeg 命令", f"userset {user_id} menu FFMPEG_CMDS")
         if user_dict.get("FFMPEG_CMDS", False):
             ffc = user_dict["FFMPEG_CMDS"]
         elif "FFMPEG_CMDS" not in user_dict and Config.FFMPEG_CMDS:
@@ -297,22 +297,22 @@ Stop Duplicate is <b>{sd_msg}</b>"""
             ffc = "None"
 
         if user_dict:
-            buttons.data_button("Reset All", f"userset {user_id} reset all")
+            buttons.data_button("重置所有", f"userset {user_id} reset all")
 
         buttons.data_button("Close", f"userset {user_id} close")
 
-        text = f"""<u>Settings for {name}</u>
-Default Package is <b>{du}</b>
-Use <b>{tr}</b> token/config
-Upload Paths is <code>{upload_paths}</code>
+        text = f"""<u>设置 - {name}</u>
+默认包是 <b>{du}</b>
+使用 <b>{tr}</b> 令牌/配置
+上传路径为 <code>{upload_paths}</code>
 
-Name substitution is <code>{ns_msg}</code>
+名称替换为 <code>{ns_msg}</code>
 
-Excluded Extensions is <code>{ex_ex}</code>
+排除的扩展名为 <code>{ex_ex}</code>
 
-YT-DLP Options is <code>{ytopt}</code>
+YT-DLP 选项为 <code>{ytopt}</code>
 
-FFMPEG Commands is <code>{ffc}</code>"""
+FFMPEG 命令为 <code>{ffc}</code>"""
 
     return text, buttons.build_menu(1)
 

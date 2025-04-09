@@ -35,28 +35,28 @@ async def bot_stats(_, message):
     swap = swap_memory()
     memory = virtual_memory()
     stats = f"""
-<b>Commit Date:</b> {commands["commit"]}
+<b>提交日期:</b> {commands["commit"]}
 
-<b>Bot Uptime:</b> {get_readable_time(time() - bot_start_time)}
-<b>OS Uptime:</b> {get_readable_time(time() - boot_time())}
+<b>机器人运行时间:</b> {get_readable_time(time() - bot_start_time)}
+<b>系统运行时间:</b> {get_readable_time(time() - boot_time())}
 
-<b>Total Disk Space:</b> {get_readable_file_size(total)}
-<b>Used:</b> {get_readable_file_size(used)} | <b>Free:</b> {get_readable_file_size(free)}
+<b>总磁盘空间:</b> {get_readable_file_size(total)}
+<b>已用:</b> {get_readable_file_size(used)} | <b>空闲:</b> {get_readable_file_size(free)}
 
-<b>Upload:</b> {get_readable_file_size(net_io_counters().bytes_sent)}
-<b>Download:</b> {get_readable_file_size(net_io_counters().bytes_recv)}
+<b>上传:</b> {get_readable_file_size(net_io_counters().bytes_sent)}
+<b>下载:</b> {get_readable_file_size(net_io_counters().bytes_recv)}
 
 <b>CPU:</b> {cpu_percent(interval=0.5)}%
-<b>RAM:</b> {memory.percent}%
-<b>DISK:</b> {disk}%
+<b>内存:</b> {memory.percent}%
+<b>磁盘:</b> {disk}%
 
-<b>Physical Cores:</b> {cpu_count(logical=False)}
-<b>Total Cores:</b> {cpu_count()}
-<b>SWAP:</b> {get_readable_file_size(swap.total)} | <b>Used:</b> {swap.percent}%
+<b>物理核心:</b> {cpu_count(logical=False)}
+<b>总核心数:</b> {cpu_count()}
+<b>交换空间:</b> {get_readable_file_size(swap.total)} | <b>已用:</b> {swap.percent}%
 
-<b>Memory Total:</b> {get_readable_file_size(memory.total)}
-<b>Memory Free:</b> {get_readable_file_size(memory.available)}
-<b>Memory Used:</b> {get_readable_file_size(memory.used)}
+<b>总内存:</b> {get_readable_file_size(memory.total)}
+<b>空闲内存:</b> {get_readable_file_size(memory.available)}
+<b>已用内存:</b> {get_readable_file_size(memory.used)}
 
 <b>python:</b> {commands["python"]}
 <b>aria2:</b> {commands["aria2"]}
