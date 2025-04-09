@@ -22,4 +22,7 @@ RUN mltbenv/bin/pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# 复制样本配置文件作为默认配置（如果不存在config.py）
+RUN if [ ! -f config.py ]; then cp config_sample.py config.py; fi
+
 CMD ["bash", "start.sh"]
