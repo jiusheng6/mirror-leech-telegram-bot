@@ -13,16 +13,13 @@ mkdir -p /usr/src/alist/data
 # 等待 Alist 完全启动
 sleep 5
 
-# 获取管理员信息
-echo "Alist 已启动，正在获取/重置管理员密码:"
-# 尝试查看信息，如果没有输出密码，则重置为随机密码
-ADMIN_INFO=$(./alist admin info)
-if echo "$ADMIN_INFO" | grep -q "password can only be output at the first startup"; then
-    echo "Alist 密码已被存储为哈希值，正在重置为新的随机密码..."
-    ./alist admin random
-else
-    echo "$ADMIN_INFO"
-fi
+# 设置固定的Alist管理员密码
+echo "Alist 已启动，正在设置固定管理员密码..."
+# 设置管理员密码为 admin123456
+./alist admin set admin123456
+echo "Alist 管理员用户名: admin"
+echo "Alist 管理员密码: admin123456"
+echo "请记住这些凭据用于访问 Alist 管理面板"
 
 # 返回主工作目录
 cd /usr/src/app
