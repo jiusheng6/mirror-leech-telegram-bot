@@ -3,6 +3,9 @@ FROM anasty17/mltb:latest
 WORKDIR /usr/src/app
 RUN chmod 777 /usr/src/app
 
+# 安装必要的工具
+RUN apt-get update && apt-get install -y wget curl && apt-get clean
+
 # 安装 Alist
 RUN mkdir -p /usr/src/alist
 WORKDIR /usr/src/alist
