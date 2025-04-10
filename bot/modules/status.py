@@ -39,7 +39,7 @@ async def task_status(_, message):
     if count == 0:
         currentTime = get_readable_time(time() - bot_start_time)
         free = get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)
-        msg = f"没有活跃任务！\n每个用户可以通过在命令后添加 me 或 user_id 来获取他的任务状态: /{BotCommands.StatusCommand} me"
+        msg = f"没有活动任务！\n每个用户可以通过在命令后添加 me 或 user_id 来获取他的任务状态: /{BotCommands.StatusCommand} me"
         msg += (
             f"\n<b>CPU:</b> {cpu_percent()}% | <b>可用空间:</b> {free}"
             f"\n<b>内存:</b> {virtual_memory().percent}% | <b>运行时间:</b> {currentTime}"

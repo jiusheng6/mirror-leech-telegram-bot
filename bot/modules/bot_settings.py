@@ -93,23 +93,23 @@ async def get_buttons(key=None, edit_type=None):
                 "BOT_TOKEN",
                 "TG_PROXY",
             ]:
-                msg += "Restart required for this edit to take effect! You will not see the changes in bot vars, the edit will be in database only!\n\n"
-            msg += f"Send a valid value for {key}. Current value is '{Config.get(key)}'. Timeout: 60 sec"
+                msg = "需要重启才能使此编辑生效！您将不会在机器人变量中看到更改，编辑将只在数据库中生效！\n\n"
+            msg += f"请发送 {key} 的有效值。当前值为 '{Config.get(key)}'。超时：60 秒"
         elif edit_type == "ariavar":
             buttons.data_button("返回", "botset aria")
             if key != "newkey":
                 buttons.data_button("空字符串", f"botset emptyaria {key}")
             buttons.data_button("关闭", "botset close")
             msg = (
-                "Send a key with value. Example: https-proxy-user:value. Timeout: 60 sec"
+                "发送带值的键。示例：https-proxy-user:value。超时：60 秒"
                 if key == "newkey"
-                else f"Send a valid value for {key}. Current value is '{aria2_options[key]}'. Timeout: 60 sec"
+                else f"请发送 {key} 的有效值。当前值为 '{aria2_options[key]}'。超时：60 秒"
             )
         elif edit_type == "qbitvar":
             buttons.data_button("返回", "botset qbit")
             buttons.data_button("空字符串", f"botset emptyqbit {key}")
             buttons.data_button("关闭", "botset close")
-            msg = f"Send a valid value for {key}. Current value is '{qbit_options[key]}'. Timeout: 60 sec"
+            msg = f"请发送 {key} 的有效值。当前值为 '{qbit_options[key]}'。超时：60 秒"
         elif edit_type == "nzbvar":
             buttons.data_button("返回", "botset nzb")
             buttons.data_button("默认", f"botset resetnzb {key}")
@@ -123,9 +123,9 @@ async def get_buttons(key=None, edit_type=None):
                 buttons.data_button("空", f"botset emptyserkey {index} {key}")
             buttons.data_button("关闭", "botset close")
             if key == "newser":
-                msg = "Send one server as dictionary {}, like in config.py without []. Timeout: 60 sec"
+                msg = "使用字典格式 {} 发送一个服务器，如同 config.py 中一样，但不带 []。超时：60 秒"
             else:
-                msg = f"Send a valid value for {key} in server {Config.USENET_SERVERS[index]['name']}. Current value is {Config.USENET_SERVERS[index][key]}. Timeout: 60 sec"
+                msg = f"请为服务器 {Config.USENET_SERVERS[index]['name']} 中的 {key} 发送有效值。当前值为 {Config.USENET_SERVERS[index][key]}。超时：60 秒"
     elif key == "var":
         conf_dict = Config.get_all()
         for k in list(conf_dict.keys())[start : 10 + start]:
@@ -142,14 +142,14 @@ async def get_buttons(key=None, edit_type=None):
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start var {x}", position="footer"
             )
-        msg = f"Config Variables | Page: {int(start / 10)} | State: {state}"
+        msg = f"Config Variables | 页面: {int(start / 10)} | 状态: {state}"
     elif key == "private":
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close")
-        msg = """Send private file: config.py, token.pickle, rclone.conf, accounts.zip, list_drives.txt, cookies.txt, .netrc or any other private file!
-To delete private file send only the file name as text message.
-Note: Changing .netrc will not take effect for aria2c until restart.
-Timeout: 60 sec"""
+        buttons.data_button("返回", "botset back")
+        buttons.data_button("关闭", "botset close")
+        msg = """发送私人文件：contig.py, token.pickle, rclone.conf, accounts.zip, list_drives.txt, cookies.txt, .netrc 或其他私人文件！
+要删除私人文件，只需发送文件名作为文本消息。
+注意：更改 .netrc 在重启前不会对 aria2c 生效。
+超时：60 秒"""
     elif key == "aria":
         for k in list(aria2_options.keys())[start : 10 + start]:
             if k not in ["checksum", "index-out", "out", "pause", "select-file"]:
@@ -165,68 +165,68 @@ Timeout: 60 sec"""
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start aria {x}", position="footer"
             )
-        msg = f"Aria2c Options | Page: {int(start / 10)} | State: {state}"
+        msg = f"Aria2c Options | 页面: {int(start / 10)} | 状态: {state}"
     elif key == "qbit":
         for k in list(qbit_options.keys())[start : 10 + start]:
             buttons.data_button(k, f"botset qbitvar {k}")
         if state == "view":
-            buttons.data_button("Edit", "botset edit qbit")
+            buttons.data_button("编辑", "botset edit qbit")
         else:
-            buttons.data_button("View", "botset view qbit")
-        buttons.data_button("Sync Qbittorrent", "botset syncqbit")
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close")
+            buttons.data_button("查看", "botset view qbit")
+        buttons.data_button("同步 Qbittorrent", "botset syncqbit")
+        buttons.data_button("返回", "botset back")
+        buttons.data_button("关闭", "botset close")
         for x in range(0, len(qbit_options), 10):
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start qbit {x}", position="footer"
             )
-        msg = f"Qbittorrent Options | Page: {int(start / 10)} | State: {state}"
+        msg = f"Qbittorrent Options | 页面: {int(start / 10)} | 状态: {state}"
     elif key == "nzb":
         for k in list(nzb_options.keys())[start : 10 + start]:
             buttons.data_button(k, f"botset nzbvar {k}")
         if state == "view":
-            buttons.data_button("Edit", "botset edit nzb")
+            buttons.data_button("编辑", "botset edit nzb")
         else:
-            buttons.data_button("View", "botset view nzb")
-        buttons.data_button("Servers", "botset nzbserver")
-        buttons.data_button("Sync Sabnzbd", "botset syncnzb")
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close")
+            buttons.data_button("查看", "botset view nzb")
+        buttons.data_button("服务器", "botset nzbserver")
+        buttons.data_button("同步 Sabnzbd", "botset syncnzb")
+        buttons.data_button("返回", "botset back")
+        buttons.data_button("关闭", "botset close")
         for x in range(0, len(nzb_options), 10):
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start nzb {x}", position="footer"
             )
-        msg = f"Sabnzbd Options | Page: {int(start / 10)} | State: {state}"
+        msg = f"Sabnzbd Options | 页面: {int(start / 10)} | 状态: {state}"
     elif key == "nzbserver":
         if len(Config.USENET_SERVERS) > 0:
             for index, k in enumerate(Config.USENET_SERVERS[start : 10 + start]):
                 buttons.data_button(k["name"], f"botset nzbser{index}")
-        buttons.data_button("Add New", "botset nzbsevar newser")
-        buttons.data_button("Back", "botset nzb")
-        buttons.data_button("Close", "botset close")
+        buttons.data_button("添加新的", "botset nzbsevar newser")
+        buttons.data_button("返回", "botset nzb")
+        buttons.data_button("关闭", "botset close")
         if len(Config.USENET_SERVERS) > 10:
             for x in range(0, len(Config.USENET_SERVERS), 10):
                 buttons.data_button(
                     f"{int(x / 10)}", f"botset start nzbser {x}", position="footer"
                 )
-        msg = f"Usenet Servers | Page: {int(start / 10)} | State: {state}"
+        msg = f"Usenet Servers | 页面: {int(start / 10)} | 状态: {state}"
     elif key.startswith("nzbser"):
         index = int(key.replace("nzbser", ""))
         for k in list(Config.USENET_SERVERS[index].keys())[start : 10 + start]:
             buttons.data_button(k, f"botset nzbsevar{index} {k}")
         if state == "view":
-            buttons.data_button("Edit", f"botset edit {key}")
+            buttons.data_button("编辑", f"botset edit {key}")
         else:
-            buttons.data_button("View", f"botset view {key}")
-        buttons.data_button("Remove Server", f"botset remser {index}")
-        buttons.data_button("Back", "botset nzbserver")
-        buttons.data_button("Close", "botset close")
+            buttons.data_button("查看", f"botset view {key}")
+        buttons.data_button("移除服务器", f"botset remser {index}")
+        buttons.data_button("返回", "botset nzbserver")
+        buttons.data_button("关闭", "botset close")
         if len(Config.USENET_SERVERS[index].keys()) > 10:
             for x in range(0, len(Config.USENET_SERVERS[index]), 10):
                 buttons.data_button(
                     f"{int(x / 10)}", f"botset start {key} {x}", position="footer"
                 )
-        msg = f"Server Keys | Page: {int(start / 10)} | State: {state}"
+        msg = f"Server Keys | 页面: {int(start / 10)} | 状态: {state}"
 
     button = buttons.build_menu(1) if key is None else buttons.build_menu(2)
     return msg, button
@@ -394,18 +394,18 @@ async def edit_nzb_server(_, message, pre_message, key, index=0):
             try:
                 value = eval(value)
             except:
-                await send_message(message, "Invalid dict format!")
+                await send_message(message, "无效的字典格式！")
                 await update_buttons(pre_message, "nzbserver")
                 return
             res = await sabnzbd_client.add_server(value)
             if not res["config"]["servers"][0]["host"]:
-                await send_message(message, "Invalid server!")
+                await send_message(message, "无效的服务器！")
                 await update_buttons(pre_message, "nzbserver")
                 return
             Config.USENET_SERVERS.append(value)
             await update_buttons(pre_message, "nzbserver")
         else:
-            await send_message(message, "Invalid dict format!")
+            await send_message(message, "无效的字典格式！")
             await update_buttons(pre_message, "nzbserver")
             return
     else:
@@ -415,7 +415,7 @@ async def edit_nzb_server(_, message, pre_message, key, index=0):
             {"name": Config.USENET_SERVERS[index]["name"], key: value}
         )
         if res["config"]["servers"][0][key] == "":
-            await send_message(message, "Invalid value")
+            await send_message(message, "无效的值")
             return
         Config.USENET_SERVERS[index][key] = value
         await update_buttons(pre_message, f"nzbser{index}")
@@ -501,9 +501,9 @@ async def update_private_file(_, message, pre_message):
             await load_config()
         if "@github.com" in Config.UPSTREAM_REPO:
             buttons = ButtonMaker()
-            msg = "Push to UPSTREAM_REPO ?"
-            buttons.data_button("Yes!", f"botset push {file_name}")
-            buttons.data_button("No", "botset close")
+            msg = "推送到上游仓库？"
+            buttons.data_button("是！", f"botset push {file_name}")
+            buttons.data_button("否", "botset close")
             await send_message(message, msg, buttons.build_menu(2))
         else:
             await delete_message(message)
@@ -558,7 +558,7 @@ async def edit_bot_settings(client, query):
             )
             return
         await query.answer(
-            "Syncronization Started. JDownloader will get restarted. It takes up to 10 sec!",
+            "已开始同步。JDownloader 将重启。这将花费最多10秒！",
             show_alert=True,
         )
         await sync_jdownloader()
@@ -644,14 +644,14 @@ async def edit_bot_settings(client, query):
         await database.update_nzb_config()
     elif data[1] == "syncnzb":
         await query.answer(
-            "Syncronization Started. It takes up to 2 sec!", show_alert=True
+            "已开始同步。这将花费最多2秒！", show_alert=True
         )
         nzb_options.clear()
         await update_nzb_options()
         await database.update_nzb_config()
     elif data[1] == "syncqbit":
         await query.answer(
-            "Syncronization Started. It takes up to 2 sec!", show_alert=True
+            "已开始同步。这将花费最多2秒！", show_alert=True
         )
         qbit_options.clear()
         await update_qb_options()

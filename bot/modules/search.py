@@ -69,18 +69,18 @@ async def search(key, site, message, method):
             if "error" in search_results or search_results["total"] == 0:
                 await edit_message(
                     message,
-                    f"No result found for <i>{key}</i>\nTorrent Site:- <i>{SITES.get(site)}</i>",
+                    f"未找到 <i>{key}</i> 的搜索结果\n种子站点:- <i>{SITES.get(site)}</i>",
                 )
                 return
             msg = f"<b>Found {min(search_results['total'], TELEGRAPH_LIMIT)}</b>"
             if method == "apitrend":
-                msg += f" <b>trending result(s)\nTorrent Site:- <i>{SITES.get(site)}</i></b>"
+                msg += f" <b>个流行结果\n种子站点:- <i>{SITES.get(site)}</i></b>"
             elif method == "apirecent":
                 msg += (
-                    f" <b>recent result(s)\nTorrent Site:- <i>{SITES.get(site)}</i></b>"
+                    f" <b>个最新结果\n种子站点:- <i>{SITES.get(site)}</i></b>"
                 )
             else:
-                msg += f" <b>result(s) for <i>{key}</i>\nTorrent Site:- <i>{SITES.get(site)}</i></b>"
+                msg += f" <b>个结果，关键词: <i>{key}</i>\n种子站点:- <i>{SITES.get(site)}</i></b>"
             search_results = search_results["data"]
         except Exception as e:
             await edit_message(message, str(e))
@@ -104,15 +104,15 @@ async def search(key, site, message, method):
         if total_results == 0:
             await edit_message(
                 message,
-                f"No result found for <i>{key}</i>\nTorrent Site:- <i>{site.capitalize()}</i>",
+                f"未找到 <i>{key}</i> 的搜索结果\n种子站点:- <i>{site.capitalize()}</i>",
             )
             return
-        msg = f"<b>Found {min(total_results, TELEGRAPH_LIMIT)}</b>"
-        msg += f" <b>result(s) for <i>{key}</i>\nTorrent Site:- <i>{site.capitalize()}</i></b>"
+        msg = f"<b>找到 {min(total_results, TELEGRAPH_LIMIT)}</b>"
+        msg += f" <b>个结果，关键词: <i>{key}</i>\n种子站点:- <i>{site.capitalize()}</i></b>"
         await TorrentManager.qbittorrent.search.delete(search_id)
     link = await get_result(search_results, key, message, method)
     buttons = ButtonMaker()
-    buttons.url_button("🔎 VIEW", link)
+    buttons.url_button("🔎 查看", link)
     button = buttons.build_menu(1)
     await edit_message(message, msg, button)
 
@@ -120,13 +120,13 @@ async def search(key, site, message, method):
 async def get_result(search_results, key, message, method):
     telegraph_content = []
     if method == "apirecent":
-        msg = "<h4>API Recent Results</h4>"
+        msg = "<h4>API 最新结果</h4>"
     elif method == "apisearch":
-        msg = f"<h4>API Search Result(s) For {key}</h4>"
+        msg = f"<h4>API 搜索结果，关键词: {key}</h4>"
     elif method == "apitrend":
-        msg = "<h4>API Trending Results</h4>"
+        msg = "<h4>API 流行结果</h4>"
     else:
-        msg = f"<h4>PLUGINS Search Result(s) For {key}</h4>"
+        msg = f"<h4>插件搜索结果，关键词: {key}</h4>"
     for index, result in enumerate(search_results, start=1):
         if method.startswith("api"):
             try:

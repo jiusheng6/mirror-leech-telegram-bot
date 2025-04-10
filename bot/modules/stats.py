@@ -74,11 +74,11 @@ async def get_version_async(command, regex):
     try:
         out, err, code = await cmd_exec(command)
         if code != 0:
-            return f"Error: {err}"
+            return f"错误: {err}"
         match = research(regex, out)
-        return match.group(1) if match else "Version not found"
+        return match.group(1) if match else "未找到版本"
     except Exception as e:
-        return f"Exception: {str(e)}"
+        return f"异常: {str(e)}"
 
 
 @new_task
@@ -93,5 +93,5 @@ async def get_packages_version():
         )
         last_commit = last_commit[0]
     else:
-        last_commit = "No UPSTREAM_REPO"
+        last_commit = "没有上游仓库"
     commands["commit"] = last_commit

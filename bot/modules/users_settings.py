@@ -544,8 +544,8 @@ async def edit_user_settings(client, query):
         elif data[2] == "rmone":
             text = f"Remove one or more key from {data[3]}. Example: key 1/key2/key 3. Timeout: 60 sec"
             func = remove_one
-        buttons.data_button("Back", f"userset {user_id} setevent")
-        buttons.data_button("Close", f"userset {user_id} close")
+        buttons.data_button("返回", f"userset {user_id} setevent")
+        buttons.data_button("关闭", f"userset {user_id} close")
         await edit_message(message, text, buttons.build_menu(1))
         pfunc = partial(func, option=data[3])
         await event_handler(client, query, pfunc)

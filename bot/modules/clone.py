@@ -125,7 +125,7 @@ class Clone(TaskListener):
         if is_share_link(self.link):
             try:
                 self.link = await sync_to_async(direct_link_generator, self.link)
-                LOGGER.info(f"Generated link: {self.link}")
+                LOGGER.info(f"生成链接: {self.link}")
             except DirectDownloadLinkException as e:
                 LOGGER.error(str(e))
                 if str(e).startswith("ERROR:"):
@@ -143,11 +143,11 @@ class Clone(TaskListener):
                 await send_message(self.message, msg, button)
                 return
             await self.on_download_start()
-            LOGGER.info(f"Clone Started: Name: {self.name} - Source: {self.link}")
+            LOGGER.info(f"克隆已开始: 名称: {self.name} - 源: {self.link}")
             drive = GoogleDriveClone(self)
             if files <= 10:
                 msg = await send_message(
-                    self.message, f"Cloning: <code>{self.link}</code>"
+                    self.message, f"正在克隆: <code>{self.link}</code>"
                 )
             else:
                 msg = ""
@@ -164,7 +164,7 @@ class Clone(TaskListener):
             await self.on_upload_complete(
                 flink, files, folders, mime_type, dir_id=dir_id
             )
-            LOGGER.info(f"Cloning Done: {self.name}")
+            LOGGER.info(f"克隆完成: {self.name}")
         elif is_rclone_path(self.link):
             if self.link.startswith("mrcc:"):
                 self.link = self.link.replace("mrcc:", "", 1)
@@ -197,7 +197,7 @@ class Clone(TaskListener):
                 res = await cmd_exec(cmd)
                 if res[2] != 0:
                     if res[2] != -9:
-                        msg = f"Error: While getting rclone stat. Path: {remote}:{src_path}. Stderr: {res[1][:4000]}"
+                        msg = f"错误: 获取 rclone 状态时出错。路径: {remote}:{src_path}. 错误输出: {res[1][:4000]}"
                         await send_message(self.message, msg)
                     return
                 rstat = loads(res[0])
@@ -217,7 +217,7 @@ class Clone(TaskListener):
 
             RCTransfer = RcloneTransferHelper(self)
             LOGGER.info(
-                f"Clone Started: Name: {self.name} - Source: {self.link} - Destination: {self.up_dest}"
+                f"克隆已开始: 名称: {self.name} - 源: {self.link} - 目标: {self.up_dest}"
             )
             gid = token_urlsafe(12)
             async with task_dict_lock:
@@ -236,7 +236,7 @@ class Clone(TaskListener):
                 await remove(self.link)
             if not destination:
                 return
-            LOGGER.info(f"Cloning Done: {self.name}")
+            LOGGER.info(f"克隆完成: {self.name}")
             cmd1 = [
                 "rclone",
                 "lsf",
@@ -284,7 +284,7 @@ class Clone(TaskListener):
                 folders = None
                 self.size = 0
                 error = res1[1] or res2[1] or res3[1]
-                msg = f"Error: While getting rclone stat. Path: {destination}. Stderr: {error[:4000]}"
+                msg = f"错误: 获取 rclone 状态时出错。路径: {destination}. 错误输出: {error[:4000]}"
                 await self.on_upload_error(msg)
             else:
                 files = len(res1[0].split("\n"))

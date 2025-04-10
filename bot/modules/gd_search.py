@@ -12,23 +12,23 @@ from ..helper.telegram_helper.message_utils import send_message, edit_message
 async def list_buttons(user_id, is_recursive=True, user_token=False):
     buttons = ButtonMaker()
     buttons.data_button(
-        "Folders", f"list_types {user_id} folders {is_recursive} {user_token}"
+        "文件夹", f"list_types {user_id} folders {is_recursive} {user_token}"
     )
     buttons.data_button(
-        "Files", f"list_types {user_id} files {is_recursive} {user_token}"
+        "文件", f"list_types {user_id} files {is_recursive} {user_token}"
     )
     buttons.data_button(
-        "Both", f"list_types {user_id} both {is_recursive} {user_token}"
+        "全部", f"list_types {user_id} both {is_recursive} {user_token}"
     )
     buttons.data_button(
-        f"Recursive: {is_recursive}",
+        f"递归搜索: {is_recursive}",
         f"list_types {user_id} rec {is_recursive} {user_token}",
     )
     buttons.data_button(
-        f"User Token: {user_token}",
+        f"用户令牌: {user_token}",
         f"list_types {user_id} ut {is_recursive} {user_token}",
     )
-    buttons.data_button("Cancel", f"list_types {user_id} cancel")
+    buttons.data_button("取消", f"list_types {user_id} cancel")
     return buttons.build_menu(2)
 
 
@@ -52,10 +52,10 @@ async def _list_drive(key, message, item_type, is_recursive, user_token, user_id
         except Exception as e:
             await edit_message(message, e)
             return
-        msg = f"<b>Found {contents_no} result for <i>{key}</i></b>"
+        msg = f"<b>找到 {contents_no} 个结果，关键词 <i>{key}</i></b>"
         await edit_message(message, msg, button)
     else:
-        await edit_message(message, f"No result found for <i>{key}</i>")
+        await edit_message(message, f"没有找到关键词 <i>{key}</i> 的结果")
 
 
 @new_task
@@ -65,35 +65,35 @@ async def select_type(_, query):
     key = message.reply_to_message.text.split(maxsplit=1)[1].strip()
     data = query.data.split()
     if user_id != int(data[1]):
-        return await query.answer(text="Not Yours!", show_alert=True)
+        return await query.answer(text="不是你的！", show_alert=True)
     elif data[2] == "rec":
         await query.answer()
         is_recursive = not bool(eval(data[3]))
         buttons = await list_buttons(user_id, is_recursive, eval(data[4]))
-        return await edit_message(message, "Choose list options:", buttons)
+        return await edit_message(message, "选择列表选项:", buttons)
     elif data[2] == "ut":
         await query.answer()
         user_token = not bool(eval(data[4]))
         buttons = await list_buttons(user_id, eval(data[3]), user_token)
-        return await edit_message(message, "Choose list options:", buttons)
+        return await edit_message(message, "选择列表选项:", buttons)
     elif data[2] == "cancel":
         await query.answer()
-        return await edit_message(message, "list has been canceled!")
+        return await edit_message(message, "列表已取消!")
     await query.answer()
     item_type = data[2]
     is_recursive = eval(data[3])
     user_token = eval(data[4])
-    await edit_message(message, f"<b>Searching for <i>{key}</i></b>")
+    await edit_message(message, f"<b>正在搜索 <i>{key}</i></b>")
     await _list_drive(key, message, item_type, is_recursive, user_token, user_id)
 
 
 @new_task
 async def gdrive_search(_, message):
     if len(message.text.split()) == 1:
-        return await send_message(message, "Send a search key along with command")
+        return await send_message(message, "请发送搜索关键词与命令一起使用")
     user_id = message.from_user.id
     buttons = await list_buttons(user_id)
-    await send_message(message, "Choose list options:", buttons)
+    await send_message(message, "选择列表选项:", buttons)
 
 
 

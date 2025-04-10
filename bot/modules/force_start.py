@@ -23,24 +23,24 @@ async def remove_from_queue(_, message):
         gid = msg[2] if status else msg[1]
         task = await get_task_by_gid(gid)
         if task is None:
-            await send_message(message, f"GID: <code>{gid}</code> Not Found.")
+            await send_message(message, f"GID: <code>{gid}</code> 未找到.")
             return
     elif reply_to_id := message.reply_to_message_id:
         async with task_dict_lock:
             task = task_dict.get(reply_to_id)
         if task is None:
-            await send_message(message, "This is not an active task!")
+            await send_message(message, "这不是一个活动任务!")
             return
     elif len(msg) in {1, 2}:
-        msg = f"""Reply to an active Command message which was used to start the download/upload.
-<code>/{BotCommands.ForceStartCommand[0]}</code> fd (to remove it from download queue) or fu (to remove it from upload queue) or nothing to start remove it from both download and upload queue.
-Also send <code>/{BotCommands.ForceStartCommand[0]} GID</code> fu|fd or obly gid to force start by removeing the task rom queue!
-Examples:
-<code>/{BotCommands.ForceStartCommand[1]}</code> GID fu (force upload)
-<code>/{BotCommands.ForceStartCommand[1]}</code> GID (force download and upload)
-By reply to task cmd:
-<code>/{BotCommands.ForceStartCommand[1]}</code> (force download and upload)
-<code>/{BotCommands.ForceStartCommand[1]}</code> fd (force download)
+        msg = f"""回复用于启动下载/上传的活动命令消息。
+<code>/{BotCommands.ForceStartCommand[0]}</code> fd (从下载队列中移除) 或 fu (从上传队列中移除) 或不带参数来同时从下载和上传队列中移除。
+也可以发送 <code>/{BotCommands.ForceStartCommand[0]} GID</code> fu|fd 或只发送 gid 来强制开始，从队列中移除任务！
+示例：
+<code>/{BotCommands.ForceStartCommand[1]}</code> GID fu (强制上传)
+<code>/{BotCommands.ForceStartCommand[1]}</code> GID (强制下载和上传)
+通过回复任务命令：
+<code>/{BotCommands.ForceStartCommand[1]}</code> (强制下载和上传)
+<code>/{BotCommands.ForceStartCommand[1]}</code> fd (强制下载)
 """
         await send_message(message, msg)
         return
@@ -49,7 +49,7 @@ By reply to task cmd:
         and task.listener.user_id != user_id
         and (user_id not in user_data or not user_data[user_id].get("SUDO"))
     ):
-        await send_message(message, "This task is not for you!")
+        await send_message(message, "这个任务不是为你的!")
         return
     listener = task.listener
     msg = ""
@@ -58,26 +58,26 @@ By reply to task cmd:
             listener.force_upload = True
             if listener.mid in queued_up:
                 await start_up_from_queued(listener.mid)
-                msg = "Task have been force started to upload!"
+                msg = "任务已被强制开始上传!"
             else:
-                msg = "Force upload enabled for this task!"
+                msg = "已为此任务启用强制上传!"
         elif status == "fd":
             listener.force_download = True
             if listener.mid in queued_dl:
                 await start_dl_from_queued(listener.mid)
-                msg = "Task have been force started to download only!"
+                msg = "任务已被强制开始下载!"
             else:
-                msg = "This task not in download queue!"
+                msg = "此任务不在下载队列中!"
         else:
             listener.force_download = True
             listener.force_upload = True
             if listener.mid in queued_up:
                 await start_up_from_queued(listener.mid)
-                msg = "Task have been force started to upload!"
+                msg = "任务已被强制开始上传!"
             elif listener.mid in queued_dl:
                 await start_dl_from_queued(listener.mid)
-                msg = "Task have been force started to download and upload will start once download finish!"
+                msg = "任务已被强制开始下载，下载完成后将开始上传!"
             else:
-                msg = "This task not in queue!"
+                msg = "此任务不在队列中!"
     if msg:
         await send_message(message, msg)
