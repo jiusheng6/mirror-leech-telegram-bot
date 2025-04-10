@@ -69,7 +69,7 @@ DEFAULT_VALUES = {
 async def get_buttons(key=None, edit_type=None):
     buttons = ButtonMaker()
     if key is None:
-        buttons.data_button("配置变量", "botset var")
+        buttons.data_button("配置变量", "botset var")  # 回调数据中保持英文标识符
         buttons.data_button("私人文件", "botset private")
         buttons.data_button("Qbit 设置", "botset qbit")
         buttons.data_button("Aria2c 设置", "botset aria")
@@ -133,11 +133,11 @@ async def get_buttons(key=None, edit_type=None):
                 continue
             buttons.data_button(k, f"botset botvar {k}")
         if state == "view":
-            buttons.data_button("Edit", "botset edit var")
+            buttons.data_button("编辑", "botset edit var")
         else:
-            buttons.data_button("View", "botset view var")
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close")
+            buttons.data_button("查看", "botset view var")
+        buttons.data_button("返回", "botset back")
+        buttons.data_button("关闭", "botset close")
         for x in range(0, len(conf_dict), 10):
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start var {x}", position="footer"
@@ -155,12 +155,12 @@ Timeout: 60 sec"""
             if k not in ["checksum", "index-out", "out", "pause", "select-file"]:
                 buttons.data_button(k, f"botset ariavar {k}")
         if state == "view":
-            buttons.data_button("Edit", "botset edit aria")
+            buttons.data_button("编辑", "botset edit aria")
         else:
-            buttons.data_button("View", "botset view aria")
-        buttons.data_button("Add new key", "botset ariavar newkey")
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close")
+            buttons.data_button("查看", "botset view aria")
+        buttons.data_button("添加新键", "botset ariavar newkey")
+        buttons.data_button("返回", "botset back")
+        buttons.data_button("关闭", "botset close")
         for x in range(0, len(aria2_options), 10):
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start aria {x}", position="footer"

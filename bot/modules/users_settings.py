@@ -422,9 +422,12 @@ async def get_menu(option, message, user_id):
     handler_dict[user_id] = False
     user_dict = user_data.get(user_id, {})
     buttons = ButtonMaker()
-    key = "文件" if option in ["THUMBNAIL", "RCLONE_CONFIG", "TOKEN_PICKLE"] else "设置"
-    buttons.data_button("设置", f"userset {user_id} {key} {option}")
-    if option in user_dict and key != "文件":
+    if option in ["THUMBNAIL", "RCLONE_CONFIG", "TOKEN_PICKLE"]:
+        key = "file"  # 必须保持为英文，不要改为“文件”，它用于内部逻辑
+    else:
+        key = "set"  # 必须保持为英文，不要改为“设置”，它用于内部逻辑
+    buttons.data_button("设置", f"userset {user_id} {key} {option}")  # key 必须是英文值 "file" 或 "set"
+    if option in user_dict and key != "file":
         buttons.data_button("重置", f"userset {user_id} reset {option}")
     buttons.data_button("移除", f"userset {user_id} remove {option}")
     if option in user_dict and user_dict[option]:
@@ -508,17 +511,17 @@ async def edit_user_settings(client, query):
             back_to = "leech"
         await update_user_settings(query, stype=back_to)
         await database.update_user_data(user_id)
-    elif data[2] == "file":
+    elif data[2] == "file":  # 此处应与 key 变量值对应
         await query.answer()
         buttons = ButtonMaker()
         if data[3] == "THUMBNAIL":
-            text = "Send a photo to save it as custom thumbnail. Timeout: 60 sec"
+            text = "发送一张照片作为自定义缩略图。超时：60秒"
         elif data[3] == "RCLONE_CONFIG":
-            text = "Send rclone.conf. Timeout: 60 sec"
+            text = "发送rclone.conf文件。超时：60秒"
         else:
-            text = "Send token.pickle. Timeout: 60 sec"
-        buttons.data_button("Back", f"userset {user_id} setevent")
-        buttons.data_button("Close", f"userset {user_id} close")
+            text = "发送token.pickle文件。超时：60秒"
+        buttons.data_button("返回", f"userset {user_id} setevent")
+        buttons.data_button("关闭", f"userset {user_id} close")
         await edit_message(message, text, buttons.build_menu(1))
         pfunc = partial(add_file, ftype=data[3])
         await event_handler(
