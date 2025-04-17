@@ -2,7 +2,8 @@ import time
 from pyrogram import filters
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 
-from .. import bot, bot_loop, LOGGER
+from .. import LOGGER
+from ..core.mltb_client import TgClient
 from ..core.config_manager import Config
 from ..helper.telegram_helper.message_utils import sendMessage, editMessage, deleteMessage
 from ..helper.telegram_helper.filters import CustomFilters
@@ -357,12 +358,12 @@ async def fsm_command_handler(client, message):
     await fsm_search(client, message)
 
 # 注册命令和回调处理器
-bot.add_handler(MessageHandler(
+TgClient.bot.add_handler(MessageHandler(
     fsm_command_handler, 
     filters=filters.command(BotCommands.FsmCommand) & (CustomFilters.authorized | CustomFilters.sudo)
 ))
 
-bot.add_handler(CallbackQueryHandler(
+TgClient.bot.add_handler(CallbackQueryHandler(
     fsm_callback,
     filters=filters.regex('^fsm')
 ))
