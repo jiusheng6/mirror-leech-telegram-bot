@@ -412,6 +412,7 @@ help_string = f"""
 /{BotCommands.CancelAllCommand} [query]：取消所有 [status] 任务。
 /{BotCommands.ListCommand} [query]：在 Google Drive 中搜索。
 /{BotCommands.SearchCommand} [query]：使用 API 搜索种子。
+/{BotCommands.FsmCommand} [query]：在 FSM 上搜索种子。
 /{BotCommands.StatusCommand}：显示所有下载的状态。
 /{BotCommands.StatsCommand}：显示机器人所在机器的统计信息。
 /{BotCommands.PingCommand}：检查 Ping 机器人所需的时间（仅限所有者和 Sudo）。

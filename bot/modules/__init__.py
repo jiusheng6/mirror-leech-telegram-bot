@@ -5,6 +5,7 @@ from .clone import clone_node
 from .exec import aioexecute, execute, clear
 from .file_selector import select, confirm_selection
 from .force_start import remove_from_queue
+from .fsm_search import fsm_command_handler, fsm_callback
 from .gd_count import count_node
 from .gd_delete import delete_file
 from .gd_search import gdrive_search, select_type
@@ -52,6 +53,8 @@ __all__ = [
     "select",
     "confirm_selection",
     "remove_from_queue",
+    "fsm_command_handler",
+    "fsm_callback",
     "count_node",
     "delete_file",
     "gdrive_search",

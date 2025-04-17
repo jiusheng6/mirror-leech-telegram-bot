@@ -14,6 +14,10 @@ class Config:
     EXCLUDED_EXTENSIONS = ""
     FFMPEG_CMDS = {}
     FILELION_API = ""
+    FSM_API_TOKEN = ""
+    FSM_PASSKEY = ""
+    FSM_API_BASE_URL = "https://fsm.name/api/"
+    FSM_DOWNLOAD_URL_BASE = "https://api.fsm.name/Torrents/download"
     GDRIVE_ID = ""
     INCOMPLETE_TASK_NOTIFIER = False
     INDEX_URL = ""

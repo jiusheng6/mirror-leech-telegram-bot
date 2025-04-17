@@ -121,6 +121,12 @@ RSS_SIZE_LIMIT = 0            # RSS下载大小限制（字节），0表示无�
 # ==================== 种子搜索 ====================
 SEARCH_API_LINK = ""          # 种子搜索API链接
 SEARCH_LIMIT = 0              # 搜索结果限制，0表示使用默认值
+
+# FSM API 配置
+FSM_API_TOKEN = ""            # FSM API令牌，从环境变量获取或直接设置
+FSM_PASSKEY = ""              # FSM下载所需的Passkey
+FSM_API_BASE_URL = "https://fsm.name/api/"  # FSM API主地址
+FSM_DOWNLOAD_URL_BASE = "https://api.fsm.name/Torrents/download"  # FSM下载接口基址
 # 搜索插件列表
 SEARCH_PLUGINS = [
     # qBittorrent官方插件
