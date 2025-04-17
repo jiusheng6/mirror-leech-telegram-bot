@@ -5,7 +5,7 @@ from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from .. import LOGGER
 from ..core.mltb_client import TgClient
 from ..core.config_manager import Config
-from ..helper.telegram_helper.message_utils import sendMessage, editMessage, deleteMessage
+from ..helper.telegram_helper.message_utils import send_message, edit_message, delete_message
 from ..helper.telegram_helper.filters import CustomFilters
 from ..helper.telegram_helper.bot_commands import BotCommands
 from ..helper.telegram_helper.button_build import ButtonMaker
@@ -33,7 +33,7 @@ async def fsm_search(client, message):
     args = message.text.split(" ", 1)
     if len(args) == 1:
         help_msg = "请提供搜索关键词。\n示例: /fsm 关键词"
-        return await sendMessage(help_msg, client, message)
+        return await send_message(help_msg, client, message)
     
     keyword = args[1]
     
@@ -54,11 +54,11 @@ async def fsm_search(client, message):
         buttons.data_button("取消", f"{TYPE_PREFIX}cancel")
         
         button = buttons.build_menu(2)
-        return await sendMessage("请选择种子分类:", client, message, button)
+        return await send_message("请选择种子分类:", client, message, button)
     
     except Exception as e:
         LOGGER.error(f"FSM搜索错误: {e}")
-        return await sendMessage(f"错误: {str(e)}", client, message)
+        return await send_message(f"错误: {str(e)}", client, message)
 
 @new_task
 async def fsm_callback(client, callback_query):
@@ -73,7 +73,7 @@ async def fsm_callback(client, callback_query):
             type_data = data[len(TYPE_PREFIX):].split(":", 1)
             if type_data[0] == "cancel":
                 await callback_query.answer()
-                return await editMessage(message, "搜索已取消！")
+                return await edit_message(message, "搜索已取消！")
                 
             type_id = type_data[0]
             keyword = type_data[1]
@@ -95,21 +95,21 @@ async def fsm_callback(client, callback_query):
             
             button = buttons.build_menu(2)
             await callback_query.answer()
-            await editMessage(message, "请选择优惠类型:", button)
+            await edit_message(message, "请选择优惠类型:", button)
             
         # 处理优惠类型选择
         elif data.startswith(SYSTEM_PREFIX):
             sys_data = data[len(SYSTEM_PREFIX):].split(":", 2)
             if sys_data[0] == "cancel":
                 await callback_query.answer()
-                return await editMessage(message, "搜索已取消！")
+                return await edit_message(message, "搜索已取消！")
                 
             systematics_id = sys_data[0]
             type_id = sys_data[1]
             keyword = sys_data[2]
             
             await callback_query.answer()
-            await editMessage(message, f"<b>正在搜索:</b> <i>{keyword}</i>...")
+            await edit_message(message, f"<b>正在搜索:</b> <i>{keyword}</i>...")
             
             # 搜索种子
             search_results = await search_torrents(keyword, type_id, systematics_id)
@@ -126,7 +126,7 @@ async def fsm_callback(client, callback_query):
             magnet_link = create_magnet_link(file_hash, title)
             
             await callback_query.answer("已生成磁力链接")
-            await editMessage(
+            await edit_message(
                 message,
                 f"为以下种子生成了磁力链接: {title}\n\n"
                 f"`{magnet_link}`\n\n"
@@ -143,7 +143,7 @@ async def fsm_callback(client, callback_query):
             keyword = page_data[3]
             
             await callback_query.answer()
-            await editMessage(message, f"<b>正在获取第 {page} 页...</b>")
+            await edit_message(message, f"<b>正在获取第 {page} 页...</b>")
             
             # 搜索种子的新页面
             search_results = await search_torrents(keyword, type_id, systematics_id, page=page)
@@ -152,19 +152,19 @@ async def fsm_callback(client, callback_query):
     except Exception as e:
         LOGGER.error(f"FSM回调错误: {e}")
         await callback_query.answer(f"出错了: {str(e)[:50]}", show_alert=True)
-        await editMessage(message, f"错误: {str(e)}")
+        await edit_message(message, f"错误: {str(e)}")
 
 async def handle_search_results(client, message, search_results, type_id, systematics_id, keyword):
     """处理并显示搜索结果"""
     if not search_results.get('success', False):
-        return await editMessage(message, f"搜索失败: {search_results.get('msg', '未知错误')}")
+        return await edit_message(message, f"搜索失败: {search_results.get('msg', '未知错误')}")
     
     torrents = search_results.get('data', {}).get('list', [])
     max_page = search_results.get('data', {}).get('maxPage', 1)
     current_page = int(search_results.get('data', {}).get('page', 1))
     
     if not torrents:
-        return await editMessage(message, f"未找到与 <i>'{keyword}'</i> 相关的结果")
+        return await edit_message(message, f"未找到与 <i>'{keyword}'</i> 相关的结果")
     
     # 如果结果较多，使用Telegraph
     if len(torrents) > RESULTS_PER_PAGE:
@@ -240,7 +240,7 @@ async def handle_search_results(client, message, search_results, type_id, system
                 )
                 
         button = buttons.build_menu(1)
-        await editMessage(
+        await edit_message(
             message,
             f"找到 {len(torrents)} 个与 <i>'{keyword}'</i> 相关的结果。在Telegraph查看详细信息:",
             button
@@ -291,7 +291,7 @@ async def handle_search_results(client, message, search_results, type_id, system
                 )
         
         button = buttons.build_menu(1)
-        await editMessage(message, result_message, button)
+        await edit_message(message, result_message, button)
 
 @new_task
 async def fsm_command_handler(client, message):
@@ -299,29 +299,29 @@ async def fsm_command_handler(client, message):
     args = message.text.split()
     if len(args) >= 2 and args[1] == 'download':
         if len(args) < 3:
-            return await sendMessage("缺少种子ID，请使用正确的格式: /fsm download <tid>", client, message)
+            return await send_message("缺少种子ID，请使用正确的格式: /fsm download <tid>", client, message)
             
         tid = args[2]
         try:
             # 获取种子详情
-            await sendMessage(f"正在获取种子 <code>{tid}</code> 的详情...", client, message)
+            await send_message(f"正在获取种子 <code>{tid}</code> 的详情...", client, message)
             torrent_details = await get_torrent_details(tid)
             
             if not torrent_details.get('success', False):
-                return await sendMessage(f"获取种子详情失败: {torrent_details.get('msg', '未知错误')}", client, message)
+                return await send_message(f"获取种子详情失败: {torrent_details.get('msg', '未知错误')}", client, message)
             
             torrent = torrent_details.get('data', {}).get('torrent', {})
             title = torrent.get('title', f'FSM_Torrent_{tid}')
             file_hash = torrent.get('fileHash', '')
             
             if not file_hash:
-                return await sendMessage("错误: 无法获取生成磁力链接所需的文件哈希", client, message)
+                return await send_message("错误: 无法获取生成磁力链接所需的文件哈希", client, message)
             
             # 创建磁力链接
             magnet_link = create_magnet_link(file_hash, title)
             
             # 提供磁力链接给用户，让用户手动使用命令下载
-            return await sendMessage(
+            return await send_message(
                 f"为以下种子生成了磁力链接: {title}\n\n"
                 f"`{magnet_link}`\n\n"
                 f"回复此消息并使用 /{BotCommands.QbMirrorCommand} 命令开始下载。",
@@ -329,7 +329,7 @@ async def fsm_command_handler(client, message):
             )
         except Exception as e:
             LOGGER.error(f"FSM下载命令错误: {e}")
-            return await sendMessage(f"错误: {str(e)}", client, message)
+            return await send_message(f"错误: {str(e)}", client, message)
     
     # 处理带页码参数的搜索
     page = 1
@@ -350,7 +350,7 @@ async def fsm_command_handler(client, message):
         
         if keyword and page > 1:
             # 直接搜索指定页面
-            await sendMessage(f"<b>正在搜索:</b> <i>{keyword}</i> (第 {page} 页)...", client, message)
+            await send_message(f"<b>正在搜索:</b> <i>{keyword}</i> (第 {page} 页)...", client, message)
             search_results = await search_torrents(keyword, '0', '0', page=str(page))
             return await handle_search_results(client, message, search_results, '0', '0', keyword)
     
