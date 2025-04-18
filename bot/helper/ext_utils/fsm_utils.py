@@ -7,27 +7,43 @@ from ... import LOGGER
 
 async def get_download_url(tid):
     """获取种子下载链接"""
-    if not Config.FSM_PASSKEY:
+    # 确保获取最新设置
+    from ...core.config_manager import Config
+    passkey = Config.FSM_PASSKEY
+    download_url_base = Config.FSM_DOWNLOAD_URL_BASE
+    
+    if not passkey:
+        LOGGER.error("FSM_PASSKEY为空，请检查配置文件")
         raise Exception("FSM_PASSKEY未设置，无法获取下载链接")
         
     # 构建下载链接，添加source参数以符合API要求
     params = {
         'tid': tid,
-        'passkey': Config.FSM_PASSKEY,
+        'passkey': passkey,
         'source': 'direct'
     }
     
     # 构建查询字符串
     query_string = '&'.join([f"{k}={v}" for k, v in params.items()])
-    download_url = f"{Config.FSM_DOWNLOAD_URL_BASE}?{query_string}"
+    download_url = f"{download_url_base}?{query_string}"
+    LOGGER.info(f"FSM下载URL生成: {download_url_base}?tid={tid}&passkey=[已隐藏]&source=direct")
     return download_url
 
 async def make_fsm_request(endpoint, params=None, stream=False):
     """发送FSM API请求"""
-    headers = {'APITOKEN': Config.FSM_API_TOKEN}
-    url = f"{Config.FSM_API_BASE_URL.rstrip('/')}/{endpoint}"
+    # 确保获取最新设置
+    from ...core.config_manager import Config
+    api_token = Config.FSM_API_TOKEN
+    base_url = Config.FSM_API_BASE_URL
     
-    LOGGER.info(f"FSM请求: 端点={endpoint}, URL={url},headers={headers}")
+    if not api_token:
+        LOGGER.error("FSM_API_TOKEN为空，请检查配置文件")
+        raise Exception("FSM_API_TOKEN未设置，请配置API令牌")
+        
+    headers = {'APITOKEN': api_token}
+    url = f"{base_url.rstrip('/')}/{endpoint}"
+    
+    LOGGER.info(f"FSM请求: 端点={endpoint}, URL={url}, API令牌长度={len(api_token) if api_token else 0}")
     
     try:
         async with aiohttp.ClientSession() as session:

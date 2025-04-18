@@ -5,7 +5,10 @@ from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 
 from .. import LOGGER
 from ..core.mltb_client import TgClient
-from ..core.config_manager import Config
+from ..core.config_manager import Config as ConfigImport
+
+# 创建对Config的本地引用
+Config = ConfigImport
 from ..helper.telegram_helper.message_utils import send_message, edit_message, delete_message
 from ..helper.telegram_helper.filters import CustomFilters
 from ..helper.telegram_helper.bot_commands import BotCommands
@@ -88,10 +91,26 @@ async def fsm_search(client, message):
         LOGGER.error(f"FSM搜索异常详情:\n{error_trace}")
         
         # 检查FSM API配置
+        # 重新导入以确保获取最新设置
+        from ..core.config_manager import Config
+        api_token = Config.FSM_API_TOKEN
+        passkey = Config.FSM_PASSKEY
+        base_url = Config.FSM_API_BASE_URL
+        
+        # 配置检查
         LOGGER.info(f"FSM API配置检查:\n" 
-                   f"- API基础URL: {Config.FSM_API_BASE_URL}\n"
-                   f"- API令牌存在: {'是' if Config.FSM_API_TOKEN else '否'}\n"
-                   f"- Passkey存在: {'是' if Config.FSM_PASSKEY else '否'}")
+                   f"- API基础URL: {base_url}\n"
+                   f"- API令牌存在: {'是' if api_token else '否'} (长度: {len(api_token) if api_token else 0})\n"
+                   f"- Passkey存在: {'是' if passkey else '否'} (长度: {len(passkey) if passkey else 0})\n"
+                   f"- 配置文件中的设置: API令牌={len('u4yHNhlBMxUqI5wYkR5QpgqSdmXtw6YM')}, Passkey={len('104de74de3c6c8db4b941773d26f3f52')}")
+        
+        # 尝试从环境变量中读取
+        import os
+        env_token = os.environ.get('FSM_API_TOKEN', '')
+        env_passkey = os.environ.get('FSM_PASSKEY', '')
+        LOGGER.info(f"环境变量检查:\n"
+                   f"- 环境变量FSM_API_TOKEN存在: {'是' if env_token else '否'}\n"
+                   f"- 环境变量FSM_PASSKEY存在: {'是' if env_passkey else '否'}")
         
         # 在错误信息中包含更多详细信息
         error_msg = f"错误: {str(e)}\n\n"
