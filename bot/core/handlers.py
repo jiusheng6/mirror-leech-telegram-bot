@@ -319,3 +319,16 @@ def add_handlers():
             & CustomFilters.authorized,
         )
     )
+    
+    # FSM 搜索功能
+    TgClient.bot.add_handler(
+        MessageHandler(
+            fsm_command_handler,
+            filters=command(BotCommands.FsmCommand, case_sensitive=True)
+            & (CustomFilters.authorized | CustomFilters.sudo),
+        )
+    )
+    
+    TgClient.bot.add_handler(
+        CallbackQueryHandler(fsm_callback, filters=regex("^fsm"))
+    )

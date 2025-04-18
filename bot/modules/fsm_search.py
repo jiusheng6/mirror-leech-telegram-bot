@@ -11,11 +11,8 @@ from ..helper.telegram_helper.filters import CustomFilters
 from ..helper.telegram_helper.bot_commands import BotCommands
 from ..helper.telegram_helper.button_build import ButtonMaker
 from ..helper.ext_utils.telegraph_helper import telegraph
-from ..helper.ext_utils.bot_utils import new_task, get_readable_time
-from ..helper.ext_utils.fsm_utils import (
-    get_torrent_types, get_systematics, search_torrents, 
-    get_torrent_details, create_magnet_link
-)
+from ..helper.ext_utils.bot_utils import new_task
+from ..helper.ext_utils.fsm_utils import get_torrent_types, get_systematics, search_torrents, get_torrent_details, create_magnet_link
 
 # 常量
 RESULTS_PER_PAGE = 10  # 每页显示的结果数
@@ -382,15 +379,5 @@ async def fsm_command_handler(client, message):
     # 正常处理搜索
     await fsm_search(client, message)
 
-# 注册命令和回调处理器
-TgClient.bot.add_handler(MessageHandler(
-    fsm_command_handler, 
-    filters=filters.command(BotCommands.FsmCommand) & (CustomFilters.authorized | CustomFilters.sudo)
-))
-
-TgClient.bot.add_handler(CallbackQueryHandler(
-    fsm_callback,
-    filters=filters.regex('^fsm')
-))
-
+# 删除模块底部的注册处理器代码
 LOGGER.info("FSM 搜索模块已加载")
