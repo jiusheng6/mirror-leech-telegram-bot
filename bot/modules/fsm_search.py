@@ -291,18 +291,18 @@ async def handle_search_results(client, message, search_results, user_id) :
     telegraph_content.append(f"<h4>FSM 搜索结果: {keyword}</h4>")
     telegraph_content.append(f"<p>当前第 {current_page} 页，共 {max_page} 页</p>")
 
-    # 添加搜索信息卡片头部 - 只使用基本支持的标签
-    telegraph_content.append(f"<h3>🔍 FSM 搜索: 「{keyword}」</h3>")
-    telegraph_content.append(
-        f"<p>共找到 <strong>{len(torrents)}</strong> 个结果 | 第 <strong>{current_page}</strong> 页 / 共 {max_page} 页</p>")
+    # 更便于移动设备阅读的Telegraph页面
+    telegraph_content = []
+
+    # 添加标题和搜索信息
+    telegraph_content.append(f"<h3>🔍 FSM 搜索: {keyword}</h3>")
+
+    # 简洁的搜索信息
+    telegraph_content.append(f"<p>找到 <strong>{len(torrents)}</strong> 个结果 | 第 {current_page}/{max_page} 页</p>")
     telegraph_content.append("<hr/>")
 
-    # 创建结果列表，使用有序列表
-    telegraph_content.append("<ol>")
-
-    # 添加每个种子作为列表项，优化布局和可读性
-    count = 0
-    for torrent in torrents[:MAX_TELEGRAPH_RESULTS] :
+    # 不使用有序列表，而是使用更紧凑的格式
+    for index, torrent in enumerate(torrents[:MAX_TELEGRAPH_RESULTS], 1) :
         title = torrent.get('title', '未知')
         size = torrent.get('fileSize', '未知')
         seeds = torrent.get('peers', {}).get('upload', 0)
@@ -317,55 +317,46 @@ async def handle_search_results(client, message, search_results, user_id) :
         else :
             created_time = '未知'
 
-        # 获取更多可能的信息（可能不存在）
+        # 获取优惠信息
         free_type = torrent.get('systematic', {}).get('name', '')
-        free_tag = f"🏷️ <strong>{free_type}</strong><br/>" if free_type else ""
+        free_badge = f"【{free_type}】" if free_type else ""
 
-        # 格式化为美观的列表项
-        item = f"<li><h4>{title}</h4>"
+        # 创建一个更紧凑、更适合移动端的布局
+        item = f"<h4>{index}. {free_badge}{title}</h4>"
 
-        # 使用符号+粗体分组显示主要信息，增强可读性
+        # 主要信息一行显示，使用图标区分
         item += "<p>"
-        item += f"📁 <strong>大小:</strong> <code>{size}</code> • "
-        item += f"👥 <strong>做种/下载:</strong> <code>{seeds}/{leech}</code> • "
-        item += f"📂 <strong>分类:</strong> {category}"
+        item += f"📁 {size} "
+        item += f"👥 {seeds}/{leech} "
+        item += f"📂 {category}"
         item += "</p>"
 
-        # 第二行展示次要信息
+        # 额外信息和下载命令
         item += "<p>"
-        item += f"📅 <strong>上传日期:</strong> {created_time} • "
-        item += f"🆔 <strong>种子ID:</strong> <code>{tid}</code>"
+        item += f"📅 {created_time} · "
+        item += f"🆔 <code>{tid}</code>"
         item += "</p>"
 
-        # 显示优惠类型标签（如果有）
-        if free_tag :
-            item += f"<p>{free_tag}</p>"
+        # 下载命令单独一行，更易点击/复制
+        item += f"<p>📥 <code>/fsm download {tid}</code></p>"
 
-        # 突出显示下载命令
-        item += "<p>📥 <strong>下载命令:</strong> <code>/fsm download " + str(tid) + "</code></p>"
-
-        # 添加轻量分隔线，提高清晰度
-        item += "</li>"
-        if count < len(torrents[:MAX_TELEGRAPH_RESULTS]) - 1 :
+        # 添加分隔线
+        if index < len(torrents[:MAX_TELEGRAPH_RESULTS]) :
             item += "<hr/>"
 
         telegraph_content.append(item)
-        count += 1
-
-    telegraph_content.append("</ol>")
 
     # 添加底部导航（如果有多页）
     if max_page > 1 :
         telegraph_content.append("<hr/>")
-        telegraph_content.append("<h4>📄 页面导航</h4>")
+        telegraph_content.append("<h4>页面导航</h4>")
 
-        # 生成更直观的分页导航
+        # 生成分页导航
         nav_text = ""
         if current_page > 1 :
             nav_text += f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page - 1}'>⬅️ 上一页</a> "
 
-        # 添加页码指示
-        nav_text += f"<strong>[ {current_page} / {max_page} ]</strong>"
+        nav_text += f"<strong>{current_page}/{max_page}</strong>"
 
         if current_page < max_page :
             nav_text += f" <a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page + 1}'>下一页 ➡️</a>"
@@ -393,35 +384,47 @@ async def handle_search_results(client, message, search_results, user_id) :
     buttons = ButtonMaker()
     buttons.url_button("在Telegraph查看结果", telegraph_url)
 
-    # 创建功能丰富的按钮区域
-    # 第一行：添加Telegraph查看按钮
-    buttons.url_button("🔎 在Telegraph查看完整结果", telegraph_url)
+    # 为Telegram消息创建有意义的区别，与Telegraph页面形成差异化
+    buttons = ButtonMaker()
+
+    # 第一行：只保留一个Telegraph按钮，但更改描述以强调其优势
+    buttons.url_button("📋 在Telegraph查看详细列表", telegraph_url)
 
     # 第二行：添加简洁的分页按钮
     if max_page > 1 :
-        nav_buttons = []
         if current_page > 1 :
             buttons.data_button("⬅️ 上一页", f"{PAGE_PREFIX}{current_page - 1}")
 
-        # 添加页码指示按钮（不可点击）
         buttons.data_button(f"📄 {current_page}/{max_page}", "noop")
 
         if current_page < max_page :
             buttons.data_button("下一页 ➡️", f"{PAGE_PREFIX}{current_page + 1}")
 
-    # 第三行：添加功能按钮
+    # 第三行：功能按钮
     buttons.data_button("🔄 刷新", f"{PAGE_PREFIX}{current_page}")
     buttons.data_button("❌ 取消", f"{TYPE_PREFIX}cancel")
 
-    # 使用2列布局构建菜单，更适合移动端显示
+    # 使用2列布局构建菜单
     button = buttons.build_menu(2)
 
-    # 创建美观的结果消息
+    # 创建精简的Telegram消息，只显示基本信息和热门结果
     result_msg = f"<b>🔍 FSM搜索结果</b>\n\n"
     result_msg += f"关键词: <code>{keyword}</code>\n"
-    result_msg += f"找到 <b>{count}</b> 个相关结果\n"
-    result_msg += f"当前显示第 <b>{current_page}</b> 页，共 {max_page} 页\n\n"
-    result_msg += f"👇 点击下方按钮查看详细结果或翻页"
+    result_msg += f"找到 <b>{len(torrents)}</b> 个相关结果\n"
+
+    # 只在Telegram消息中展示前3个热门结果的简要信息
+    if torrents :
+        result_msg += "\n<b>热门结果预览:</b>\n"
+        for i, torrent in enumerate(torrents[:3], 1) :
+            title = torrent.get('title', '未知')
+            seeds = torrent.get('peers', {}).get('upload', 0)
+            size = torrent.get('fileSize', '未知')
+            tid = torrent.get('tid')
+
+            result_msg += f"{i}. <b>{title}</b>\n"
+            result_msg += f"   大小: {size} | 做种: {seeds} | ID: <code>{tid}</code>\n\n"
+
+        result_msg += f"👇 点击下方按钮查看完整列表或使用命令下载"
 
     await edit_message(message, result_msg, button)
 
