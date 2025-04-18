@@ -55,19 +55,13 @@ async def fsm_search(client, message):
 
         buttons = ButtonMaker()
         for i, type_item in enumerate(torrent_types):
-            buttons.data_button(
-                type_item['name'],
-                f"{TYPE_PREFIX}{i}"
-            )
-
+            buttons.data_button(type_item['name'], f"{TYPE_PREFIX}{i}")
             if user_id not in search_contexts:
                 search_contexts[user_id] = {}
             if 'type_mapping' not in search_contexts[user_id]:
                 search_contexts[user_id]['type_mapping'] = {}
-
             search_contexts[user_id]['type_mapping'][str(i)] = type_item['id']
             search_contexts[user_id]['keyword'] = keyword
-
             LOGGER.debug(f"FSM搜索: 添加分类按钮: {type_item['name']} (ID: {type_item['id']})")
 
         buttons.data_button("全部分类", f"{TYPE_PREFIX}all")
@@ -98,8 +92,7 @@ async def fsm_search(client, message):
                     f"- 环境变量FSM_API_TOKEN存在: {'是' if env_token else '否'}\n"
                     f"- 环境变量FSM_PASSKEY存在: {'是' if env_passkey else '否'}")
 
-        error_msg = f"错误: {str(e)}\n\n"
-        error_msg += "详细请查看日志。可能与 FSM API 认证相关或 API 地址变更。"
+        error_msg = f"错误: {str(e)}\n\n详细请查看日志。可能与 FSM API 认证相关或 API 地址变更。"
         return await send_message(message, error_msg)
 
 
@@ -127,7 +120,6 @@ async def fsm_callback(client, callback_query):
                 type_id = "0"
             else:
                 type_id = search_contexts[user_id]['type_mapping'].get(type_data, "0")
-
             search_contexts[user_id]['selected_type'] = type_id
 
             try:
@@ -139,10 +131,7 @@ async def fsm_callback(client, callback_query):
 
             buttons = ButtonMaker()
             for i, sys_item in enumerate(systematics):
-                buttons.data_button(
-                    sys_item['name'],
-                    f"{SYSTEM_PREFIX}{i}"
-                )
+                buttons.data_button(sys_item['name'], f"{SYSTEM_PREFIX}{i}")
                 if 'system_mapping' not in search_contexts[user_id]:
                     search_contexts[user_id]['system_mapping'] = {}
                 search_contexts[user_id]['system_mapping'][str(i)] = sys_item['id']
@@ -168,7 +157,6 @@ async def fsm_callback(client, callback_query):
                 systematics_id = "0"
             else:
                 systematics_id = search_contexts[user_id]['system_mapping'].get(sys_data, "0")
-
             search_contexts[user_id]['selected_system'] = systematics_id
 
             await callback_query.answer("正在搜索中...")
@@ -186,6 +174,7 @@ async def fsm_callback(client, callback_query):
         elif data.startswith(DOWNLOAD_PREFIX):
             tid = data[len(DOWNLOAD_PREFIX):]
             await callback_query.answer("正在获取下载链接...", show_alert=True)
+
             try:
                 torrent_details = await get_torrent_details(tid)
                 if not torrent_details.get('success', False):
@@ -204,11 +193,12 @@ async def fsm_callback(client, callback_query):
                 LOGGER.error(f"获取下载链接错误: {e}")
                 return await edit_message(message, f"<b>❌ 获取下载链接失败:</b> {str(e)}")
 
-            msg = f"<b>✅ 为以下种子生成了下载链接:</b>\n{title}\n\n"
-            msg += f"📁 <b>直接下载链接</b> (带Passkey):\n"
-            msg += f"<code>{download_url}</code>\n\n"
-            msg += f"📝 回复此消息并使用 /{BotCommands.QbMirrorCommand} 命令开始下载。"
-
+            msg = (
+                f"<b>✅ 为以下种子生成了下载链接:</b>\n{title}\n\n"
+                f"📁 <b>直接下载链接</b> (带Passkey):\n"
+                f"<code>{download_url}</code>\n\n"
+                f"📝 回复此消息并使用 /{BotCommands.QbMirrorCommand} 命令开始下载。"
+            )
             await edit_message(message, msg)
 
         elif data.startswith(PAGE_PREFIX):
@@ -216,7 +206,6 @@ async def fsm_callback(client, callback_query):
             if page == "noop":
                 await callback_query.answer("当前页码信息")
                 return
-
             keyword = search_contexts[user_id].get('keyword', '')
             type_id = search_contexts[user_id].get('selected_type', "0")
             systematics_id = search_contexts[user_id].get('selected_system', "0")
@@ -253,7 +242,6 @@ async def handle_search_results(client, message, search_results, user_id):
     torrents = search_results.get('data', {}).get('list', [])
     max_page = search_results.get('data', {}).get('maxPage', 1)
     current_page = int(search_results.get('data', {}).get('page', 1))
-
     keyword = search_contexts[user_id].get('keyword', '')
 
     if not torrents:
@@ -266,8 +254,8 @@ async def handle_search_results(client, message, search_results, user_id):
         telegraph_content.append(f"<h3>🔍 FSM 搜索: {keyword}</h3>")
         telegraph_content.append(f"<p>找到 <b>{len(torrents)}</b> 个结果 | 第 {current_page}/{max_page} 页</p>")
         telegraph_content.append("<hr/>")
-
         telegraph_content.append("<ol>")
+
         for torrent in torrents[:MAX_TELEGRAPH_RESULTS]:
             title = torrent.get('title', '未知')
             size = torrent.get('fileSize', '未知')
@@ -275,10 +263,9 @@ async def handle_search_results(client, message, search_results, user_id):
             leech = torrent.get('peers', {}).get('download', 0)
             category = torrent.get('type', {}).get('name', '未知')
             tid = torrent.get('tid')
-
             created_ts = torrent.get('createdTs', 0)
             created_time = time.strftime('%Y-%m-%d', time.localtime(created_ts)) if created_ts else '未知'
-            free_type =torrent.get('systematic', {}).get('name', '')
+            free_type = torrent.get('systematic', {}).get('name', '')
             free_badge = f"【{free_type}】" if free_type else ""
 
             item = "<li>"
@@ -290,8 +277,10 @@ async def handle_search_results(client, message, search_results, user_id):
             item += "<p>🆔 种子ID: <code>" + str(tid) + "</code></p>"
             item += "<p>📥 下载命令:</p>"
             item += "<p><code>/fsm download " + str(tid) + "</code></p>"
-            item += "</li><hr/>"
+            item += "</li>"
+            item += "<hr/>"
             telegraph_content.append(item)
+
         telegraph_content.append("</ol>")
 
         if max_page > 1:
@@ -315,19 +304,24 @@ async def handle_search_results(client, message, search_results, user_id):
 
         buttons = ButtonMaker()
         buttons.url_button("📋 在Telegraph查看详细列表", telegraph_url)
+
         if max_page > 1:
             if current_page > 1:
                 buttons.data_button("⬅️ 上一页", f"{PAGE_PREFIX}{current_page - 1}")
             buttons.data_button(f"📄 {current_page}/{max_page}", "noop")
             if current_page < max_page:
                 buttons.data_button("下一页 ➡️", f"{PAGE_PREFIX}{current_page + 1}")
+
         buttons.data_button("🔄 刷新", f"{PAGE_PREFIX}{current_page}")
         buttons.data_button("❌ 取消", f"{TYPE_PREFIX}cancel")
         button = buttons.build_menu(2)
 
-        result_msg = f"<b>🔍 FSM搜索结果</b>\n\n"
-        result_msg += f"<b>关键词:</b> <code>{keyword}</code>\n"
-        result_msg += f"<b>找到结果:</b> {len(torrents)} 个\n"
+        result_msg = (
+            f"<b>🔍 FSM搜索结果</b>\n\n"
+            f"<b>关键词:</b> <code>{keyword}</code>\n"
+            f"<b>找到结果:</b> {len(torrents)} 个\n\n"
+            f"👇 <i>点击下方按钮查看完整列表或使用命令下载</i>\n"
+        )
 
         if torrents:
             result_msg += "\n<b>📊 热门结果预览:</b>\n"
@@ -336,11 +330,10 @@ async def handle_search_results(client, message, search_results, user_id):
                 seeds = torrent.get('peers', {}).get('upload', 0)
                 size = torrent.get('fileSize', '未知')
                 tid = torrent.get('tid')
-
-                result_msg += f"{i}. <b>{title}</b>\n"
-                result_msg += f"   📁 {size} | 👥 {seeds} | 🆔 <code>{tid}</code>\n\n"
-
-            result_msg += f"👇 <i>点击下方按钮查看完整列表或使用命令下载</i>"
+                result_msg += (
+                    f"{i}. <b>{title}</b>\n"
+                    f"   📁 {size} | 👥 {seeds} | 🆔 <code>{tid}</code>\n\n"
+                )
 
         await edit_message(message, result_msg, button)
 
@@ -368,11 +361,52 @@ async def fsm_command_handler(client, message):
         try:
             await send_message(message, f"正在获取种子 <code>{tid}</code> 的详情...")
             torrent_details = await get_torrent_details(tid)
-
             if not torrent_details.get('success', False):
                 return await send_message(message, f"获取种子详情失败: {torrent_details.get('msg', '未知错误')}")
-
             torrent = torrent_details.get('data', {}).get('torrent', {})
             title = torrent.get('title', f'FSM_Torrent_{tid}')
-
             download_url = await get_download_url(tid)
+            if not download_url:
+                return await send_message(message, "无法获取下载链接")
+
+            msg = (
+                f"为以下种子生成了下载链接: {title}\n\n"
+                f"📁 <b>直接下载链接</b> (带Passkey):\n"
+                f"<code>{download_url}</code>\n\n"
+                f"回复此消息并使用 /{BotCommands.QbMirrorCommand} 命令开始下载。"
+            )
+            return await send_message(message, msg)
+        except Exception as e:
+            LOGGER.error(f"FSM下载命令错误: {e}")
+            return await send_message(message, f"错误: {str(e)}")
+
+    page = 1
+    keyword = ""
+    if len(args) > 1:
+        for arg in args[1:]:
+            if arg.startswith("page:"):
+                try:
+                    page = int(arg.split(":", 1)[1])
+                except:
+                    pass
+            else:
+                keyword += f"{arg} "
+        keyword = keyword.strip()
+
+        if keyword and page > 1:
+            user_id = message.from_user.id
+            if user_id not in search_contexts:
+                search_contexts[user_id] = {}
+            search_contexts[user_id]['keyword'] = keyword
+            search_contexts[user_id]['selected_type'] = '0'
+            search_contexts[user_id]['selected_system'] = '0'
+
+            await send_message(message, f"<b>正在搜索:</b> <i>{keyword}</i> (第 {page} 页)...")
+            search_results = await search_torrents(keyword, '0', '0', page=str(page))
+            return await handle_search_results(client, message, search_results, user_id)
+
+    await fsm_search(client, message)
+
+
+# 模块初始化日志
+LOGGER.info("FSM 搜索模块已加载")
