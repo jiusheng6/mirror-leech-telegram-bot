@@ -270,7 +270,7 @@ async def fsm_callback(client, callback_query) :
 
 
 async def handle_search_results(client, message, search_results, user_id) :
-    """处理并显示搜索结果，始终使用Telegraph"""
+    """处理并显示搜索结果，使用优化的Telegraph页面"""
     if not search_results.get('success', False) :
         return await edit_message(message, f"搜索失败: {search_results.get('msg', '未知错误')}")
 
@@ -284,12 +284,8 @@ async def handle_search_results(client, message, search_results, user_id) :
     if not torrents :
         return await edit_message(message, f"未找到与 <i>'{keyword}'</i> 相关的结果")
 
-    # 为所有结果创建Telegraph页面
-    telegraph_content = []
-
-    # 添加搜索信息
-    telegraph_content.append(f"<h4>FSM 搜索结果: {keyword}</h4>")
-    telegraph_content.append(f"<p>当前第 {current_page} 页，共 {max_page} 页</p>")
+    # 保存当前页到用户上下文，方便翻页时使用
+    search_contexts[user_id]['current_page'] = current_page
 
     # 根据Telegraph实际支持的标签优化页面
     telegraph_content = []
@@ -323,29 +319,27 @@ async def handle_search_results(client, message, search_results, user_id) :
         free_type = torrent.get('systematic', {}).get('name', '')
         free_badge = f"【{free_type}】" if free_type else ""
 
-        # 构建列表项 - 只使用支持的标签
+        # 构建列表项 - 只使用支持的标签，并改进移动端显示
         item = "<li>"
-        # 标题使用h4
+
+        # 标题单独一行且更加突出 - 使用h4
         item += f"<h4>{free_badge}{title}</h4>"
 
-        # 种子基本信息 - 使用p标签和支持的b/code标签
-        item += "<p>"
-        item += f"📁 大小: <b>{size}</b> | "
-        item += f"👥 做种/下载: <b>{seeds}/{leech}</b> | "
-        item += f"📂 分类: {category}"
-        item += "</p>"
+        # 每个信息点垂直排列，不要挤在一行
+        item += "<p>📁 大小: <b>" + size + "</b></p>"
+        item += "<p>👥 做种/下载: <b>" + str(seeds) + "/" + str(leech) + "</b></p>"
+        item += "<p>📂 分类: " + category + "</p>"
+        item += "<p>📅 上传日期: " + created_time + "</p>"
+        item += "<p>🆔 种子ID: <code>" + str(tid) + "</code></p>"
 
-        # 次要信息 - 同样使用p标签
-        item += "<p>"
-        item += f"📅 上传日期: {created_time} | "
-        item += f"🆔 种子ID: <code>{tid}</code>"
-        item += "</p>"
+        # 下载命令单独一行并突出显示
+        item += "<p>📥 下载命令:</p>"
+        item += "<p><code>/fsm download " + str(tid) + "</code></p>"
 
-        # 下载命令 - 使用code标签突出显示
-        item += f"<p>📥 下载命令: <code>/fsm download {tid}</code></p>"
-
-        # 结束列表项
+        # 在列表项之间添加明显的分隔
         item += "</li>"
+        item += "<hr/>"
+
         telegraph_content.append(item)
 
     # 关闭列表
@@ -370,26 +364,12 @@ async def handle_search_results(client, message, search_results, user_id) :
 
         telegraph_content.append("<p>" + " | ".join(nav_parts) + "</p>")
 
-    if max_page > 1 :
-        telegraph_content.append("<br><center><h4>页面导航</h4></center>")
-        nav_text = ""
-        if current_page > 1 :
-            nav_text += f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page - 1}'>« 上一页</a> | "
-        nav_text += f"当前第 {current_page} 页"
-        if current_page < max_page :
-            nav_text += f" | <a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page + 1}'>下一页 »</a>"
-        telegraph_content.append(f"<center>{nav_text}</center>")
-
     # 创建Telegraph页面
     telegraph_page = await telegraph.create_page(
         title=f"FSM搜索: {keyword}",
         content=''.join(telegraph_content)
     )
     telegraph_url = telegraph_page['url']
-
-    # 为Telegram消息创建按钮
-    buttons = ButtonMaker()
-    buttons.url_button("在Telegraph查看结果", telegraph_url)
 
     # 为Telegram消息创建有意义的区别，与Telegraph页面形成差异化
     buttons = ButtonMaker()
