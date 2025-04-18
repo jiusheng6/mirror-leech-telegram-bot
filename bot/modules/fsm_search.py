@@ -208,11 +208,17 @@ async def fsm_callback(client, callback_query) :
             type_id = search_contexts[user_id].get('selected_type', "0")
             systematics_id = search_contexts[user_id].get('selected_system', "0")
 
+            # 确保页码是整数并保存到用户上下文中
+            page_num = int(page)
+            search_contexts[user_id]['current_page'] = page_num
+
             await callback_query.answer(f"正在加载第 {page} 页...")
             await edit_message(message, f"<b>📃 正在获取第 {page} 页的搜索结果...</b>")
 
             try :
                 search_results = await search_torrents(keyword, type_id, systematics_id, page=page)
+                # 确保使用我们自己跟踪的页码，而不是仅依赖API响应
+                search_results['data']['page'] = page_num
                 await handle_search_results(client, message, search_results, user_id)
             except Exception as e :
                 LOGGER.error(f"翻页搜索错误: {e}")
