@@ -194,10 +194,7 @@ async def fsm_callback(client, callback_query):
                 return await edit_message(message, f"<b>❌ 获取下载链接失败:</b> {str(e)}")
 
             msg = (
-                f"<b>✅ 为以下种子生成了下载链接:</b>\n{title}\n\n"
-                f"📁 <b>直接下载链接</b> (带Passkey):\n"
                 f"<code>{download_url}</code>\n\n"
-                f"📝 回复此消息并使用 /{BotCommands.QbMirrorCommand} 命令开始下载。"
             )
             await edit_message(message, msg)
 
