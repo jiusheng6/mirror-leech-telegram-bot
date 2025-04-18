@@ -50,7 +50,7 @@ async def make_fsm_request(endpoint, params=None, stream=False):
                             try:
                                 error_text = await response.text()
                                 LOGGER.error(f"401错误详情: {error_text}")
-                                errors.append(f"Headers {header_name}="{header_value[:10]}...": {error_text}")
+                                errors.append(f"Headers {header_name}='{header_value[:10]}...': {error_text}")
                             except Exception as e:
                                 LOGGER.error(f"读取401响应内容出错: {e}")
                             continue  # 尝试下一个头部格式
