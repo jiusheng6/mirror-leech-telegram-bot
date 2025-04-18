@@ -291,18 +291,20 @@ async def handle_search_results(client, message, search_results, user_id) :
     telegraph_content.append(f"<h4>FSM 搜索结果: {keyword}</h4>")
     telegraph_content.append(f"<p>当前第 {current_page} 页，共 {max_page} 页</p>")
 
-    # 更便于移动设备阅读的Telegraph页面
+    # 根据Telegraph实际支持的标签优化页面
     telegraph_content = []
 
-    # 添加标题和搜索信息
+    # 添加标题和搜索信息 - 使用h3和p标签
     telegraph_content.append(f"<h3>🔍 FSM 搜索: {keyword}</h3>")
-
-    # 简洁的搜索信息
-    telegraph_content.append(f"<p>找到 <strong>{len(torrents)}</strong> 个结果 | 第 {current_page}/{max_page} 页</p>")
+    telegraph_content.append(f"<p>找到 <b>{len(torrents)}</b> 个结果 | 第 {current_page}/{max_page} 页</p>")
     telegraph_content.append("<hr/>")
 
-    # 不使用有序列表，而是使用更紧凑的格式
-    for index, torrent in enumerate(torrents[:MAX_TELEGRAPH_RESULTS], 1) :
+    # 创建搜索结果列表 - 使用有序列表ol/li
+    # 由于ol是支持的标签，我们可以安全地使用它
+    telegraph_content.append("<ol>")
+
+    # 遍历种子结果
+    for torrent in torrents[:MAX_TELEGRAPH_RESULTS] :
         title = torrent.get('title', '未知')
         size = torrent.get('fileSize', '未知')
         seeds = torrent.get('peers', {}).get('upload', 0)
@@ -321,47 +323,52 @@ async def handle_search_results(client, message, search_results, user_id) :
         free_type = torrent.get('systematic', {}).get('name', '')
         free_badge = f"【{free_type}】" if free_type else ""
 
-        # 创建一个更紧凑、更适合移动端的布局
-        item = f"<h4>{index}. {free_badge}{title}</h4>"
+        # 构建列表项 - 只使用支持的标签
+        item = "<li>"
+        # 标题使用h4
+        item += f"<h4>{free_badge}{title}</h4>"
 
-        # 主要信息一行显示，使用图标区分
+        # 种子基本信息 - 使用p标签和支持的b/code标签
         item += "<p>"
-        item += f"📁 {size} "
-        item += f"👥 {seeds}/{leech} "
-        item += f"📂 {category}"
+        item += f"📁 大小: <b>{size}</b> | "
+        item += f"👥 做种/下载: <b>{seeds}/{leech}</b> | "
+        item += f"📂 分类: {category}"
         item += "</p>"
 
-        # 额外信息和下载命令
+        # 次要信息 - 同样使用p标签
         item += "<p>"
-        item += f"📅 {created_time} · "
-        item += f"🆔 <code>{tid}</code>"
+        item += f"📅 上传日期: {created_time} | "
+        item += f"🆔 种子ID: <code>{tid}</code>"
         item += "</p>"
 
-        # 下载命令单独一行，更易点击/复制
-        item += f"<p>📥 <code>/fsm download {tid}</code></p>"
+        # 下载命令 - 使用code标签突出显示
+        item += f"<p>📥 下载命令: <code>/fsm download {tid}</code></p>"
 
-        # 添加分隔线
-        if index < len(torrents[:MAX_TELEGRAPH_RESULTS]) :
-            item += "<hr/>"
-
+        # 结束列表项
+        item += "</li>"
         telegraph_content.append(item)
 
-    # 添加底部导航（如果有多页）
+    # 关闭列表
+    telegraph_content.append("</ol>")
+
+    # 添加底部导航 - 如果有多页
     if max_page > 1 :
         telegraph_content.append("<hr/>")
         telegraph_content.append("<h4>页面导航</h4>")
 
-        # 生成分页导航
-        nav_text = ""
+        # 导航链接
+        nav_parts = []
         if current_page > 1 :
-            nav_text += f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page - 1}'>⬅️ 上一页</a> "
+            nav_parts.append(
+                f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page - 1}'>⬅️ 上一页</a>")
 
-        nav_text += f"<strong>{current_page}/{max_page}</strong>"
+        nav_parts.append(f"<b>{current_page}/{max_page}</b>")
 
         if current_page < max_page :
-            nav_text += f" <a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page + 1}'>下一页 ➡️</a>"
+            nav_parts.append(
+                f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page + 1}'>下一页 ➡️</a>")
 
-        telegraph_content.append(f"<p>{nav_text}</p>")
+        telegraph_content.append("<p>" + " | ".join(nav_parts) + "</p>")
 
     if max_page > 1 :
         telegraph_content.append("<br><center><h4>页面导航</h4></center>")
