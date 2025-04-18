@@ -33,7 +33,7 @@ async def fsm_search(client, message):
     args = message.text.split(" ", 1)
     if len(args) == 1:
         help_msg = "请提供搜索关键词。\n示例: /fsm 关键词"
-        return await send_message(help_msg, client, message)
+        return await send_message(message, help_msg)
     
     keyword = args[1]
     
@@ -54,11 +54,11 @@ async def fsm_search(client, message):
         buttons.data_button("取消", f"{TYPE_PREFIX}cancel")
         
         button = buttons.build_menu(2)
-        return await send_message("请选择种子分类:", client, message, button)
+        return await send_message(message, "请选择种子分类:", button)
     
     except Exception as e:
         LOGGER.error(f"FSM搜索错误: {e}")
-        return await send_message(f"错误: {str(e)}", client, message)
+        return await send_message(message, f"错误: {str(e)}")
 
 @new_task
 async def fsm_callback(client, callback_query):
@@ -299,23 +299,23 @@ async def fsm_command_handler(client, message):
     args = message.text.split()
     if len(args) >= 2 and args[1] == 'download':
         if len(args) < 3:
-            return await send_message("缺少种子ID，请使用正确的格式: /fsm download <tid>", client, message)
+            return await send_message(message, "缺少种子ID，请使用正确的格式: /fsm download <tid>")
             
         tid = args[2]
         try:
             # 获取种子详情
-            await send_message(f"正在获取种子 <code>{tid}</code> 的详情...", client, message)
+            await send_message(message, f"正在获取种子 <code>{tid}</code> 的详情...")
             torrent_details = await get_torrent_details(tid)
             
             if not torrent_details.get('success', False):
-                return await send_message(f"获取种子详情失败: {torrent_details.get('msg', '未知错误')}", client, message)
+                return await send_message(message, f"获取种子详情失败: {torrent_details.get('msg', '未知错误')}")
             
             torrent = torrent_details.get('data', {}).get('torrent', {})
             title = torrent.get('title', f'FSM_Torrent_{tid}')
             file_hash = torrent.get('fileHash', '')
             
             if not file_hash:
-                return await send_message("错误: 无法获取生成磁力链接所需的文件哈希", client, message)
+                return await send_message(message, "错误: 无法获取生成磁力链接所需的文件哈希")
             
             # 创建磁力链接
             magnet_link = create_magnet_link(file_hash, title)
@@ -325,11 +325,11 @@ async def fsm_command_handler(client, message):
                 f"为以下种子生成了磁力链接: {title}\n\n"
                 f"`{magnet_link}`\n\n"
                 f"回复此消息并使用 /{BotCommands.QbMirrorCommand} 命令开始下载。",
-                client, message
+                message
             )
         except Exception as e:
             LOGGER.error(f"FSM下载命令错误: {e}")
-            return await send_message(f"错误: {str(e)}", client, message)
+            return await send_message(message, f"错误: {str(e)}")
     
     # 处理带页码参数的搜索
     page = 1
@@ -350,7 +350,7 @@ async def fsm_command_handler(client, message):
         
         if keyword and page > 1:
             # 直接搜索指定页面
-            await send_message(f"<b>正在搜索:</b> <i>{keyword}</i> (第 {page} 页)...", client, message)
+            await send_message(message, f"<b>正在搜索:</b> <i>{keyword}</i> (第 {page} 页)...")
             search_results = await search_torrents(keyword, '0', '0', page=str(page))
             return await handle_search_results(client, message, search_results, '0', '0', keyword)
     
