@@ -291,12 +291,10 @@ async def handle_search_results(client, message, search_results, user_id) :
     telegraph_content.append(f"<h4>FSM 搜索结果: {keyword}</h4>")
     telegraph_content.append(f"<p>当前第 {current_page} 页，共 {max_page} 页</p>")
 
-    # 添加搜索信息卡片头部 - 使用center替代div
-    telegraph_content.append("<center>")
+    # 添加搜索信息卡片头部 - 只使用基本支持的标签
     telegraph_content.append(f"<h3>🔍 FSM 搜索: 「{keyword}」</h3>")
     telegraph_content.append(
         f"<p>共找到 <strong>{len(torrents)}</strong> 个结果 | 第 <strong>{current_page}</strong> 页 / 共 {max_page} 页</p>")
-    telegraph_content.append("</center>")
     telegraph_content.append("<hr/>")
 
     # 创建结果列表，使用有序列表
@@ -359,7 +357,6 @@ async def handle_search_results(client, message, search_results, user_id) :
     # 添加底部导航（如果有多页）
     if max_page > 1 :
         telegraph_content.append("<hr/>")
-        telegraph_content.append("<center>")
         telegraph_content.append("<h4>📄 页面导航</h4>")
 
         # 生成更直观的分页导航
@@ -374,7 +371,6 @@ async def handle_search_results(client, message, search_results, user_id) :
             nav_text += f" <a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page + 1}'>下一页 ➡️</a>"
 
         telegraph_content.append(f"<p>{nav_text}</p>")
-        telegraph_content.append("</center>")
 
     if max_page > 1 :
         telegraph_content.append("<br><center><h4>页面导航</h4></center>")
