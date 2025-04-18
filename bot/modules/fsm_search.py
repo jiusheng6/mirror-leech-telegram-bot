@@ -283,18 +283,18 @@ async def handle_search_results(client, message, search_results, user_id):
 
         telegraph_content.append("</ol>")
 
-        if max_page > 1:
-            telegraph_content.append("<hr/>")
-            telegraph_content.append("<h4>页面导航</h4>")
-            nav_parts = []
-            if current_page > 1:
-                nav_parts.append(
-                    f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page - 1}'>⬅️ 上一页</a>")
-            nav_parts.append(f"<b>{current_page}/{max_page}</b>")
-            if current_page < max_page:
-                nav_parts.append(
-                    f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page + 1}'>下一页 ➡️</a>")
-            telegraph_content.append("<p>" + " | ".join(nav_parts) + "</p>")
+        # if max_page > 1:
+        #     telegraph_content.append("<hr/>")
+        #     telegraph_content.append("<h4>页面导航</h4>")
+        #     nav_parts = []
+        #     if current_page > 1:
+        #         nav_parts.append(
+        #             f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page - 1}'>⬅️ 上一页</a>")
+        #     nav_parts.append(f"<b>{current_page}/{max_page}</b>")
+        #     if current_page < max_page:
+        #         nav_parts.append(
+        #             f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page + 1}'>下一页 ➡️</a>")
+        #     telegraph_content.append("<p>" + " | ".join(nav_parts) + "</p>")
 
         telegraph_page = await telegraph.create_page(
             title=f"FSM搜索: {keyword}",
@@ -305,11 +305,11 @@ async def handle_search_results(client, message, search_results, user_id):
         buttons = ButtonMaker()
         buttons.url_button("📋 在Telegraph查看详细列表", telegraph_url)
 
-        if max_page > 1:
-            if current_page > 1:
+        # 第二行：添加简洁的分页按钮
+        if max_page > 1 :
+            if current_page > 1 :
                 buttons.data_button("⬅️ 上一页", f"{PAGE_PREFIX}{current_page - 1}")
-            buttons.data_button(f"📄 {current_page}/{max_page}", "noop")
-            if current_page < max_page:
+            if current_page < max_page :
                 buttons.data_button("下一页 ➡️", f"{PAGE_PREFIX}{current_page + 1}")
 
         buttons.data_button("🔄 刷新", f"{PAGE_PREFIX}{current_page}")
