@@ -519,19 +519,13 @@ async def fsm_callback(client, callback_query) :
             await edit_message(message, msg)
 
         elif data.startswith(PAGE_PREFIX) :
-            page_data = data[len(PAGE_PREFIX) :]
-            if page_data == "noop" :
+            page = data[len(PAGE_PREFIX) :]
+            if page == "noop" :
                 await callback_query.answer("当前页码信息")
                 return
 
-            # 正确处理页码数据格式
-            if page_data.startswith("page:") :
-                page = page_data.replace("page:", "")
-            else :
-                page = page_data
-
             # 调试日志
-            LOGGER.debug(f"页码回调数据: 原始={page_data}, 解析后={page}")
+            LOGGER.debug(f"页码回调数据: {page}")
 
             keyword = search_contexts[user_id].get('keyword', '')
             type_id = search_contexts[user_id].get('selected_type', "0")
@@ -566,46 +560,44 @@ async def fsm_callback(client, callback_query) :
                     del search_contexts[user_id]
                 return await edit_message(message, "<b>❌ 浏览已取消！</b>")
 
-            # 正确处理页码数据格式
-            if browse_data.startswith("page:") :
-                page = browse_data.replace("page:", "")
-                LOGGER.debug(f"分类浏览分页请求: 页码={page}")
-                type_id = search_contexts[user_id].get('selected_type', "0")
+            # 检查是否是数字（页码）
+            if browse_data.isdigit() or browse_data == "all" :
+                # 是分类选择
+                if browse_data == "all" :
+                    type_id = "0"
+                else :
+                    type_id = search_contexts[user_id]['type_mapping'].get(browse_data, "0")
+                search_contexts[user_id]['selected_type'] = type_id
+                search_contexts[user_id]['selected_system'] = "0"  # 默认选择全部优惠
 
-                await callback_query.answer(f"正在加载第 {page} 页...")
-                await edit_message(message, f"<b>📂 正在获取分类内容 (第 {page} 页)...</b>")
+                await callback_query.answer("正在浏览分类...")
+                await edit_message(message, f"<b>📂 正在获取分类内容...</b>")
 
                 try :
-                    # 确保保存当前页码到上下文
-                    search_contexts[user_id]['current_page'] = int(page)
+                    search_results = await search_torrents("", type_id, "0")
+                    await handle_search_results(client, message, search_results, user_id, page_prefix=BROWSE_PREFIX)
+                except Exception as e :
+                    LOGGER.error(f"浏览分类错误: {e}")
+                    error_trace = traceback.format_exc()
+                    LOGGER.error(f"浏览分类异常详情:\n{error_trace}")
+                    await edit_message(message, f"<b>❌ 浏览分类失败:</b> {str(e)}")
+            else :
+                # 假设是页码，尝试加载该页
+                try :
+                    page = browse_data
+                    page_num = int(page)
+                    type_id = search_contexts[user_id].get('selected_type', "0")
+
+                    await callback_query.answer(f"正在加载第 {page} 页...")
+                    await edit_message(message, f"<b>📂 正在获取分类内容 (第 {page} 页)...</b>")
+
+                    search_contexts[user_id]['current_page'] = page_num
                     search_results = await search_torrents("", type_id, "0", page=page)
-                    # 确保页码正确
-                    search_results['data']['page'] = int(page)
+                    search_results['data']['page'] = page_num
                     await handle_search_results(client, message, search_results, user_id, page_prefix=BROWSE_PREFIX)
                 except Exception as e :
                     LOGGER.error(f"浏览分类分页错误: {e}")
-                    await edit_message(message, f"<b>❌ 获取分类第 {page} 页失败:</b> {str(e)}")
-                return
-
-            # 处理分类选择
-            if browse_data == "all" :
-                type_id = "0"
-            else :
-                type_id = search_contexts[user_id]['type_mapping'].get(browse_data, "0")
-            search_contexts[user_id]['selected_type'] = type_id
-            search_contexts[user_id]['selected_system'] = "0"  # 默认选择全部优惠
-
-            await callback_query.answer("正在浏览分类...")
-            await edit_message(message, f"<b>📂 正在获取分类内容...</b>")
-
-            try :
-                search_results = await search_torrents("", type_id, "0")
-                await handle_search_results(client, message, search_results, user_id, page_prefix=BROWSE_PREFIX)
-            except Exception as e :
-                LOGGER.error(f"浏览分类错误: {e}")
-                error_trace = traceback.format_exc()
-                LOGGER.error(f"浏览分类异常详情:\n{error_trace}")
-                await edit_message(message, f"<b>❌ 浏览分类失败:</b> {str(e)}")
+                    await edit_message(message, f"<b>❌ 获取分类第 {browse_data} 页失败:</b> {str(e)}")
 
         # 处理热门种子分页回调
         elif data.startswith(HOT_PREFIX) :
@@ -616,12 +608,8 @@ async def fsm_callback(client, callback_query) :
                     del search_contexts[user_id]
                 return await edit_message(message, "<b>❌ 查看已取消！</b>")
 
-            # 处理页码数据格式
-            if hot_data.startswith("page:") :
-                page = hot_data.replace("page:", "")
-            else :
-                page = hot_data
-
+            # 直接将数据作为页码处理
+            page = hot_data
             await callback_query.answer(f"正在加载第 {page} 页...")
             await edit_message(message, f"<b>🔥 正在获取热门种子 (第 {page} 页)...</b>")
 
@@ -642,11 +630,8 @@ async def fsm_callback(client, callback_query) :
                     del search_contexts[user_id]
                 return await edit_message(message, "<b>❌ 查看已取消！</b>")
 
-            # 处理页码数据格式
-            if latest_data.startswith("page:") :
-                page = latest_data.replace("page:", "")
-            else :
-                page = latest_data
+            # 直接将数据作为页码处理
+            page = latest_data
 
             await callback_query.answer(f"正在加载第 {page} 页...")
             await edit_message(message, f"<b>🆕 正在获取最新种子 (第 {page} 页)...</b>")
@@ -828,7 +813,7 @@ async def handle_search_results(client, message, search_results, user_id, page_p
         # 调试日志
         LOGGER.debug(f"构造分页按钮: 前缀={page_prefix}, 当前页={current_page}, 最大页={max_page}")
 
-        # 构造分页、刷新、取消按钮（不使用page:前缀）
+        # 构造分页、刷新、取消按钮
         buttons = ButtonMaker()
         if max_page > 1 :
             if current_page > 1 :
