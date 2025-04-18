@@ -1,6 +1,4 @@
 from importlib import import_module
-import os
-from .. import LOGGER
 
 
 class Config:
@@ -16,10 +14,6 @@ class Config:
     EXCLUDED_EXTENSIONS = ""
     FFMPEG_CMDS = {}
     FILELION_API = ""
-    FSM_API_TOKEN = ""
-    FSM_PASSKEY = ""
-    FSM_API_BASE_URL = "https://fsm.name/api/"
-    FSM_DOWNLOAD_URL_BASE = "https://api.fsm.name/Torrents/download"
     GDRIVE_ID = ""
     INCOMPLETE_TASK_NOTIFIER = False
     INDEX_URL = ""
@@ -67,6 +61,10 @@ class Config:
     USE_SERVICE_ACCOUNTS = False
     WEB_PINCODE = False
     YT_DLP_OPTIONS = {}
+    FSM_API_TOKEN = ""
+    FSM_PASSKEY = ""
+    FSM_API_BASE_URL = "https://fsm.name/api/"
+    FSM_DOWNLOAD_URL_BASE = "https://api.fsm.name/Torrents/download"
 
     @classmethod
     def get(cls, key):
@@ -120,9 +118,6 @@ class Config:
                 value = value.strip()
             if not value:
                 raise ValueError(f"{key} variable is missing!")
-        
-        # 特别处理FSM相关设置
-        cls._load_fsm_settings()
 
     @classmethod
     def load_dict(cls, config_dict):
@@ -151,54 +146,3 @@ class Config:
                 value = value.strip()
             if not value:
                 raise ValueError(f"{key} variable is missing!")
-        
-        # 特别处理FSM相关设置
-        cls._load_fsm_settings()
-        
-    @classmethod
-    def _load_fsm_settings(cls):
-        """特别处理FSM相关设置的加载"""
-        # 先尝试从环境变量获取
-        env_api_token = os.environ.get('FSM_API_TOKEN')
-        env_passkey = os.environ.get('FSM_PASSKEY')
-        
-        # 如果环境变量不存在，尝试直接从配置文件获取
-        try:
-            config = import_module("config")
-            file_api_token = getattr(config, 'FSM_API_TOKEN', None)
-            file_passkey = getattr(config, 'FSM_PASSKEY', None)
-        except Exception as e:
-            LOGGER.error(f"从配置文件取值FSM设置错误: {e}")
-            file_api_token = None
-            file_passkey = None
-            
-        # 确保FSM值未设置空字符串
-        if not cls.FSM_API_TOKEN and env_api_token:
-            cls.FSM_API_TOKEN = env_api_token
-            LOGGER.info(f"从环境变量设置FSM_API_TOKEN: {‘*’ * len(env_api_token) if env_api_token else None}")
-        elif not cls.FSM_API_TOKEN and file_api_token:
-            cls.FSM_API_TOKEN = file_api_token
-            LOGGER.info(f"从配置文件设置FSM_API_TOKEN: {‘*’ * len(file_api_token) if file_api_token else None}")
-            
-        if not cls.FSM_PASSKEY and env_passkey:
-            cls.FSM_PASSKEY = env_passkey
-            LOGGER.info(f"从环境变量设置FSM_PASSKEY: {‘*’ * len(env_passkey) if env_passkey else None}")
-        elif not cls.FSM_PASSKEY and file_passkey:
-            cls.FSM_PASSKEY = file_passkey
-            LOGGER.info(f"从配置文件设置FSM_PASSKEY: {‘*’ * len(file_passkey) if file_passkey else None}")
-            
-        # 确保一定要设置正确的值
-        if not cls.FSM_API_TOKEN:
-            # 尝试直接设置配置文件中看到的值
-            cls.FSM_API_TOKEN = "u4yHNhlBMxUqI5wYkR5QpgqSdmXtw6YM"
-            LOGGER.info(f"已手动设置FSM_API_TOKEN: {‘*’ * len(cls.FSM_API_TOKEN)}")
-            
-        if not cls.FSM_PASSKEY:
-            # 尝试直接设置配置文件中看到的值
-            cls.FSM_PASSKEY = "104de74de3c6c8db4b941773d26f3f52"
-            LOGGER.info(f"已手动设置FSM_PASSKEY: {‘*’ * len(cls.FSM_PASSKEY)}")
-            
-        # 输出最终结果
-        token_status = "已设置" if cls.FSM_API_TOKEN else "未设置"
-        passkey_status = "已设置" if cls.FSM_PASSKEY else "未设置"
-        LOGGER.info(f"FSM配置状态: API_TOKEN: {token_status}, PASSKEY: {passkey_status}")

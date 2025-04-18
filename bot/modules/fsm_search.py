@@ -16,7 +16,7 @@ from ..helper.telegram_helper.button_build import ButtonMaker
 from ..helper.ext_utils.telegraph_helper import telegraph
 from ..helper.ext_utils.bot_utils import new_task
 from ..helper.ext_utils.fsm_utils import get_torrent_types, get_systematics, search_torrents, get_torrent_details, get_download_url
-
+Config.load()
 async def get_torrent_links(tid, title):
     """获取种子下载链接"""
     try:
