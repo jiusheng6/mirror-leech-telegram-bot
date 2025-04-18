@@ -5,7 +5,6 @@ from urllib.parse import quote
 from ...core.config_manager import Config
 from ... import LOGGER
 
-Config.load()
 async def get_download_url(tid):
     """获取种子下载链接"""
     # 确保获取最新设置
