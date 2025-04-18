@@ -1,5 +1,7 @@
 from asyncio import sleep
 import aiohttp
+import time
+import asyncio
 from urllib.parse import quote
 from ...core.config_manager import Config
 from ... import LOGGER
@@ -7,26 +9,35 @@ from ... import LOGGER
 async def make_fsm_request(endpoint, params=None, stream=False):
     """发送FSM API请求"""
     # 尝试不同的请求头格式
-    headers = {
-        'APITOKEN': Config.FSM_API_TOKEN,
-        'X-API-TOKEN': Config.FSM_API_TOKEN,
-        'Authorization': f'Bearer {Config.FSM_API_TOKEN}'
-    }
+    headers_formats = [
+        {'APITOKEN': Config.FSM_API_TOKEN},
+        {'X-APITOKEN': Config.FSM_API_TOKEN},
+        {'X-API-TOKEN': Config.FSM_API_TOKEN},
+        {'Authorization': f'Bearer {Config.FSM_API_TOKEN}'},
+        {'Token': Config.FSM_API_TOKEN},
+        {'Api-Token': Config.FSM_API_TOKEN},
+        {'Apitoken': Config.FSM_API_TOKEN},
+        {'apitoken': Config.FSM_API_TOKEN}
+    ]
     
     url = f"{Config.FSM_API_BASE_URL.rstrip('/')}/{endpoint}"
     
     # 详细记录请求信息
     LOGGER.info(f"FSM请求详情: \n端点: {endpoint} \nURL: {url} \n参数: {params}")
     
+    errors = []
+    
     try:
         async with aiohttp.ClientSession() as session:
-            # 尝试所有可能的头部格式
-            for header_key, header_value in headers.items():
-                temp_headers = {header_key: header_value}
-                LOGGER.info(f"尝试请求头: {header_key}: {header_value[:5]}...")
+            # 尝试所有头部格式
+            for headers in headers_formats:
+                header_name = list(headers.keys())[0]
+                header_value = headers[header_name]
+                
+                LOGGER.info(f"尝试请求头: {header_name}={header_value[:5] if header_value else 'None'}...")
                 
                 try:
-                    async with session.get(url, params=params, headers=temp_headers) as response:
+                    async with session.get(url, params=params, headers=headers, timeout=10) as response:
                         status = response.status
                         LOGGER.info(f"FSM响应状态码: {status}")
                         
@@ -39,46 +50,82 @@ async def make_fsm_request(endpoint, params=None, stream=False):
                             try:
                                 error_text = await response.text()
                                 LOGGER.error(f"401错误详情: {error_text}")
-                            except:
-                                pass
+                                errors.append(f"Headers {header_name}="{header_value[:10]}...": {error_text}")
+                            except Exception as e:
+                                LOGGER.error(f"读取401响应内容出错: {e}")
                             continue  # 尝试下一个头部格式
                         
                         # 成功
                         if response.ok:
                             if stream:
                                 return response
-                            json_data = await response.json()
-                            LOGGER.info(f"FSM请求成功，使用头部: {header_key}")
-                            return json_data
+                            try:
+                                json_data = await response.json()
+                                LOGGER.info(f"FSM请求成功，使用头部: {header_name}")
+                                return json_data
+                            except Exception as e:
+                                LOGGER.error(f"解析JSON响应出错: {e}")
+                                text = await response.text()
+                                LOGGER.info(f"原始响应内容: {text[:200]}")
+                                raise Exception(f"解析响应失败: {e}")
                 except Exception as e:
-                    LOGGER.error(f"尝试头部 {header_key} 时出错: {e}")
+                    LOGGER.error(f"尝试头部 {header_name} 时出错: {e}")
+                    errors.append(f"头部 {header_name} 错误: {e}")
             
-            # 如果所有头部格式都失败，再尝试一次不带任何认证的请求
-            LOGGER.info("尝试不带认证头的请求")
-            try:
-                async with session.get(url, params=params) as response:
-                    status = response.status
-                    LOGGER.info(f"无认证请求状态码: {status}")
+            # 如果当前基础URL不是api.fsm.name，尝试备用API地址
+            if not Config.FSM_API_BASE_URL.startswith("https://api.fsm.name"):
+                alternate_url = "https://api.fsm.name/"
+                LOGGER.info(f"尝试备用API基地址: {alternate_url}")
+                
+                try:
+                    alt_url = f"{alternate_url.rstrip('/')}/{endpoint}"
+                    async with session.get(alt_url, params=params, headers=headers_formats[0], timeout=10) as response:
+                        status = response.status
+                        LOGGER.info(f"备用API地址响应状态码: {status}")
+                        
+                        if response.ok:
+                            if stream:
+                                return response
+                            json_data = await response.json()
+                            LOGGER.info(f"备用API地址请求成功")
+                            return json_data
+                        else:
+                            error_text = await response.text()
+                            LOGGER.error(f"备用API地址请求失败: {error_text}")
+                except Exception as e:
+                    LOGGER.error(f"尝试备用API地址时出错: {e}")
+            
+            # 所有尝试都失败，汇总错误信息
+            error_summary = "\n".join(errors) if errors else "无错误详情"
+            LOGGER.error(f"所有API头部格式均失败! \n错误汇总:\n{error_summary}")
+            
+            # 尝试使用passkey作为认证（如果可用）
+            if Config.FSM_PASSKEY:
+                try:
+                    passkey_params = dict(params) if params else {}
+                    passkey_params['passkey'] = Config.FSM_PASSKEY
+                    LOGGER.info(f"尝试使用passkey参数: {passkey_params}")
                     
-                    if response.ok:
-                        if stream:
-                            return response
-                        return await response.json()
-                    else:
-                        text = await response.text()
-                        LOGGER.error(f"无认证请求失败: {text}")
-            except Exception as e:
-                LOGGER.error(f"无认证请求出错: {e}")
+                    async with session.get(url, params=passkey_params, timeout=10) as response:
+                        status = response.status
+                        LOGGER.info(f"Passkey请求响应状态码: {status}")
+                        
+                        if response.ok:
+                            if stream:
+                                return response
+                            json_data = await response.json()
+                            LOGGER.info("Passkey请求成功")
+                            return json_data
+                        else:
+                            error_text = await response.text()
+                            LOGGER.error(f"Passkey请求失败: {error_text}")
+                except Exception as e:
+                    LOGGER.error(f"Passkey请求出错: {e}")
             
-            # 所有尝试都失败
-            raise Exception(f"所有认证方式都失败，无法连接到FSM API")
-            
+            raise Exception(f"FSM API通信失败，所有认证方式均失败。请检查API令牌和基础URL。")
     except aiohttp.ClientError as e:
         LOGGER.error(f"FSM请求失败: {e}")
         raise Exception(f"FSM请求失败: {e}")
-    except Exception as e:
-        LOGGER.error(f"FSM请求过程中发生未知错误: {e}")
-        raise Exception(f"FSM请求过程中发生未知错误: {e}")
 
 async def get_torrent_types():
     """获取种子分类信息"""
@@ -164,6 +211,7 @@ def create_magnet_link(file_hash, title):
 LOGGER.info(f"当前FSM配置信息，时间戳: {time.time()}\n"
             f"API基础URL: {Config.FSM_API_BASE_URL}\n"
             f"API令牌长度: {len(Config.FSM_API_TOKEN) if Config.FSM_API_TOKEN else 0}\n"
+            f"API令牌前5个字符: {Config.FSM_API_TOKEN[:5] if Config.FSM_API_TOKEN and len(Config.FSM_API_TOKEN) > 5 else '无效令牌'}\n"
             f"Passkey长度: {len(Config.FSM_PASSKEY) if Config.FSM_PASSKEY else 0}")
 
 # 尝试可能的备用API基础URL，如果原始地址无法访问
@@ -198,10 +246,6 @@ async def test_alternative_base_urls():
                         LOGGER.info(f"响应内容: {text[:100]}")
         except Exception as e:
             LOGGER.info(f"测试备用URL {base_url} 失败: {e}")
-
-# 在模块被导入时执行测试
-import asyncio
-import time
 
 # 当前模块已加载
 LOGGER.info("FSM工具模块已加载，开始测试可能的API地址")
