@@ -540,21 +540,19 @@ async def fsm_callback(client, callback_query) :
         # 处理浏览分类回调
         elif data.startswith(BROWSE_PREFIX) :
             browse_data = data[len(BROWSE_PREFIX) :]
-            if browse_data == "cancel" :
-                await callback_query.answer("已取消浏览")
-                if user_id in search_contexts :
-                    del search_contexts[user_id]
-                return await edit_message(message, "<b>❌ 浏览已取消！</b>")
 
-            # 处理分页请求
+            # 处理分页请求（包括刷新操作）
             if browse_data.startswith("page:") :
                 page = browse_data.replace("page:", "")
+                LOGGER.info(f"分类浏览分页请求: 页码={page}")
                 type_id = search_contexts[user_id].get('selected_type', "0")
 
                 await callback_query.answer(f"正在加载第 {page} 页...")
                 await edit_message(message, f"<b>📂 正在获取分类内容 (第 {page} 页)...</b>")
 
                 try :
+                    # 确保保存当前页码到上下文
+                    search_contexts[user_id]['current_page'] = int(page)
                     search_results = await search_torrents("", type_id, "0", page=page)
                     # 确保页码正确
                     search_results['data']['page'] = int(page)
@@ -563,6 +561,8 @@ async def fsm_callback(client, callback_query) :
                     LOGGER.error(f"浏览分类分页错误: {e}")
                     await edit_message(message, f"<b>❌ 获取分类第 {page} 页失败:</b> {str(e)}")
                 return
+
+            # ... [其他代码保持不变] ...
 
             # 处理分类选择
             if browse_data == "all" :
@@ -777,10 +777,13 @@ async def handle_search_results(client, message, search_results, user_id, page_p
         buttons = ButtonMaker()
         if max_page > 1 :
             if current_page > 1 :
-                buttons.data_button("⬅️ 上一页", f"{page_prefix}{current_page - 1}")
+                # 修改这里：统一使用page:前缀格式
+                buttons.data_button("⬅️ 上一页", f"{page_prefix}page:{current_page - 1}")
             if current_page < max_page :
-                buttons.data_button("下一页 ➡️", f"{page_prefix}{current_page + 1}")
-        buttons.data_button("🔄 刷新", f"{page_prefix}{current_page}")
+                # 修改这里：统一使用page:前缀格式
+                buttons.data_button("下一页 ➡️", f"{page_prefix}page:{current_page + 1}")
+        # 刷新按钮也需要修改
+        buttons.data_button("🔄 刷新", f"{page_prefix}page:{current_page}")
         buttons.data_button("❌ 取消", f"{TYPE_PREFIX}cancel")
         button_layout = buttons.build_menu(2)
 
