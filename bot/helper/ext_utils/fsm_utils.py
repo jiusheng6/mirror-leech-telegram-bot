@@ -27,7 +27,7 @@ async def make_fsm_request(endpoint, params=None, stream=False):
     headers = {'APITOKEN': Config.FSM_API_TOKEN}
     url = f"{Config.FSM_API_BASE_URL.rstrip('/')}/{endpoint}"
     
-    LOGGER.info(f"FSM请求: 端点={endpoint}, URL={url}")
+    LOGGER.info(f"FSM请求: 端点={endpoint}, URL={url},headers={headers}")
     
     try:
         async with aiohttp.ClientSession() as session:
