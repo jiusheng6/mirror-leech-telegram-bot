@@ -166,10 +166,16 @@ async def show_torrent_details(client, message, tid) :
         # 处理免费状态
         status = torrent.get('status', {})
         free_text = ""
+
+        # 详细记录状态信息
+        LOGGER.debug(f"种子状态信息: {status}")
+
         if status.get('hasStatus', False) :
             status_name = status.get('name', '')
             down_coefficient = status.get('downCoefficient', 1)
             up_coefficient = status.get('upCoefficient', 1)
+
+            LOGGER.debug(f"免费状态详情: 名称={status_name}, 下载系数={down_coefficient}, 上传系数={up_coefficient}")
 
             if status_name :
                 free_text = f"<b>🏷️ 优惠:</b> {status_name}\n"
@@ -513,24 +519,38 @@ async def fsm_callback(client, callback_query) :
             await edit_message(message, msg)
 
         elif data.startswith(PAGE_PREFIX) :
-            page = data[len(PAGE_PREFIX) :]
-            if page == "noop" :
+            page_data = data[len(PAGE_PREFIX) :]
+            if page_data == "noop" :
                 await callback_query.answer("当前页码信息")
                 return
+
+            # 正确处理页码数据格式
+            if page_data.startswith("page:") :
+                page = page_data.replace("page:", "")
+            else :
+                page = page_data
+
+            # 调试日志
+            LOGGER.debug(f"页码回调数据: 原始={page_data}, 解析后={page}")
+
             keyword = search_contexts[user_id].get('keyword', '')
             type_id = search_contexts[user_id].get('selected_type', "0")
             systematics_id = search_contexts[user_id].get('selected_system', "0")
 
             # 确保页码是整数并保存到用户上下文中
-            page_num = int(page)
-            search_contexts[user_id]['current_page'] = page_num
+            try :
+                page_num = int(page)
+                search_contexts[user_id]['current_page'] = page_num
+            except ValueError :
+                LOGGER.error(f"无效的页码: {page}")
+                return await callback_query.answer("无效的页码", show_alert=True)
 
             await callback_query.answer(f"正在加载第 {page} 页...")
             await edit_message(message, f"<b>📃 正在获取第 {page} 页的搜索结果...</b>")
 
             try :
                 search_results = await search_torrents(keyword, type_id, systematics_id, page=page)
-                # 确保使用我们自己跟踪的页码，而不是仅依赖API响应
+                # 确保使用我们自己跟踪的页码
                 search_results['data']['page'] = page_num
                 await handle_search_results(client, message, search_results, user_id)
             except Exception as e :
@@ -540,11 +560,16 @@ async def fsm_callback(client, callback_query) :
         # 处理浏览分类回调
         elif data.startswith(BROWSE_PREFIX) :
             browse_data = data[len(BROWSE_PREFIX) :]
+            if browse_data == "cancel" :
+                await callback_query.answer("已取消浏览")
+                if user_id in search_contexts :
+                    del search_contexts[user_id]
+                return await edit_message(message, "<b>❌ 浏览已取消！</b>")
 
-            # 处理分页请求（包括刷新操作）
+            # 正确处理页码数据格式
             if browse_data.startswith("page:") :
                 page = browse_data.replace("page:", "")
-                LOGGER.info(f"分类浏览分页请求: 页码={page}")
+                LOGGER.debug(f"分类浏览分页请求: 页码={page}")
                 type_id = search_contexts[user_id].get('selected_type', "0")
 
                 await callback_query.answer(f"正在加载第 {page} 页...")
@@ -561,8 +586,6 @@ async def fsm_callback(client, callback_query) :
                     LOGGER.error(f"浏览分类分页错误: {e}")
                     await edit_message(message, f"<b>❌ 获取分类第 {page} 页失败:</b> {str(e)}")
                 return
-
-            # ... [其他代码保持不变] ...
 
             # 处理分类选择
             if browse_data == "all" :
@@ -593,8 +616,12 @@ async def fsm_callback(client, callback_query) :
                     del search_contexts[user_id]
                 return await edit_message(message, "<b>❌ 查看已取消！</b>")
 
-            # 处理分页请求
-            page = hot_data
+            # 处理页码数据格式
+            if hot_data.startswith("page:") :
+                page = hot_data.replace("page:", "")
+            else :
+                page = hot_data
+
             await callback_query.answer(f"正在加载第 {page} 页...")
             await edit_message(message, f"<b>🔥 正在获取热门种子 (第 {page} 页)...</b>")
 
@@ -615,8 +642,12 @@ async def fsm_callback(client, callback_query) :
                     del search_contexts[user_id]
                 return await edit_message(message, "<b>❌ 查看已取消！</b>")
 
-            # 处理分页请求
-            page = latest_data
+            # 处理页码数据格式
+            if latest_data.startswith("page:") :
+                page = latest_data.replace("page:", "")
+            else :
+                page = latest_data
+
             await callback_query.answer(f"正在加载第 {page} 页...")
             await edit_message(message, f"<b>🆕 正在获取最新种子 (第 {page} 页)...</b>")
 
@@ -677,6 +708,7 @@ async def handle_search_results(client, message, search_results, user_id, page_p
         telegraph_content.append(f"<h3>🔍 FSM 搜索: {keyword}</h3>")
         telegraph_content.append(f"<p>找到 <b>{len(torrents)}</b> 个结果 | 第 {current_page}/{max_page} 页</p>")
         telegraph_content.append("<hr/><ol>")
+
         for torrent in torrents[:MAX_TELEGRAPH_RESULTS] :
             title = torrent.get('title', '未知')
             size = torrent.get('fileSize', '未知')
@@ -688,34 +720,44 @@ async def handle_search_results(client, message, search_results, user_id, page_p
             created_ts = torrent.get('createdTs', 0)
             created = time.strftime('%Y-%m-%d', time.localtime(created_ts)) if created_ts else '未知'
 
-            # 处理免费状态
+            # 处理免费状态 - 添加详细日志以辅助调试
             status = torrent.get('status', {})
             free_badge = ""
-            if status.get('hasStatus', False) :
-                status_name = status.get('name', '')
-                down_coefficient = status.get('downCoefficient', 1)
-                up_coefficient = status.get('upCoefficient', 1)
 
-                if status_name :
-                    free_badge = f"【{status_name}】"
-                elif down_coefficient == 0 :
-                    free_badge = "【FREE】"
-                elif down_coefficient < 1 :
-                    free_badge = f"【{int((1 - down_coefficient) * 100)}%OFF】"
-                elif up_coefficient > 1 :
-                    free_badge = f"【{up_coefficient}x上传】"
+            # 检查status字段结构
+            if isinstance(status, dict) :
+                has_status = status.get('hasStatus', False)
+                LOGGER.debug(f"种子 {tid} 状态: hasStatus={has_status}, status={status}")
+
+                if has_status :
+                    status_name = status.get('name', '')
+                    down_coefficient = status.get('downCoefficient', 1)
+                    up_coefficient = status.get('upCoefficient', 1)
+
+                    if status_name :
+                        free_badge = f"【{status_name}】"
+                    elif down_coefficient == 0 :
+                        free_badge = "【FREE】"
+                    elif down_coefficient < 1 :
+                        free_badge = f"【{int((1 - down_coefficient) * 100)}%OFF】"
+                    elif up_coefficient > 1 :
+                        free_badge = f"【{up_coefficient}x上传】"
 
             # 处理优惠标记
-            free_type = torrent.get('systematic', {}).get('name', '')
-            if free_type :
+            systematic = torrent.get('systematic', {})
+            if isinstance(systematic, dict) and systematic.get('name', '') :
+                sys_name = systematic.get('name', '')
                 if free_badge :
-                    free_badge += f" {free_type}"
+                    free_badge += f" {sys_name}"
                 else :
-                    free_badge = f"【{free_type}】"
+                    free_badge = f"【{sys_name}】"
+
+            # 调试日志
+            LOGGER.debug(f"种子 {tid} 最终免费标记: {free_badge}")
 
             telegraph_content.append(
                 f"<li>"
-                f"<h4>{free_badge}{title}</h4>"
+                f"<h4>{free_badge} {title}</h4>"
                 f"<p>📁 大小: <b>{size}</b></p>"
                 f"<p>👥 做种/下载: <b>{seeds}/{leech}</b></p>"
                 f"<p>📂 分类: {category}</p>"
@@ -745,6 +787,7 @@ async def handle_search_results(client, message, search_results, user_id, page_p
             f"📋 完整列表：<a href=\"{telegraph_url}\">在Telegraph查看</a>\n\n"
             f"👇 <i>点击下方按钮翻页或刷新</i>\n"
         )
+
         if torrents :
             result_msg += "\n<b>📊 热门结果预览:</b>\n"
             for i, torrent in enumerate(torrents[:3], 1) :
@@ -754,10 +797,10 @@ async def handle_search_results(client, message, search_results, user_id, page_p
                 t_size = torrent.get('fileSize', '未知')
                 t_tid = torrent.get('tid')
 
-                # 处理免费状态
+                # 处理结果预览中的免费状态
                 status = torrent.get('status', {})
                 free_badge = ""
-                if status.get('hasStatus', False) :
+                if isinstance(status, dict) and status.get('hasStatus', False) :
                     status_name = status.get('name', '')
                     down_coefficient = status.get('downCoefficient', 1)
 
@@ -768,22 +811,31 @@ async def handle_search_results(client, message, search_results, user_id, page_p
                     elif down_coefficient < 1 :
                         free_badge = f"【{int((1 - down_coefficient) * 100)}%OFF】"
 
+                # 添加系统标记
+                systematic = torrent.get('systematic', {})
+                if isinstance(systematic, dict) and systematic.get('name', '') :
+                    sys_name = systematic.get('name', '')
+                    if free_badge :
+                        free_badge += f" {sys_name}"
+                    else :
+                        free_badge = f"【{sys_name}】"
+
                 result_msg += (
-                    f"{i}. <b>{free_badge}{t_title}</b>\n"
+                    f"{i}. <b>{free_badge} {t_title}</b>\n"
                     f"   📁 {t_size} | 👥 {t_seeds} | 🆔 <code>{t_tid}</code>\n\n"
                 )
 
-        # 构造分页、刷新、取消按钮
+        # 调试日志
+        LOGGER.debug(f"构造分页按钮: 前缀={page_prefix}, 当前页={current_page}, 最大页={max_page}")
+
+        # 构造分页、刷新、取消按钮（不使用page:前缀）
         buttons = ButtonMaker()
         if max_page > 1 :
             if current_page > 1 :
-                # 修改这里：统一使用page:前缀格式
-                buttons.data_button("⬅️ 上一页", f"{page_prefix}page:{current_page - 1}")
+                buttons.data_button("⬅️ 上一页", f"{page_prefix}{current_page - 1}")
             if current_page < max_page :
-                # 修改这里：统一使用page:前缀格式
-                buttons.data_button("下一页 ➡️", f"{page_prefix}page:{current_page + 1}")
-        # 刷新按钮也需要修改
-        buttons.data_button("🔄 刷新", f"{page_prefix}page:{current_page}")
+                buttons.data_button("下一页 ➡️", f"{page_prefix}{current_page + 1}")
+        buttons.data_button("🔄 刷新", f"{page_prefix}{current_page}")
         buttons.data_button("❌ 取消", f"{TYPE_PREFIX}cancel")
         button_layout = buttons.build_menu(2)
 
