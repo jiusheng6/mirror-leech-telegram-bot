@@ -235,118 +235,106 @@ async def fsm_callback(client, callback_query):
 
 
 async def handle_search_results(client, message, search_results, user_id):
-    """处理并显示搜索结果，使用优化的Telegraph页面"""
+    """
+    处理并显示搜索结果，使用优化的Telegraph页面
+    """
     if not search_results.get('success', False):
         return await edit_message(message, f"<b>❌ 搜索失败:</b> {search_results.get('msg', '未知错误')}")
 
-    torrents = search_results.get('data', {}).get('list', [])
-    max_page = search_results.get('data', {}).get('maxPage', 1)
-    current_page = int(search_results.get('data', {}).get('page', 1))
+    torrents = search_results['data'].get('list', [])
+    max_page = int(search_results['data'].get('maxPage', 1))
+    current_page = int(search_results['data'].get('page', 1))
     keyword = search_contexts[user_id].get('keyword', '')
 
     if not torrents:
-        return await edit_message(message, f"<b>🔍 未找到与</b> <i>'{keyword}'</i> <b>相关的结果</b>")
+        return await edit_message(
+            message,
+            f"<b>🔍 未找到与</b> <i>'{keyword}'</i> <b>相关的结果</b>"
+        )
 
+    # 保存当前页
     search_contexts[user_id]['current_page'] = current_page
 
     try:
+        # 构建 Telegraph 页面内容
         telegraph_content = []
         telegraph_content.append(f"<h3>🔍 FSM 搜索: {keyword}</h3>")
         telegraph_content.append(f"<p>找到 <b>{len(torrents)}</b> 个结果 | 第 {current_page}/{max_page} 页</p>")
-        telegraph_content.append("<hr/>")
-        telegraph_content.append("<ol>")
-
+        telegraph_content.append("<hr/><ol>")
         for torrent in torrents[:MAX_TELEGRAPH_RESULTS]:
-            title = torrent.get('title', '未知')
-            size = torrent.get('fileSize', '未知')
-            seeds = torrent.get('peers', {}).get('upload', 0)
-            leech = torrent.get('peers', {}).get('download', 0)
-            category = torrent.get('type', {}).get('name', '未知')
-            tid = torrent.get('tid')
+            title      = torrent.get('title', '未知')
+            size       = torrent.get('fileSize', '未知')
+            seeds      = torrent.get('peers', {}).get('upload', 0)
+            leech      = torrent.get('peers', {}).get('download', 0)
+            category   = torrent.get('type', {}).get('name', '未知')
+            tid        = torrent.get('tid')
             created_ts = torrent.get('createdTs', 0)
-            created_time = time.strftime('%Y-%m-%d', time.localtime(created_ts)) if created_ts else '未知'
-            free_type = torrent.get('systematic', {}).get('name', '')
+            created    = time.strftime('%Y-%m-%d', time.localtime(created_ts)) if created_ts else '未知'
+            free_type  = torrent.get('systematic', {}).get('name', '')
             free_badge = f"【{free_type}】" if free_type else ""
 
-            item = "<li>"
-            item += f"<h4>{free_badge}{title}</h4>"
-            item += "<p>📁 大小: <b>" + size + "</b></p>"
-            item += "<p>👥 做种/下载: <b>" + str(seeds) + "/" + str(leech) + "</b></p>"
-            item += "<p>📂 分类: " + category + "</p>"
-            item += "<p>📅 上传日期: " + created_time + "</p>"
-            item += "<p>🆔 种子ID: <code>" + str(tid) + "</code></p>"
-            item += "<p>📥 下载命令:</p>"
-            item += "<p><code>/fsm download " + str(tid) + "</code></p>"
-            item += "</li>"
-            item += "<hr/>"
-            telegraph_content.append(item)
-
+            telegraph_content.append(
+                f"<li>"
+                f"<h4>{free_badge}{title}</h4>"
+                f"<p>📁 大小: <b>{size}</b></p>"
+                f"<p>👥 做种/下载: <b>{seeds}/{leech}</b></p>"
+                f"<p>📂 分类: {category}</p>"
+                f"<p>📅 上传日期: {created}</p>"
+                f"<p>🆔 种子ID: <code>{tid}</code></p>"
+                f"<p>📥 下载命令:</p>"
+                f"<p><code>/fsm download {tid}</code></p>"
+                f"</li><hr/>"
+            )
         telegraph_content.append("</ol>")
 
-        # if max_page > 1:
-        #     telegraph_content.append("<hr/>")
-        #     telegraph_content.append("<h4>页面导航</h4>")
-        #     nav_parts = []
-        #     if current_page > 1:
-        #         nav_parts.append(
-        #             f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page - 1}'>⬅️ 上一页</a>")
-        #     nav_parts.append(f"<b>{current_page}/{max_page}</b>")
-        #     if current_page < max_page:
-        #         nav_parts.append(
-        #             f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page + 1}'>下一页 ➡️</a>")
-        #     telegraph_content.append("<p>" + " | ".join(nav_parts) + "</p>")
-
+        # 创建并获取 Telegraph 页面 URL
         telegraph_page = await telegraph.create_page(
-            title=f"FSM搜索: {keyword}",
-            content=''.join(telegraph_content)
+            title   = f"FSM搜索: {keyword}",
+            content = ''.join(telegraph_content)
         )
         telegraph_url = telegraph_page['url']
 
-        buttons = ButtonMaker()
-        buttons.url_button("📋 在Telegraph查看详细列表", telegraph_url)
-
-        # 第二行：添加简洁的分页按钮
-        if max_page > 1 :
-            if current_page > 1 :
-                buttons.data_button("⬅️ 上一页", f"{PAGE_PREFIX}{current_page - 1}")
-            if current_page < max_page :
-                buttons.data_button("下一页 ➡️", f"{PAGE_PREFIX}{current_page + 1}")
-
-        buttons.data_button("🔄 刷新", f"{PAGE_PREFIX}{current_page}")
-        buttons.data_button("❌ 取消", f"{TYPE_PREFIX}cancel")
-        button = buttons.build_menu(2)
-
+        # 在消息正文中嵌入 Telegraph 链接
         result_msg = (
             f"<b>🔍 FSM搜索结果</b>\n\n"
             f"<b>关键词:</b> <code>{keyword}</code>\n"
             f"<b>找到结果:</b> {len(torrents)} 个\n\n"
-            f"👇 <i>点击下方按钮查看完整列表或使用命令下载</i>\n"
+            f"📋 完整列表：<a href=\"{telegraph_url}\">在Telegraph查看</a>\n\n"
+            f"👇 <i>点击下方按钮翻页或刷新</i>\n"
         )
-
         if torrents:
             result_msg += "\n<b>📊 热门结果预览:</b>\n"
             for i, torrent in enumerate(torrents[:3], 1):
-                title = torrent.get('title', '未知')
-                seeds = torrent.get('peers', {}).get('upload', 0)
-                size = torrent.get('fileSize', '未知')
-                tid = torrent.get('tid')
+                t_title = torrent.get('title', '未知')
+                t_seeds = torrent.get('peers', {}).get('upload', 0)
+                t_size  = torrent.get('fileSize', '未知')
+                t_tid   = torrent.get('tid')
                 result_msg += (
-                    f"{i}. <b>{title}</b>\n"
-                    f"   📁 {size} | 👥 {seeds} | 🆔 <code>{tid}</code>\n\n"
+                    f"{i}. <b>{t_title}</b>\n"
+                    f"   📁 {t_size} | 👥 {t_seeds} | 🆔 <code>{t_tid}</code>\n\n"
                 )
 
-        await edit_message(message, result_msg, button)
+        # 构造分页、刷新、取消按钮
+        buttons = ButtonMaker()
+        if max_page > 1:
+            if current_page > 1:
+                buttons.data_button("⬅️ 上一页", f"{PAGE_PREFIX}{current_page-1}")
+            if current_page < max_page:
+                buttons.data_button("下一页 ➡️", f"{PAGE_PREFIX}{current_page+1}")
+        buttons.data_button("🔄 刷新", f"{PAGE_PREFIX}{current_page}")
+        buttons.data_button("❌ 取消", f"{TYPE_PREFIX}cancel")
+        button_layout = buttons.build_menu(2)
+
+        # 最后更新消息
+        await edit_message(message, result_msg, button_layout)
 
     except Exception as e:
-        LOGGER.error(f"处理搜索结果错误: {e}")
-        error_trace = traceback.format_exc()
-        LOGGER.error(f"处理搜索结果异常详情:\n{error_trace}")
-
-        error_str = str(e).lower()
-        if "tag is not allowed" in error_str:
-            await edit_message(message, f"<b>❌ Telegraph标签错误:</b> {str(e)}\n\n请联系开发者修复。")
-        else:
-            await edit_message(message, f"<b>❌ 处理搜索结果失败:</b> {str(e)}")
+        LOGGER.error(f"处理搜索结果错误: {e}\n{traceback.format_exc()}")
+        err = str(e).lower()
+        if "message_not_modified" in err or "tag is not allowed" in err:
+            # 如果内容没变或 Telegraph 标签错误，提醒用户
+            return await edit_message(message, f"<b>❌ 处理搜索结果失败:</b> {str(e)}")
+        await edit_message(message, f"<b>❌ 处理搜索结果异常:</b> {str(e)}")
 
 
 @new_task
