@@ -38,8 +38,15 @@ async def fsm_search(client, message):
     keyword = args[1]
     
     try:
+        # 记录开始尝试获取类型
+        LOGGER.info(f"FSM搜索: 正在获取种子分类信息，关键词: {keyword}")
+        await send_message(message, f"<b>正在获取种子分类信息...</b>")
+        
         # 获取种子分类
         torrent_types = await get_torrent_types()
+        
+        # 记录获取到的分类
+        LOGGER.info(f"FSM搜索: 成功获取种子分类数量: {len(torrent_types)}")
         
         # 创建分类按钮
         buttons = ButtonMaker()
@@ -48,17 +55,34 @@ async def fsm_search(client, message):
                 type_item['name'], 
                 f"{TYPE_PREFIX}{type_item['id']}:{keyword}"
             )
+            LOGGER.debug(f"FSM搜索: 添加分类按钮: {type_item['name']} (ID: {type_item['id']})")
             
         # 添加"全部"按钮
         buttons.data_button("全部分类", f"{TYPE_PREFIX}0:{keyword}")
         buttons.data_button("取消", f"{TYPE_PREFIX}cancel")
         
         button = buttons.build_menu(2)
-        return await send_message(message, "请选择种子分类:", button)
+        return await edit_message(message, "请选择种子分类:", button)
     
     except Exception as e:
         LOGGER.error(f"FSM搜索错误: {e}")
-        return await send_message(message, f"错误: {str(e)}")
+        
+        # 尝试打印更详细的错误信息
+        import traceback
+        error_trace = traceback.format_exc()
+        LOGGER.error(f"FSM搜索异常详情:\n{error_trace}")
+        
+        # 检查FSM API配置
+        LOGGER.info(f"FSM API配置检查:\n" 
+                   f"- API基础URL: {Config.FSM_API_BASE_URL}\n"
+                   f"- API令牌存在: {'是' if Config.FSM_API_TOKEN else '否'}\n"
+                   f"- Passkey存在: {'是' if Config.FSM_PASSKEY else '否'}")
+        
+        # 在错误信息中包含更多详细信息
+        error_msg = f"错误: {str(e)}\n\n"
+        error_msg += "详细请查看日志。可能与 FSM API 认证相关或 API 地址变更。"
+        
+        return await send_message(message, error_msg)
 
 @new_task
 async def fsm_callback(client, callback_query):
