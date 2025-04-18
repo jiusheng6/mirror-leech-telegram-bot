@@ -246,13 +246,18 @@ async def fsm_callback(client, callback_query) :
         elif data.startswith(PAGE_PREFIX) :
             page = data[len(PAGE_PREFIX) :]  # 只获取页码
 
+            # 处理无操作按钮
+            if page == "noop" :
+                await callback_query.answer("当前页码信息")
+                return
+
             # 从上下文中获取搜索数据
             keyword = search_contexts[user_id].get('keyword', '')
             type_id = search_contexts[user_id].get('selected_type', "0")
             systematics_id = search_contexts[user_id].get('selected_system', "0")
 
-            await callback_query.answer()
-            await edit_message(message, f"<b>正在获取第 {page} 页...</b>")
+            await callback_query.answer(f"正在加载第 {page} 页...")
+            await edit_message(message, f"<b>📃 正在获取第 {page} 页的搜索结果...</b>")
 
             # 搜索种子的新页面
             search_results = await search_torrents(keyword, type_id, systematics_id, page=page)
@@ -286,18 +291,24 @@ async def handle_search_results(client, message, search_results, user_id) :
     telegraph_content.append(f"<h4>FSM 搜索结果: {keyword}</h4>")
     telegraph_content.append(f"<p>当前第 {current_page} 页，共 {max_page} 页</p>")
 
-    # 创建结果表格
-    telegraph_content.append("<table>")
+    # 添加搜索信息卡片头部
+    telegraph_content.append("<div style='text-align: center;'>")
+    telegraph_content.append(f"<h3>🔍 FSM 搜索: 「{keyword}」</h3>")
     telegraph_content.append(
-        "<thead><tr><th>标题</th><th>大小</th><th>做种</th><th>分类</th><th>上传日期</th><th>操作</th></tr></thead>")
-    telegraph_content.append("<tbody>")
+        f"<p>共找到 <strong>{len(torrents)}</strong> 个结果 | 第 <strong>{current_page}</strong> 页 / 共 {max_page} 页</p>")
+    telegraph_content.append("</div>")
+    telegraph_content.append("<hr/>")
 
-    # 添加每个种子作为一行
+    # 创建结果列表，使用有序列表
+    telegraph_content.append("<ol>")
+
+    # 添加每个种子作为列表项，优化布局和可读性
     count = 0
-    for torrent in torrents[:MAX_TELEGRAPH_RESULTS] :  # 限制结果以防Telegraph出问题
+    for torrent in torrents[:MAX_TELEGRAPH_RESULTS] :
         title = torrent.get('title', '未知')
         size = torrent.get('fileSize', '未知')
         seeds = torrent.get('peers', {}).get('upload', 0)
+        leech = torrent.get('peers', {}).get('download', 0)
         category = torrent.get('type', {}).get('name', '未知')
         tid = torrent.get('tid')
 
@@ -308,16 +319,62 @@ async def handle_search_results(client, message, search_results, user_id) :
         else :
             created_time = '未知'
 
-        # 格式化行
-        row = f"<tr><td>{title}</td><td>{size}</td><td>{seeds}</td><td>{category}</td><td>{created_time}</td>"
+        # 获取更多可能的信息（可能不存在）
+        free_type = torrent.get('systematic', {}).get('name', '')
+        free_tag = f"🏷️ <strong>{free_type}</strong><br/>" if free_type else ""
 
-        # 添加下载按钮/链接 - 为Telegraph提供命令
-        row += f"<td>使用命令: <code>/fsm download {tid}</code></td></tr>"
+        # 格式化为美观的列表项
+        item = f"<li><h4>{title}</h4>"
 
-        telegraph_content.append(row)
+        # 使用符号+粗体分组显示主要信息，增强可读性
+        item += "<p>"
+        item += f"📁 <strong>大小:</strong> <code>{size}</code> • "
+        item += f"👥 <strong>做种/下载:</strong> <code>{seeds}/{leech}</code> • "
+        item += f"📂 <strong>分类:</strong> {category}"
+        item += "</p>"
+
+        # 第二行展示次要信息
+        item += "<p>"
+        item += f"📅 <strong>上传日期:</strong> {created_time} • "
+        item += f"🆔 <strong>种子ID:</strong> <code>{tid}</code>"
+        item += "</p>"
+
+        # 显示优惠类型标签（如果有）
+        if free_tag :
+            item += f"<p>{free_tag}</p>"
+
+        # 突出显示下载命令
+        item += "<p>📥 <strong>下载命令:</strong> <code>/fsm download " + str(tid) + "</code></p>"
+
+        # 添加轻量分隔线，提高清晰度
+        item += "</li>"
+        if count < len(torrents[:MAX_TELEGRAPH_RESULTS]) - 1 :
+            item += "<hr style='margin: 10px 0; opacity: 0.3;'/>"
+
+        telegraph_content.append(item)
         count += 1
 
-    telegraph_content.append("</tbody></table>")
+    telegraph_content.append("</ol>")
+
+    # 添加底部导航（如果有多页）
+    if max_page > 1 :
+        telegraph_content.append("<hr/>")
+        telegraph_content.append("<div style='text-align: center;'>")
+        telegraph_content.append("<h4>📄 页面导航</h4>")
+
+        # 生成更直观的分页导航
+        nav_text = ""
+        if current_page > 1 :
+            nav_text += f"<a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page - 1}'>⬅️ 上一页</a> "
+
+        # 添加页码指示
+        nav_text += f"<strong>[ {current_page} / {max_page} ]</strong>"
+
+        if current_page < max_page :
+            nav_text += f" <a href='https://t.me/share/url?url=/fsm%20{keyword}%20page:{current_page + 1}'>下一页 ➡️</a>"
+
+        telegraph_content.append(f"<p>{nav_text}</p>")
+        telegraph_content.append("</div>")
 
     if max_page > 1 :
         telegraph_content.append("<br><center><h4>页面导航</h4></center>")
@@ -340,25 +397,37 @@ async def handle_search_results(client, message, search_results, user_id) :
     buttons = ButtonMaker()
     buttons.url_button("在Telegraph查看结果", telegraph_url)
 
-    # 如果需要，添加分页按钮（使用简短的回调数据）
-    if max_page > 1 :
-        if current_page > 1 :
-            buttons.data_button(
-                "⬅️ 上一页",
-                f"{PAGE_PREFIX}{current_page - 1}"
-            )
-        if current_page < max_page :
-            buttons.data_button(
-                "下一页 ➡️",
-                f"{PAGE_PREFIX}{current_page + 1}"
-            )
+    # 创建功能丰富的按钮区域
+    # 第一行：添加Telegraph查看按钮
+    buttons.url_button("🔎 在Telegraph查看完整结果", telegraph_url)
 
-    button = buttons.build_menu(1)
-    await edit_message(
-        message,
-        f"找到 {count} 个与 <i>'{keyword}'</i> 相关的结果。在Telegraph查看详细信息:",
-        button
-    )
+    # 第二行：添加简洁的分页按钮
+    if max_page > 1 :
+        nav_buttons = []
+        if current_page > 1 :
+            buttons.data_button("⬅️ 上一页", f"{PAGE_PREFIX}{current_page - 1}")
+
+        # 添加页码指示按钮（不可点击）
+        buttons.data_button(f"📄 {current_page}/{max_page}", "noop")
+
+        if current_page < max_page :
+            buttons.data_button("下一页 ➡️", f"{PAGE_PREFIX}{current_page + 1}")
+
+    # 第三行：添加功能按钮
+    buttons.data_button("🔄 刷新", f"{PAGE_PREFIX}{current_page}")
+    buttons.data_button("❌ 取消", f"{TYPE_PREFIX}cancel")
+
+    # 使用2列布局构建菜单，更适合移动端显示
+    button = buttons.build_menu(2)
+
+    # 创建美观的结果消息
+    result_msg = f"<b>🔍 FSM搜索结果</b>\n\n"
+    result_msg += f"关键词: <code>{keyword}</code>\n"
+    result_msg += f"找到 <b>{count}</b> 个相关结果\n"
+    result_msg += f"当前显示第 <b>{current_page}</b> 页，共 {max_page} 页\n\n"
+    result_msg += f"👇 点击下方按钮查看详细结果或翻页"
+
+    await edit_message(message, result_msg, button)
 
 
 @new_task
