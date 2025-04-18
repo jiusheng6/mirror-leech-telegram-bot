@@ -5,12 +5,29 @@ from urllib.parse import quote
 from ...core.config_manager import Config
 from ... import LOGGER
 
+async def get_download_url(tid):
+    """获取种子下载链接"""
+    if not Config.FSM_PASSKEY:
+        raise Exception("FSM_PASSKEY未设置，无法获取下载链接")
+        
+    # 构建下载链接，添加source参数以符合API要求
+    params = {
+        'tid': tid,
+        'passkey': Config.FSM_PASSKEY,
+        'source': 'direct'
+    }
+    
+    # 构建查询字符串
+    query_string = '&'.join([f"{k}={v}" for k, v in params.items()])
+    download_url = f"{Config.FSM_DOWNLOAD_URL_BASE}?{query_string}"
+    return download_url
+
 async def make_fsm_request(endpoint, params=None, stream=False):
     """发送FSM API请求"""
     headers = {'APITOKEN': Config.FSM_API_TOKEN}
     url = f"{Config.FSM_API_BASE_URL.rstrip('/')}/{endpoint}"
     
-    LOGGER.info(f"FSM请求: 端点={endpoint}, URL={url},headers={headers}")
+    LOGGER.info(f"FSM请求: 端点={endpoint}, URL={url}")
     
     try:
         async with aiohttp.ClientSession() as session:

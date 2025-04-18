@@ -12,7 +12,25 @@ from ..helper.telegram_helper.bot_commands import BotCommands
 from ..helper.telegram_helper.button_build import ButtonMaker
 from ..helper.ext_utils.telegraph_helper import telegraph
 from ..helper.ext_utils.bot_utils import new_task
-from ..helper.ext_utils.fsm_utils import get_torrent_types, get_systematics, search_torrents, get_torrent_details, create_magnet_link
+from ..helper.ext_utils.fsm_utils import get_torrent_types, get_systematics, search_torrents, get_torrent_details, get_download_url
+
+async def get_torrent_links(tid, title):
+    """获取种子下载链接"""
+    try:
+        # 获取直接下载链接（带passkey，适用于PT站）
+        download_url = await get_download_url(tid)
+        LOGGER.info(f"成功获取种子{tid}的下载链接")
+        
+        return {
+            "success": True,
+            "download_url": download_url
+        }
+    except Exception as e:
+        LOGGER.error(f"获取下载链接失败: {e}")
+        return {
+            "success": False,
+            "msg": str(e)
+        }
 
 # 常量
 RESULTS_PER_PAGE = 10  # 每页显示的结果数
@@ -66,7 +84,6 @@ async def fsm_search(client, message):
         LOGGER.error(f"FSM搜索错误: {e}")
         
         # 尝试打印更详细的错误信息
-        import traceback
         error_trace = traceback.format_exc()
         LOGGER.error(f"FSM搜索异常详情:\n{error_trace}")
         
@@ -139,22 +156,27 @@ async def fsm_callback(client, callback_query):
             
         # 处理下载按钮
         elif data.startswith(DOWNLOAD_PREFIX):
-            dl_data = data[len(DOWNLOAD_PREFIX):].split(":", 2)
+            dl_data = data[len(DOWNLOAD_PREFIX):].split(":", 1)
             tid = dl_data[0]
-            file_hash = dl_data[1]
-            title = dl_data[2] if len(dl_data) > 2 else f"FSM_Torrent_{tid}"
+            title = dl_data[1] if len(dl_data) > 1 else f"FSM_Torrent_{tid}"
             
-            # 创建磁力链接
-            magnet_link = create_magnet_link(file_hash, title)
+            await callback_query.answer("正在获取下载链接...")
             
-            await callback_query.answer("已生成磁力链接")
-            await edit_message(
-                message,
-                f"为以下种子生成了磁力链接: {title}\n\n"
-                f"`{magnet_link}`\n\n"
-                f"回复此消息并使用 /{BotCommands.QbMirrorCommand} 命令开始下载。",
-                parse_mode='Markdown'
-            )
+            # 获取下载链接
+            links_response = await get_torrent_links(tid, title)
+            if not links_response.get('success', False):
+                await edit_message(message, f"错误: {links_response.get('msg', '无法获取下载链接')}")
+                return
+            
+            download_url = links_response.get('download_url', '')
+            
+            # 提供下载链接给用户
+            msg = f"为以下种子生成了下载链接: {title}\n\n"
+            msg += f"📁 <b>直接下载链接</b> (带Passkey):\n"
+            msg += f"<code>{download_url}</code>\n\n"
+            msg += f"回复此消息并使用 /{BotCommands.QbMirrorCommand} 命令开始下载。"
+            
+            await edit_message(message, msg)
             
         # 处理翻页
         elif data.startswith(PAGE_PREFIX):
@@ -208,7 +230,6 @@ async def handle_search_results(client, message, search_results, type_id, system
             seeds = torrent.get('peers', {}).get('upload', 0)
             category = torrent.get('type', {}).get('name', '未知')
             tid = torrent.get('tid')
-            file_hash = torrent.get('fileHash', '')
             
             # 格式化时间戳
             created_ts = torrent.get('createdTs', 0)
@@ -278,7 +299,6 @@ async def handle_search_results(client, message, search_results, type_id, system
             seeds = torrent.get('peers', {}).get('upload', 0)
             category = torrent.get('type', {}).get('name', '未知')
             tid = torrent.get('tid')
-            file_hash = torrent.get('fileHash', '')
             
             # 格式化时间戳
             created_ts = torrent.get('createdTs', 0)
@@ -295,7 +315,7 @@ async def handle_search_results(client, message, search_results, type_id, system
             short_title = title[:20] + ('...' if len(title) > 20 else '')
             buttons.data_button(
                 f"下载: {short_title}", 
-                f"{DOWNLOAD_PREFIX}{tid}:{file_hash}:{title[:50].replace(':', ' ')}"
+                f"{DOWNLOAD_PREFIX}{tid}:{title[:50].replace(':', ' ')}"
             )
             result_message += "\n"
         
@@ -334,21 +354,21 @@ async def fsm_command_handler(client, message):
             
             torrent = torrent_details.get('data', {}).get('torrent', {})
             title = torrent.get('title', f'FSM_Torrent_{tid}')
-            file_hash = torrent.get('fileHash', '')
             
-            if not file_hash:
-                return await send_message(message, "错误: 无法获取生成磁力链接所需的文件哈希")
+            # 获取下载链接
+            links_response = await get_torrent_links(tid, title)
+            if not links_response.get('success', False):
+                return await send_message(message, f"错误: {links_response.get('msg', '无法获取下载链接')}")
             
-            # 创建磁力链接
-            magnet_link = create_magnet_link(file_hash, title)
+            download_url = links_response.get('download_url', '')
             
-            # 提供磁力链接给用户，让用户手动使用命令下载
-            return await send_message(
-                f"为以下种子生成了磁力链接: {title}\n\n"
-                f"`{magnet_link}`\n\n"
-                f"回复此消息并使用 /{BotCommands.QbMirrorCommand} 命令开始下载。",
-                message
-            )
+            # 提供下载链接给用户
+            msg = f"为以下种子生成了下载链接: {title}\n\n"
+            msg += f"📁 <b>直接下载链接</b> (带Passkey):\n"
+            msg += f"<code>{download_url}</code>\n\n"
+            msg += f"回复此消息并使用 /{BotCommands.QbMirrorCommand} 命令开始下载。"
+            
+            return await send_message(message, msg)
         except Exception as e:
             LOGGER.error(f"FSM下载命令错误: {e}")
             return await send_message(message, f"错误: {str(e)}")
