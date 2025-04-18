@@ -36,17 +36,17 @@ search_contexts = {}
 
 
 @new_task
-async def fsm_search(client, message):
+async def fsm_search(client, message) :
     """处理/fsm命令搜索种子"""
     args = message.text.split(" ", 1)
-    if len(args) == 1:
+    if len(args) == 1 :
         help_msg = "请提供搜索关键词。\n示例: /fsm 关键词"
         return await send_message(message, help_msg)
 
     keyword = args[1]
     user_id = message.from_user.id
 
-    try:
+    try :
         LOGGER.info(f"FSM搜索: 正在获取种子分类信息，关键词: {keyword}")
         indicator_msg = await send_message(message, "<b>🔍 正在获取种子分类信息...</b>")
 
@@ -54,11 +54,11 @@ async def fsm_search(client, message):
         LOGGER.info(f"FSM搜索: 成功获取种子分类数量: {len(torrent_types)}")
 
         buttons = ButtonMaker()
-        for i, type_item in enumerate(torrent_types):
+        for i, type_item in enumerate(torrent_types) :
             buttons.data_button(type_item['name'], f"{TYPE_PREFIX}{i}")
-            if user_id not in search_contexts:
+            if user_id not in search_contexts :
                 search_contexts[user_id] = {}
-            if 'type_mapping' not in search_contexts[user_id]:
+            if 'type_mapping' not in search_contexts[user_id] :
                 search_contexts[user_id]['type_mapping'] = {}
             search_contexts[user_id]['type_mapping'][str(i)] = type_item['id']
             search_contexts[user_id]['keyword'] = keyword
@@ -70,7 +70,7 @@ async def fsm_search(client, message):
         button = buttons.build_menu(2)
         return await edit_message(indicator_msg, "<b>🔍 请选择种子分类:</b>", button)
 
-    except Exception as e:
+    except Exception as e :
         LOGGER.error(f"FSM搜索错误: {e}")
         error_trace = traceback.format_exc()
         LOGGER.error(f"FSM搜索异常详情:\n{error_trace}")
@@ -97,42 +97,42 @@ async def fsm_search(client, message):
 
 
 @new_task
-async def fsm_callback(client, callback_query):
+async def fsm_callback(client, callback_query) :
     """处理FSM搜索按钮的回调查询"""
     message = callback_query.message
     data = callback_query.data
     user_id = callback_query.from_user.id
 
-    if user_id not in search_contexts:
+    if user_id not in search_contexts :
         search_contexts[user_id] = {}
 
-    try:
-        if data.startswith(TYPE_PREFIX):
-            type_data = data[len(TYPE_PREFIX):]
-            if type_data == "cancel":
+    try :
+        if data.startswith(TYPE_PREFIX) :
+            type_data = data[len(TYPE_PREFIX) :]
+            if type_data == "cancel" :
                 await callback_query.answer("已取消搜索")
-                if user_id in search_contexts:
+                if user_id in search_contexts :
                     del search_contexts[user_id]
                 return await edit_message(message, "<b>❌ 搜索已取消！</b>")
 
             keyword = search_contexts[user_id].get('keyword', '')
-            if type_data == "all":
+            if type_data == "all" :
                 type_id = "0"
-            else:
+            else :
                 type_id = search_contexts[user_id]['type_mapping'].get(type_data, "0")
             search_contexts[user_id]['selected_type'] = type_id
 
-            try:
+            try :
                 systematics = await get_systematics()
-            except Exception as e:
+            except Exception as e :
                 LOGGER.error(f"获取优惠类型失败: {e}")
                 await callback_query.answer("获取优惠类型失败，请重试", show_alert=True)
                 return await edit_message(message, f"<b>❌ 获取优惠类型失败:</b> {str(e)}")
 
             buttons = ButtonMaker()
-            for i, sys_item in enumerate(systematics):
+            for i, sys_item in enumerate(systematics) :
                 buttons.data_button(sys_item['name'], f"{SYSTEM_PREFIX}{i}")
-                if 'system_mapping' not in search_contexts[user_id]:
+                if 'system_mapping' not in search_contexts[user_id] :
                     search_contexts[user_id]['system_mapping'] = {}
                 search_contexts[user_id]['system_mapping'][str(i)] = sys_item['id']
 
@@ -143,53 +143,54 @@ async def fsm_callback(client, callback_query):
             await callback_query.answer("请选择优惠类型")
             await edit_message(message, "<b>🔍 请选择优惠类型:</b>", button)
 
-        elif data.startswith(SYSTEM_PREFIX):
-            sys_data = data[len(SYSTEM_PREFIX):]
-            if sys_data == "cancel":
+        elif data.startswith(SYSTEM_PREFIX) :
+            sys_data = data[len(SYSTEM_PREFIX) :]
+            if sys_data == "cancel" :
                 await callback_query.answer("已取消搜索")
-                if user_id in search_contexts:
+                if user_id in search_contexts :
                     del search_contexts[user_id]
                 return await edit_message(message, "<b>❌ 搜索已取消！</b>")
 
             keyword = search_contexts[user_id].get('keyword', '')
             type_id = search_contexts[user_id].get('selected_type', "0")
-            if sys_data == "all":
+            if sys_data == "all" :
                 systematics_id = "0"
-            else:
+            else :
                 systematics_id = search_contexts[user_id]['system_mapping'].get(sys_data, "0")
             search_contexts[user_id]['selected_system'] = systematics_id
 
             await callback_query.answer("正在搜索中...")
             await edit_message(message, f"<b>🔍 正在搜索:</b> <i>{keyword}</i>...")
 
-            try:
+            try :
                 search_results = await search_torrents(keyword, type_id, systematics_id)
                 await handle_search_results(client, message, search_results, user_id)
-            except Exception as e:
+            except Exception as e :
                 LOGGER.error(f"搜索种子错误: {e}")
                 error_trace = traceback.format_exc()
                 LOGGER.error(f"搜索种子异常详情:\n{error_trace}")
                 await edit_message(message, f"<b>❌ 搜索失败:</b> {str(e)}")
 
-        elif data.startswith(DOWNLOAD_PREFIX):
-            tid = data[len(DOWNLOAD_PREFIX):]
+        elif data.startswith(DOWNLOAD_PREFIX) :
+            tid = data[len(DOWNLOAD_PREFIX) :]
             await callback_query.answer("正在获取下载链接...", show_alert=True)
 
-            try:
+            try :
                 torrent_details = await get_torrent_details(tid)
-                if not torrent_details.get('success', False):
-                    return await edit_message(message, f"<b>❌ 获取种子详情失败:</b> {torrent_details.get('msg', '未知错误')}")
+                if not torrent_details.get('success', False) :
+                    return await edit_message(message,
+                                              f"<b>❌ 获取种子详情失败:</b> {torrent_details.get('msg', '未知错误')}")
                 torrent = torrent_details.get('data', {}).get('torrent', {})
                 title = torrent.get('title', f'FSM_Torrent_{tid}')
-            except Exception as e:
+            except Exception as e :
                 LOGGER.error(f"获取种子详情错误: {e}")
                 title = f'FSM_Torrent_{tid}'
 
-            try:
+            try :
                 download_url = await get_download_url(tid)
-                if not download_url:
+                if not download_url :
                     return await edit_message(message, "<b>❌ 无法获取下载链接</b>")
-            except Exception as e:
+            except Exception as e :
                 LOGGER.error(f"获取下载链接错误: {e}")
                 return await edit_message(message, f"<b>❌ 获取下载链接失败:</b> {str(e)}")
 
@@ -198,9 +199,9 @@ async def fsm_callback(client, callback_query):
             )
             await edit_message(message, msg)
 
-        elif data.startswith(PAGE_PREFIX):
-            page = data[len(PAGE_PREFIX):]
-            if page == "noop":
+        elif data.startswith(PAGE_PREFIX) :
+            page = data[len(PAGE_PREFIX) :]
+            if page == "noop" :
                 await callback_query.answer("当前页码信息")
                 return
             keyword = search_contexts[user_id].get('keyword', '')
@@ -210,20 +211,20 @@ async def fsm_callback(client, callback_query):
             await callback_query.answer(f"正在加载第 {page} 页...")
             await edit_message(message, f"<b>📃 正在获取第 {page} 页的搜索结果...</b>")
 
-            try:
+            try :
                 search_results = await search_torrents(keyword, type_id, systematics_id, page=page)
                 await handle_search_results(client, message, search_results, user_id)
-            except Exception as e:
+            except Exception as e :
                 LOGGER.error(f"翻页搜索错误: {e}")
                 await edit_message(message, f"<b>❌ 获取第 {page} 页失败:</b> {str(e)}")
 
-    except Exception as e:
+    except Exception as e :
         LOGGER.error(f"FSM回调错误: {e}")
         error_trace = traceback.format_exc()
         LOGGER.error(f"FSM回调异常详情:\n{error_trace}")
 
         error_str = str(e).lower()
-        if "message_not_modified" in error_str or "message was not modified" in error_str:
+        if "message_not_modified" in error_str or "message was not modified" in error_str :
             await callback_query.answer("内容未变更")
             return
 
@@ -231,11 +232,11 @@ async def fsm_callback(client, callback_query):
         await edit_message(message, f"<b>❌ 错误:</b> {str(e)}")
 
 
-async def handle_search_results(client, message, search_results, user_id):
+async def handle_search_results(client, message, search_results, user_id) :
     """
     处理并显示搜索结果，使用优化的Telegraph页面
     """
-    if not search_results.get('success', False):
+    if not search_results.get('success', False) :
         return await edit_message(message, f"<b>❌ 搜索失败:</b> {search_results.get('msg', '未知错误')}")
 
     torrents = search_results['data'].get('list', [])
@@ -243,7 +244,7 @@ async def handle_search_results(client, message, search_results, user_id):
     current_page = int(search_results['data'].get('page', 1))
     keyword = search_contexts[user_id].get('keyword', '')
 
-    if not torrents:
+    if not torrents :
         return await edit_message(
             message,
             f"<b>🔍 未找到与</b> <i>'{keyword}'</i> <b>相关的结果</b>"
@@ -252,22 +253,22 @@ async def handle_search_results(client, message, search_results, user_id):
     # 保存当前页
     search_contexts[user_id]['current_page'] = current_page
 
-    try:
+    try :
         # 构建 Telegraph 页面内容
         telegraph_content = []
         telegraph_content.append(f"<h3>🔍 FSM 搜索: {keyword}</h3>")
         telegraph_content.append(f"<p>找到 <b>{len(torrents)}</b> 个结果 | 第 {current_page}/{max_page} 页</p>")
         telegraph_content.append("<hr/><ol>")
-        for torrent in torrents[:MAX_TELEGRAPH_RESULTS]:
-            title      = torrent.get('title', '未知')
-            size       = torrent.get('fileSize', '未知')
-            seeds      = torrent.get('peers', {}).get('upload', 0)
-            leech      = torrent.get('peers', {}).get('download', 0)
-            category   = torrent.get('type', {}).get('name', '未知')
-            tid        = torrent.get('tid')
+        for torrent in torrents[:MAX_TELEGRAPH_RESULTS] :
+            title = torrent.get('title', '未知')
+            size = torrent.get('fileSize', '未知')
+            seeds = torrent.get('peers', {}).get('upload', 0)
+            leech = torrent.get('peers', {}).get('download', 0)
+            category = torrent.get('type', {}).get('name', '未知')
+            tid = torrent.get('tid')
             created_ts = torrent.get('createdTs', 0)
-            created    = time.strftime('%Y-%m-%d', time.localtime(created_ts)) if created_ts else '未知'
-            free_type  = torrent.get('systematic', {}).get('name', '')
+            created = time.strftime('%Y-%m-%d', time.localtime(created_ts)) if created_ts else '未知'
+            free_type = torrent.get('systematic', {}).get('name', '')
             free_badge = f"【{free_type}】" if free_type else ""
 
             telegraph_content.append(
@@ -286,8 +287,8 @@ async def handle_search_results(client, message, search_results, user_id):
 
         # 创建并获取 Telegraph 页面 URL
         telegraph_page = await telegraph.create_page(
-            title   = f"FSM搜索: {keyword}",
-            content = ''.join(telegraph_content)
+            title=f"FSM搜索: {keyword}",
+            content=''.join(telegraph_content)
         )
         telegraph_url = telegraph_page['url']
 
@@ -299,13 +300,13 @@ async def handle_search_results(client, message, search_results, user_id):
             f"📋 完整列表：<a href=\"{telegraph_url}\">在Telegraph查看</a>\n\n"
             f"👇 <i>点击下方按钮翻页或刷新</i>\n"
         )
-        if torrents:
+        if torrents :
             result_msg += "\n<b>📊 热门结果预览:</b>\n"
-            for i, torrent in enumerate(torrents[:3], 1):
+            for i, torrent in enumerate(torrents[:3], 1) :
                 t_title = torrent.get('title', '未知')
                 t_seeds = torrent.get('peers', {}).get('upload', 0)
-                t_size  = torrent.get('fileSize', '未知')
-                t_tid   = torrent.get('tid')
+                t_size = torrent.get('fileSize', '未知')
+                t_tid = torrent.get('tid')
                 result_msg += (
                     f"{i}. <b>{t_title}</b>\n"
                     f"   📁 {t_size} | 👥 {t_seeds} | 🆔 <code>{t_tid}</code>\n\n"
@@ -313,11 +314,11 @@ async def handle_search_results(client, message, search_results, user_id):
 
         # 构造分页、刷新、取消按钮
         buttons = ButtonMaker()
-        if max_page > 1:
-            if current_page > 1:
-                buttons.data_button("⬅️ 上一页", f"{PAGE_PREFIX}{current_page-1}")
-            if current_page < max_page:
-                buttons.data_button("下一页 ➡️", f"{PAGE_PREFIX}{current_page+1}")
+        if max_page > 1 :
+            if current_page > 1 :
+                buttons.data_button("⬅️ 上一页", f"{PAGE_PREFIX}{current_page - 1}")
+            if current_page < max_page :
+                buttons.data_button("下一页 ➡️", f"{PAGE_PREFIX}{current_page + 1}")
         buttons.data_button("🔄 刷新", f"{PAGE_PREFIX}{current_page}")
         buttons.data_button("❌ 取消", f"{TYPE_PREFIX}cancel")
         button_layout = buttons.build_menu(2)
@@ -325,62 +326,59 @@ async def handle_search_results(client, message, search_results, user_id):
         # 最后更新消息
         await edit_message(message, result_msg, button_layout)
 
-    except Exception as e:
+    except Exception as e :
         LOGGER.error(f"处理搜索结果错误: {e}\n{traceback.format_exc()}")
         err = str(e).lower()
-        if "message_not_modified" in err or "tag is not allowed" in err:
+        if "message_not_modified" in err or "tag is not allowed" in err :
             # 如果内容没变或 Telegraph 标签错误，提醒用户
             return await edit_message(message, f"<b>❌ 处理搜索结果失败:</b> {str(e)}")
         await edit_message(message, f"<b>❌ 处理搜索结果异常:</b> {str(e)}")
 
 
 @new_task
-async def fsm_command_handler(client, message):
+async def fsm_command_handler(client, message) :
     """处理 /fsm 命令，包括直接下载和搜索功能"""
     args = message.text.split()
-    if len(args) >= 2 and args[1] == 'download':
-        if len(args) < 3:
+    if len(args) >= 2 and args[1] == 'download' :
+        if len(args) < 3 :
             return await send_message(message, "缺少种子ID，请使用正确的格式: /fsm download <tid>")
 
         tid = args[2]
-        try:
+        try :
             await send_message(message, f"正在获取种子 <code>{tid}</code> 的详情...")
             torrent_details = await get_torrent_details(tid)
-            if not torrent_details.get('success', False):
+            if not torrent_details.get('success', False) :
                 return await send_message(message, f"获取种子详情失败: {torrent_details.get('msg', '未知错误')}")
             torrent = torrent_details.get('data', {}).get('torrent', {})
             title = torrent.get('title', f'FSM_Torrent_{tid}')
             download_url = await get_download_url(tid)
-            if not download_url:
+            if not download_url :
                 return await send_message(message, "无法获取下载链接")
 
             msg = (
-                f"为以下种子生成了下载链接: {title}\n\n"
-                f"📁 <b>直接下载链接</b> (带Passkey):\n"
                 f"<code>{download_url}</code>\n\n"
-                f"回复此消息并使用 /{BotCommands.QbMirrorCommand} 命令开始下载。"
             )
             return await send_message(message, msg)
-        except Exception as e:
+        except Exception as e :
             LOGGER.error(f"FSM下载命令错误: {e}")
             return await send_message(message, f"错误: {str(e)}")
 
     page = 1
     keyword = ""
-    if len(args) > 1:
-        for arg in args[1:]:
-            if arg.startswith("page:"):
-                try:
+    if len(args) > 1 :
+        for arg in args[1 :] :
+            if arg.startswith("page:") :
+                try :
                     page = int(arg.split(":", 1)[1])
-                except:
+                except :
                     pass
-            else:
+            else :
                 keyword += f"{arg} "
         keyword = keyword.strip()
 
-        if keyword and page > 1:
+        if keyword and page > 1 :
             user_id = message.from_user.id
-            if user_id not in search_contexts:
+            if user_id not in search_contexts :
                 search_contexts[user_id] = {}
             search_contexts[user_id]['keyword'] = keyword
             search_contexts[user_id]['selected_type'] = '0'
