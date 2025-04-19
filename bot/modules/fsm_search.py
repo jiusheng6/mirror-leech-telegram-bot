@@ -683,19 +683,32 @@ async def handle_search_results(client, message, search_results, user_id, page_p
             if free_badge:
                 status_display = f"<p>🏷️ <b>{free_badge}</b> {free_detail}</p>"
 
-            telegraph_content.append(
-                f"<li id='torrent-{tid}'>"
-                f"<h4>{free_badge} {title}</h4>"
-                f"<p>📁 大小: <b>{size}</b> | 👥 做种/下载: <b>{seeds}/{leech}</b> | 🔄 完成: <b>{finish}</b></p>"
-                f"<p>📂 分类: {category} | 📅 上传日期: {created}</p>"
-                f"{status_display}"
-                f"{tags_text}"
-                f"{actress_text}"
-                f"<p>🆔 种子ID: <code>{tid}</code></p>"
-                f"<p>📥 下载命令: <code>/fsm -do {tid}</code></p>"
-                f"<p>📋 详情命令: <code>/fsm -de {tid}</code></p>"
-                f"</li><hr/>"
-            )
+                # 构建更美观的卡片式样式
+                telegraph_content.append(
+                    f"<li id='torrent-{tid}' style='background-color:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:12px;'>"
+                    f"<h4 style='color:#1a73e8;margin-top:0;'>{free_badge} {title}</h4>"
+                    f"<div style='display:flex;flex-wrap:wrap;'>"
+                    f"<div style='flex:1;min-width:280px;'>"
+                    f"<p>📁 大小: <b>{size}</b></p>"
+                    f"<p>👥 做种/下载: <b>{seeds}/{leech}</b></p>"
+                    f"<p>🔄 完成: <b>{finish}</b></p>"
+                    f"<p>📂 分类: {category}</p>"
+                    f"</div>"
+                    f"<div style='flex:1;min-width:280px;'>"
+                    f"<p>📅 上传日期: {created}</p>"
+                    f"<p>🆔 种子ID: <code>{tid}</code></p>"
+                    f"{status_display}"
+                    f"{tags_text}"
+                    f"{actress_text}"
+                    f"</div>"
+                    f"</div>"
+                    f"<div style='margin-top:10px;'>"
+                    f"<a href='tg://cmd?text=/fsm%20-de%20{tid}' style='display:inline-block;background-color:#1a73e8;color:white;padding:5px 10px;border-radius:4px;text-decoration:none;margin-right:10px;'>📋 查看详情</a>"
+                    f"<a href='tg://cmd?text=/fsm%20-do%20{tid}' style='display:inline-block;background-color:#34a853;color:white;padding:5px 10px;border-radius:4px;text-decoration:none;'>📥 下载</a>"
+                    f"</div>"
+                    f"</li>"
+                )
+                telegraph_content.append("<hr/>")
         telegraph_content.append("</ol>")
 
         # 创建并获取 Telegraph 页面 URL
@@ -711,7 +724,7 @@ async def handle_search_results(client, message, search_results, user_id, page_p
             f"<b>关键词:</b> <code>{keyword}</code>\n"
             f"<b>找到结果:</b> {total_count} 个\n"
             f"<b>当前页码:</b> {current_page}/{max_page}\n\n"
-            f"📋 完整列表：<a href=\"{telegraph_url}\">在Telegraph查看</a>\n\n"
+            f"📋 <a href=\"{telegraph_url}\">在Telegraph查看完整列表</a>\n\n"
             f"👇 <i>点击下方按钮翻页或刷新</i>\n"
         )
 
@@ -766,15 +779,17 @@ async def handle_search_results(client, message, search_results, user_id, page_p
                     if len(tags) > 2:
                         tags_preview += "..."
 
+                # 使用更美观的MD格式显示预览
                 result_msg += (
                     f"{i}. <b>{free_badge} {t_title}</b>\n"
-                    f"   📁 {t_size} | 👥 {t_seeds} | 🔄 {t_finish} | 🆔 <code>{t_tid}</code>{tags_preview}\n\n"
+                    f"   📁 {t_size} | 👥 {t_seeds} | 🔄 {t_finish} | 🆔 <code>{t_tid}</code>{tags_preview}\n"
+                    f"   <a href=\"/fsm -de {t_tid}\">📋 查看详情</a> | <a href=\"/fsm -do {t_tid}\">📥 下载</a>\n\n"
                 )
 
         # 调试日志
         LOGGER.debug(f"构造分页按钮: 前缀={page_prefix}, 当前页={current_page}, 最大页={max_page}")
 
-        # 构造分页、刷新、取消按钮
+        # 构造分页、刷新、返回、取消按钮
         buttons = ButtonMaker()
         if max_page > 1:
             if current_page > 1:
@@ -788,11 +803,17 @@ async def handle_search_results(client, message, search_results, user_id, page_p
                     buttons.data_button("下一页 ➡️", f"{page_prefix}page_{current_page + 1}")
                 else:
                     buttons.data_button("下一页 ➡️", f"{page_prefix}{current_page + 1}")
+
         # 刷新按钮也需要特殊处理
         if page_prefix == BROWSE_PREFIX:
             buttons.data_button("🔄 刷新", f"{page_prefix}page_{current_page}")
         else:
             buttons.data_button("🔄 刷新", f"{page_prefix}{current_page}")
+
+        # 添加返回按钮，返回到类型选择
+        if search_contexts[user_id].get('keyword', '') != '分类浏览':
+            buttons.data_button("⬅️ 返回", f"{TYPE_PREFIX}back")
+
         buttons.data_button("❌ 取消", f"{TYPE_PREFIX}cancel")
         button_layout = buttons.build_menu(2)
 
@@ -910,31 +931,69 @@ async def show_torrent_details(client, message, tid):
             has_content = True
 
         if torrent.get('cover') or has_content or torrent.get('screenshots'):
-            # 使用Telegraph创建详情页面
+            # 使用Telegraph创建详情页面，使用更美观的样式
             telegraph_content = []
-            telegraph_content.append(f"<h3>{title}</h3>")
-            telegraph_content.append(f"<p>📁 大小: {file_size} | 👥 做种/下载: {upload}/{download}</p>")
-            telegraph_content.append(f"<p>📂 分类: {torrent_type} | 📅 上传日期: {created}</p>")
+            telegraph_content.append(f"<h1 style='text-align:center;color:#1a73e8;'>{title}</h1>")
+
+            # 添加基本信息卡片
+            telegraph_content.append(
+                "<div style='background-color:#f8f9fa;border-radius:8px;padding:15px;margin:15px 0;'>")
+            telegraph_content.append(
+                "<h3 style='margin-top:0;border-bottom:1px solid #dadce0;padding-bottom:8px;'>📊 基本信息</h3>")
+            telegraph_content.append("<div style='display:flex;flex-wrap:wrap;'>")
+
+            # 左侧信息
+            telegraph_content.append("<div style='flex:1;min-width:280px;'>")
+            telegraph_content.append(f"<p>📁 <strong>大小:</strong> {file_size}</p>")
+            telegraph_content.append(f"<p>👥 <strong>做种/下载:</strong> {upload}/{download}</p>")
+            telegraph_content.append(f"<p>🔄 <strong>完成数:</strong> {finish}</p>")
+            telegraph_content.append("</div>")
+
+            # 右侧信息
+            telegraph_content.append("<div style='flex:1;min-width:280px;'>")
+            telegraph_content.append(f"<p>📂 <strong>分类:</strong> {torrent_type}</p>")
+            telegraph_content.append(f"<p>📅 <strong>上传日期:</strong> {created}</p>")
 
             if free_text:
-                telegraph_content.append(f"<p>{free_text.replace('<b>', '<strong>').replace('</b>', '</strong>')}</p>")
+                free_text_formatted = free_text.replace('<b>', '<strong>').replace('</b>', '</strong>')
+                telegraph_content.append(f"<p>{free_text_formatted}</p>")
 
-            # 添加标签
+            telegraph_content.append("</div>")
+            telegraph_content.append("</div>")  # 结束flex容器
+
+            # 显示标签和演员信息
             if tags:
-                telegraph_content.append(f"<p>🏷️ 标签: {tags_text}</p>")
+                telegraph_content.append(
+                    f"<p style='margin-top:10px;border-top:1px solid #dadce0;padding-top:8px;'>🏷️ <strong>标签:</strong> {tags_text}</p>")
 
-            # 添加演员
             if actresses:
-                telegraph_content.append(f"<p>👩 演员: {', '.join(actress_names)}</p>")
+                telegraph_content.append(
+                    f"<p style='margin-top:5px;'>👩 <strong>演员:</strong> {', '.join(actress_names)}</p>")
+
+            telegraph_content.append("</div>")  # 结束基本信息卡片
+
+            # 添加下载指令卡片
+            telegraph_content.append(
+                "<div style='background-color:#e8f0fe;border-radius:8px;padding:15px;margin:15px 0;text-align:center;'>")
+            telegraph_content.append(f"<p><strong>🆔 种子ID:</strong> <code>{tid}</code></p>")
+            telegraph_content.append(f"<p><strong>📥 下载命令:</strong> <code>/fsm -do {tid}</code></p>")
+            telegraph_content.append("</div>")
 
             # 添加封面图片
             if torrent.get('cover'):
-                telegraph_content.append(f"<img src='{torrent.get('cover')}' />")
+                telegraph_content.append("<div style='text-align:center;margin:20px 0;'>")
+                telegraph_content.append(
+                    f"<img src='{torrent.get('cover')}' style='max-width:100%;border-radius:8px;' />")
+                telegraph_content.append("</div>")
 
             # 添加内容描述
             if has_content:
-                telegraph_content.append("<h4>📝 内容描述:</h4>")
+                telegraph_content.append(
+                    "<div style='background-color:#f8f9fa;border-radius:8px;padding:15px;margin:15px 0;'>")
+                telegraph_content.append(
+                    "<h3 style='margin-top:0;border-bottom:1px solid #dadce0;padding-bottom:8px;'>📝 内容描述</h3>")
                 telegraph_content.append(torrent.get('content'))
+                telegraph_content.append("</div>")
 
             # 添加截图
             screenshots = torrent.get('screenshots', [])
@@ -972,7 +1031,6 @@ async def show_torrent_details(client, message, tid):
         error_trace = traceback.format_exc()
         LOGGER.error(f"显示种子详情异常详情:\n{error_trace}")
         return await send_message(message, f"<b>❌ 显示种子详情失败:</b> {str(e)}")
-
 
 @new_task
 async def fsm_command_handler(client, message) :
