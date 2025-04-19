@@ -40,48 +40,12 @@ VIEW_PREFIX = "fsmv:"  # 查看详情前缀 - 新增
 search_contexts = {}
 
 
-# 辅助函数：转义MarkdownV2字符
-def escape_markdown(text):
-    """转义MarkdownV2格式中的特殊字符"""
+# 辅助函数：HTML转义字符
+def escape_html(text):
+    """转义HTML中的特殊字符"""
     if not text:
         return ""
-    # 转义以下字符: _ * [ ] ( ) ~ ` > # + - = | { } . !
-    chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
-    for char in chars:
-        text = text.replace(char, f"\\{char}")
-    return text
-
-
-# 辅助函数：HTML转MarkdownV2格式
-def html_to_markdown(text):
-    """将HTML格式转换为MarkdownV2格式"""
-    if not text:
-        return ""
-    # 粗体
-    text = text.replace('<b>', '*').replace('</b>', '*')
-    # 斜体
-    text = text.replace('<i>', '_').replace('</i>', '_')
-    # 下划线
-    text = text.replace('<u>', '__').replace('</u>', '__')
-    # 删除线
-    text = text.replace('<s>', '~').replace('</s>', '~')
-    # 代码
-    text = text.replace('<code>', '`').replace('</code>', '`')
-    return text
-
-
-# 使用MarkdownV2格式发送消息
-async def send_markdown_message(message, text, reply_markup=None):
-    """使用MarkdownV2格式发送消息"""
-    md_text = html_to_markdown(text)
-    return await message.reply(md_text, parse_mode="MarkdownV2", reply_markup=reply_markup)
-
-
-# 使用MarkdownV2格式编辑消息
-async def edit_markdown_message(message, text, reply_markup=None):
-    """使用MarkdownV2格式编辑消息"""
-    md_text = html_to_markdown(text)
-    return await message.edit(md_text, parse_mode="MarkdownV2", reply_markup=reply_markup)
+    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 
 @new_task
@@ -97,7 +61,7 @@ async def fsm_search(client, message):
 
     try:
         LOGGER.info(f"FSM搜索: 正在获取种子分类信息，关键词: {keyword}")
-        indicator_msg = await send_message(message, "*🔍 正在获取种子分类信息\\.\\.\\.*")
+        indicator_msg = await send_message(message, "<b>🔍 正在获取种子分类信息...</b>")
 
         torrent_types = await get_torrent_types()
         LOGGER.info(f"FSM搜索: 成功获取种子分类数量: {len(torrent_types)}")
@@ -117,7 +81,7 @@ async def fsm_search(client, message):
         buttons.data_button("取消", f"{TYPE_PREFIX}cancel")
 
         button = buttons.build_menu(2)
-        return await edit_markdown_message(indicator_msg, "*🔍 请选择种子分类:*", button)
+        return await edit_message(indicator_msg, "<b>🔍 请选择种子分类:</b>", button)
 
     except Exception as e:
         LOGGER.error(f"FSM搜索错误: {e}")
@@ -152,7 +116,7 @@ async def fsm_browse(client, message):
 
     try:
         LOGGER.info("FSM分类浏览: 正在获取种子分类信息")
-        indicator_msg = await send_message(message, "*🔍 正在获取种子分类信息\\.\\.\\.*")
+        indicator_msg = await send_message(message, "<b>🔍 正在获取种子分类信息...</b>")
 
         torrent_types = await get_torrent_types()
         LOGGER.info(f"FSM分类浏览: 成功获取种子分类数量: {len(torrent_types)}")
@@ -172,7 +136,7 @@ async def fsm_browse(client, message):
         buttons.data_button("取消", f"{BROWSE_PREFIX}cancel")
 
         button = buttons.build_menu(2)
-        return await edit_markdown_message(indicator_msg, "*📂 请选择要浏览的种子分类:*", button)
+        return await edit_message(indicator_msg, "<b>📂 请选择要浏览的种子分类:</b>", button)
 
     except Exception as e:
         LOGGER.error(f"FSM分类浏览错误: {e}")
@@ -188,7 +152,7 @@ async def fsm_hot(client, message, page="1"):
     user_id = message.from_user.id
 
     try:
-        indicator_msg = await send_message(message, f"*🔥 正在获取热门种子列表 \\(第 {page} 页\\)\\.\\.\\.*")
+        indicator_msg = await send_message(message, f"<b>🔥 正在获取热门种子列表 (第 {page} 页)...</b>")
 
         # 设置搜索上下文
         if user_id not in search_contexts:
@@ -203,15 +167,15 @@ async def fsm_hot(client, message, page="1"):
         search_results = await search_torrents("", "0", "0", page=page)
 
         if not search_results.get('success', False):
-            return await edit_markdown_message(indicator_msg,
-                                               f"*❌ 获取热门种子失败:* {escape_markdown(search_results.get('msg', '未知错误'))}")
+            return await edit_message(indicator_msg,
+                                      f"<b>❌ 获取热门种子失败:</b> {search_results.get('msg', '未知错误')}")
 
         torrents = search_results['data'].get('list', [])
         max_page = int(search_results['data'].get('maxPage', 1))
         current_page = int(page)
 
         if not torrents:
-            return await edit_markdown_message(indicator_msg, "*❌ 未找到热门种子*")
+            return await edit_message(indicator_msg, "<b>❌ 未找到热门种子</b>")
 
         # 按做种人数排序
         for torrent in torrents:
@@ -236,7 +200,7 @@ async def fsm_hot(client, message, page="1"):
         }
 
         # 修改消息标题
-        await edit_markdown_message(indicator_msg, f"*🔥 FSM热门种子排行榜* \\(第 {page}/{max_page} 页\\)")
+        await edit_message(indicator_msg, f"<b>🔥 FSM热门种子排行榜</b> (第 {page}/{max_page} 页)")
 
         # 使用原有的结果处理函数展示热门种子，但替换页面前缀
         await handle_search_results(client, indicator_msg, hot_results, user_id, page_prefix=HOT_PREFIX)
@@ -245,7 +209,7 @@ async def fsm_hot(client, message, page="1"):
         LOGGER.error(f"获取热门种子错误: {e}")
         error_trace = traceback.format_exc()
         LOGGER.error(f"获取热门种子异常详情:\n{error_trace}")
-        return await send_message(message, f"*❌ 获取热门种子失败:* {escape_markdown(str(e))}")
+        return await send_message(message, f"<b>❌ 获取热门种子失败:</b> {str(e)}")
 
 
 @new_task
@@ -254,7 +218,7 @@ async def fsm_latest(client, message, page="1"):
     user_id = message.from_user.id
 
     try:
-        indicator_msg = await send_message(message, f"*🆕 正在获取最新上传种子 \\(第 {page} 页\\)\\.\\.\\.*")
+        indicator_msg = await send_message(message, f"<b>🆕 正在获取最新上传种子 (第 {page} 页)...</b>")
 
         # 设置搜索上下文
         if user_id not in search_contexts:
@@ -269,15 +233,15 @@ async def fsm_latest(client, message, page="1"):
         search_results = await search_torrents("", "0", "0", page=page)
 
         if not search_results.get('success', False):
-            return await edit_markdown_message(indicator_msg,
-                                               f"*❌ 获取最新种子失败:* {escape_markdown(search_results.get('msg', '未知错误'))}")
+            return await edit_message(indicator_msg,
+                                      f"<b>❌ 获取最新种子失败:</b> {search_results.get('msg', '未知错误')}")
 
         torrents = search_results['data'].get('list', [])
         max_page = int(search_results['data'].get('maxPage', 1))
         current_page = int(page)
 
         if not torrents:
-            return await edit_markdown_message(indicator_msg, "*❌ 未找到种子*")
+            return await edit_message(indicator_msg, "<b>❌ 未找到种子</b>")
 
         # 按创建时间排序
         for torrent in torrents:
@@ -298,7 +262,7 @@ async def fsm_latest(client, message, page="1"):
         }
 
         # 修改消息标题
-        await edit_markdown_message(indicator_msg, f"*🆕 FSM最新上传种子* \\(第 {page}/{max_page} 页\\)")
+        await edit_message(indicator_msg, f"<b>🆕 FSM最新上传种子</b> (第 {page}/{max_page} 页)")
 
         # 使用原有的结果处理函数展示最新种子，但替换页面前缀
         await handle_search_results(client, indicator_msg, latest_results, user_id, page_prefix=LATEST_PREFIX)
@@ -307,7 +271,7 @@ async def fsm_latest(client, message, page="1"):
         LOGGER.error(f"获取最新种子错误: {e}")
         error_trace = traceback.format_exc()
         LOGGER.error(f"获取最新种子异常详情:\n{error_trace}")
-        return await send_message(message, f"*❌ 获取最新种子失败:* {escape_markdown(str(e))}")
+        return await send_message(message, f"<b>❌ 获取最新种子失败:</b> {str(e)}")
 
 
 @new_task
@@ -316,8 +280,7 @@ async def fsm_search_by_tag(client, message, tag, page="1"):
     user_id = message.from_user.id
 
     try:
-        indicator_msg = await send_message(message,
-                                           f"*🏷️ 正在搜索标签:* _{escape_markdown(tag)}_ \\(第 {page} 页\\)\\.\\.\\.")
+        indicator_msg = await send_message(message, f"<b>🏷️ 正在搜索标签:</b> <i>{tag}</i> (第 {page} 页)...")
 
         # 设置搜索上下文
         if user_id not in search_contexts:
@@ -338,7 +301,7 @@ async def fsm_search_by_tag(client, message, tag, page="1"):
         LOGGER.error(f"标签搜索错误: {e}")
         error_trace = traceback.format_exc()
         LOGGER.error(f"标签搜索异常详情:\n{error_trace}")
-        return await send_message(message, f"*❌ 标签搜索失败:* {escape_markdown(str(e))}")
+        return await send_message(message, f"<b>❌ 标签搜索失败:</b> {str(e)}")
 
 
 @new_task
@@ -358,7 +321,7 @@ async def fsm_callback(client, callback_query):
                 await callback_query.answer("已取消搜索")
                 if user_id in search_contexts:
                     del search_contexts[user_id]
-                return await edit_markdown_message(message, "*❌ 搜索已取消！*")
+                return await edit_message(message, "<b>❌ 搜索已取消！</b>")
 
             keyword = search_contexts[user_id].get('keyword', '')
             if type_data == "all":
@@ -372,7 +335,7 @@ async def fsm_callback(client, callback_query):
             except Exception as e:
                 LOGGER.error(f"获取优惠类型失败: {e}")
                 await callback_query.answer("获取优惠类型失败，请重试", show_alert=True)
-                return await edit_markdown_message(message, f"*❌ 获取优惠类型失败:* {escape_markdown(str(e))}")
+                return await edit_message(message, f"<b>❌ 获取优惠类型失败:</b> {str(e)}")
 
             buttons = ButtonMaker()
             for i, sys_item in enumerate(systematics):
@@ -386,7 +349,7 @@ async def fsm_callback(client, callback_query):
 
             button = buttons.build_menu(2)
             await callback_query.answer("请选择优惠类型")
-            await edit_markdown_message(message, "*🔍 请选择优惠类型:*", button)
+            await edit_message(message, "<b>🔍 请选择优惠类型:</b>", button)
 
         elif data.startswith(SYSTEM_PREFIX):
             sys_data = data[len(SYSTEM_PREFIX):]
@@ -394,7 +357,7 @@ async def fsm_callback(client, callback_query):
                 await callback_query.answer("已取消搜索")
                 if user_id in search_contexts:
                     del search_contexts[user_id]
-                return await edit_markdown_message(message, "*❌ 搜索已取消！*")
+                return await edit_message(message, "<b>❌ 搜索已取消！</b>")
 
             keyword = search_contexts[user_id].get('keyword', '')
             type_id = search_contexts[user_id].get('selected_type', "0")
@@ -405,7 +368,7 @@ async def fsm_callback(client, callback_query):
             search_contexts[user_id]['selected_system'] = systematics_id
 
             await callback_query.answer("正在搜索中...")
-            await edit_markdown_message(message, f"*🔍 正在搜索:* _{escape_markdown(keyword)}_ \\.\\.\\.")
+            await edit_message(message, f"<b>🔍 正在搜索:</b> <i>{keyword}</i>...")
 
             try:
                 search_results = await search_torrents(keyword, type_id, systematics_id)
@@ -414,7 +377,7 @@ async def fsm_callback(client, callback_query):
                 LOGGER.error(f"搜索种子错误: {e}")
                 error_trace = traceback.format_exc()
                 LOGGER.error(f"搜索种子异常详情:\n{error_trace}")
-                await edit_markdown_message(message, f"*❌ 搜索失败:* {escape_markdown(str(e))}")
+                await edit_message(message, f"<b>❌ 搜索失败:</b> {str(e)}")
 
         elif data.startswith(VIEW_PREFIX):
             # 处理查看详情按钮回调
@@ -429,8 +392,8 @@ async def fsm_callback(client, callback_query):
             try:
                 torrent_details = await get_torrent_details(tid)
                 if not torrent_details.get('success', False):
-                    return await edit_markdown_message(message,
-                                                       f"*❌ 获取种子详情失败:* {escape_markdown(torrent_details.get('msg', '未知错误'))}")
+                    return await edit_message(message,
+                                              f"<b>❌ 获取种子详情失败:</b> {torrent_details.get('msg', '未知错误')}")
                 torrent = torrent_details.get('data', {}).get('torrent', {})
                 title = torrent.get('title', f'FSM_Torrent_{tid}')
             except Exception as e:
@@ -440,15 +403,15 @@ async def fsm_callback(client, callback_query):
             try:
                 download_url = await get_download_url(tid)
                 if not download_url:
-                    return await edit_markdown_message(message, "*❌ 无法获取下载链接*")
+                    return await edit_message(message, "<b>❌ 无法获取下载链接</b>")
             except Exception as e:
                 LOGGER.error(f"获取下载链接错误: {e}")
-                return await edit_markdown_message(message, f"*❌ 获取下载链接失败:* {escape_markdown(str(e))}")
+                return await edit_message(message, f"<b>❌ 获取下载链接失败:</b> {str(e)}")
 
             msg = (
-                f"`{escape_markdown(download_url)}`\n\n"
+                f"<code>{download_url}</code>\n\n"
             )
-            await edit_markdown_message(message, msg)
+            await edit_message(message, msg)
 
         elif data.startswith(PAGE_PREFIX):
             page = data[len(PAGE_PREFIX):]
@@ -472,7 +435,7 @@ async def fsm_callback(client, callback_query):
                 return await callback_query.answer("无效的页码", show_alert=True)
 
             await callback_query.answer(f"正在加载第 {page} 页...")
-            await edit_markdown_message(message, f"*📃 正在获取第 {page} 页的搜索结果\\.\\.\\.*")
+            await edit_message(message, f"<b>📃 正在获取第 {page} 页的搜索结果...</b>")
 
             try:
                 search_results = await search_torrents(keyword, type_id, systematics_id, page=page)
@@ -481,7 +444,7 @@ async def fsm_callback(client, callback_query):
                 await handle_search_results(client, message, search_results, user_id)
             except Exception as e:
                 LOGGER.error(f"翻页搜索错误: {e}")
-                await edit_markdown_message(message, f"*❌ 获取第 {page} 页失败:* {escape_markdown(str(e))}")
+                await edit_message(message, f"<b>❌ 获取第 {page} 页失败:</b> {str(e)}")
 
         # 处理浏览分类回调
         elif data.startswith(BROWSE_PREFIX):
@@ -490,7 +453,7 @@ async def fsm_callback(client, callback_query):
                 await callback_query.answer("已取消浏览")
                 if user_id in search_contexts:
                     del search_contexts[user_id]
-                return await edit_markdown_message(message, "*❌ 浏览已取消！*")
+                return await edit_message(message, "<b>❌ 浏览已取消！</b>")
 
             # 明确检查是否是页码请求（使用特殊前缀区分）
             if browse_data.startswith("page_"):
@@ -500,7 +463,7 @@ async def fsm_callback(client, callback_query):
                 type_id = search_contexts[user_id].get('selected_type', "0")
 
                 await callback_query.answer(f"正在加载第 {page} 页...")
-                await edit_markdown_message(message, f"*📂 正在获取分类内容 \\(第 {page} 页\\)\\.\\.\\.*")
+                await edit_message(message, f"<b>📂 正在获取分类内容 (第 {page} 页)...</b>")
 
                 try:
                     # 确保保存当前页码到上下文
@@ -511,7 +474,7 @@ async def fsm_callback(client, callback_query):
                     await handle_search_results(client, message, search_results, user_id, page_prefix=BROWSE_PREFIX)
                 except Exception as e:
                     LOGGER.error(f"浏览分类分页错误: {e}")
-                    await edit_markdown_message(message, f"*❌ 获取分类第 {page} 页失败:* {escape_markdown(str(e))}")
+                    await edit_message(message, f"<b>❌ 获取分类第 {page} 页失败:</b> {str(e)}")
                 return
 
             # 不是页码请求，则是分类选择
@@ -523,7 +486,7 @@ async def fsm_callback(client, callback_query):
             search_contexts[user_id]['selected_system'] = "0"  # 默认选择全部优惠
 
             await callback_query.answer("正在浏览分类...")
-            await edit_markdown_message(message, "*📂 正在获取分类内容\\.\\.\\.*")
+            await edit_message(message, "<b>📂 正在获取分类内容...</b>")
 
             try:
                 search_results = await search_torrents("", type_id, "0")
@@ -532,7 +495,7 @@ async def fsm_callback(client, callback_query):
                 LOGGER.error(f"浏览分类错误: {e}")
                 error_trace = traceback.format_exc()
                 LOGGER.error(f"浏览分类异常详情:\n{error_trace}")
-                await edit_markdown_message(message, f"*❌ 浏览分类失败:* {escape_markdown(str(e))}")
+                await edit_message(message, f"<b>❌ 浏览分类失败:</b> {str(e)}")
 
         # 处理热门种子分页回调
         elif data.startswith(HOT_PREFIX):
@@ -541,12 +504,12 @@ async def fsm_callback(client, callback_query):
                 await callback_query.answer("已取消查看")
                 if user_id in search_contexts:
                     del search_contexts[user_id]
-                return await edit_markdown_message(message, "*❌ 查看已取消！*")
+                return await edit_message(message, "<b>❌ 查看已取消！</b>")
 
             # 直接将数据作为页码处理
             page = hot_data
             await callback_query.answer(f"正在加载第 {page} 页...")
-            await edit_markdown_message(message, f"*🔥 正在获取热门种子 \\(第 {page} 页\\)\\.\\.\\.*")
+            await edit_message(message, f"<b>🔥 正在获取热门种子 (第 {page} 页)...</b>")
 
             try:
                 # 调用热门种子函数获取新页码数据
@@ -554,7 +517,7 @@ async def fsm_callback(client, callback_query):
                 await fsm_hot(client, message, page)
             except Exception as e:
                 LOGGER.error(f"热门种子分页错误: {e}")
-                await edit_markdown_message(message, f"*❌ 获取热门种子第 {page} 页失败:* {escape_markdown(str(e))}")
+                await edit_message(message, f"<b>❌ 获取热门种子第 {page} 页失败:</b> {str(e)}")
 
         # 处理最新种子分页回调
         elif data.startswith(LATEST_PREFIX):
@@ -563,13 +526,13 @@ async def fsm_callback(client, callback_query):
                 await callback_query.answer("已取消查看")
                 if user_id in search_contexts:
                     del search_contexts[user_id]
-                return await edit_markdown_message(message, "*❌ 查看已取消！*")
+                return await edit_message(message, "<b>❌ 查看已取消！</b>")
 
             # 直接将数据作为页码处理
             page = latest_data
 
             await callback_query.answer(f"正在加载第 {page} 页...")
-            await edit_markdown_message(message, f"*🆕 正在获取最新种子 \\(第 {page} 页\\)\\.\\.\\.*")
+            await edit_message(message, f"<b>🆕 正在获取最新种子 (第 {page} 页)...</b>")
 
             try:
                 # 调用最新种子函数获取新页码数据
@@ -577,7 +540,7 @@ async def fsm_callback(client, callback_query):
                 await fsm_latest(client, message, page)
             except Exception as e:
                 LOGGER.error(f"最新种子分页错误: {e}")
-                await edit_markdown_message(message, f"*❌ 获取最新种子第 {page} 页失败:* {escape_markdown(str(e))}")
+                await edit_message(message, f"<b>❌ 获取最新种子第 {page} 页失败:</b> {str(e)}")
 
         # 处理详情回调
         elif data.startswith(DETAILS_PREFIX):
@@ -597,7 +560,7 @@ async def fsm_callback(client, callback_query):
             return
 
         await callback_query.answer(f"出错了: {str(e)[:50]}", show_alert=True)
-        await edit_markdown_message(message, f"*❌ 错误:* {escape_markdown(str(e))}")
+        await edit_message(message, f"<b>❌ 错误:</b> {str(e)}")
 
 
 async def handle_search_results(client, message, search_results, user_id, page_prefix=PAGE_PREFIX):
@@ -606,8 +569,7 @@ async def handle_search_results(client, message, search_results, user_id, page_p
     可以指定不同的页面前缀以支持不同的分页功能
     """
     if not search_results.get('success', False):
-        return await edit_markdown_message(message,
-                                           f"*❌ 搜索失败:* {escape_markdown(search_results.get('msg', '未知错误'))}")
+        return await edit_message(message, f"<b>❌ 搜索失败:</b> {search_results.get('msg', '未知错误')}")
 
     torrents = search_results['data'].get('list', [])
     max_page = int(search_results['data'].get('maxPage', 1))
@@ -621,9 +583,9 @@ async def handle_search_results(client, message, search_results, user_id, page_p
         buttons.data_button("🔙 返回上一步", f"{TYPE_PREFIX}cancel")
         button = buttons.build_menu(1)
 
-        return await edit_markdown_message(
+        return await edit_message(
             message,
-            f"*🔍 未找到与* _{escape_markdown(keyword)}_ *相关的结果*",
+            f"<b>🔍 未找到与</b> <i>{keyword}</i> <b>相关的结果</b>",
             button
         )
 
@@ -746,17 +708,17 @@ async def handle_search_results(client, message, search_results, user_id, page_p
 
         # 在消息正文中嵌入 Telegraph 链接
         result_msg = (
-            f"*🔍 FSM搜索结果*\n\n"
-            f"*关键词:* `{escape_markdown(keyword)}`\n"
-            f"*找到结果:* {total_count} 个\n"
-            f"*当前页码:* {current_page}/{max_page}\n\n"
-            f"📋 完整列表：[在Telegraph查看]({escape_markdown(telegraph_url)})\n\n"
-            f"👇 _点击下方按钮翻页或刷新_\n"
+            f"<b>🔍 FSM搜索结果</b>\n\n"
+            f"<b>关键词:</b> <code>{escape_html(keyword)}</code>\n"
+            f"<b>找到结果:</b> {total_count} 个\n"
+            f"<b>当前页码:</b> {current_page}/{max_page}\n\n"
+            f"📋 完整列表：<a href=\"{telegraph_url}\">在Telegraph查看</a>\n\n"
+            f"👇 <i>点击下方按钮翻页或刷新</i>\n"
         )
 
         if torrents:
-            result_msg += "\n*📊 热门结果预览:*\n"
-            # 使用MarkdownV2格式美化热门结果
+            result_msg += "\n<b>📊 热门结果预览:</b>\n"
+            # 使用HTML格式美化热门结果
             for i, torrent in enumerate(torrents[:3], 1):
                 t_title = torrent.get('title', '未知')
                 t_seeds = torrent.get('peers', {}).get('upload', 0) if isinstance(torrent.get('peers'),
@@ -802,19 +764,15 @@ async def handle_search_results(client, message, search_results, user_id, page_p
                 tags = torrent.get('tags', [])
                 tags_preview = ""
                 if tags and len(tags) > 0:
-                    tags_str = ', '.join([f'\\#{escape_markdown(tag)}' for tag in tags[:2]])
-                    tags_preview = f" \\| 🏷️ {tags_str}"
+                    tags_str = ', '.join([f'#{tag}' for tag in tags[:2]])
+                    tags_preview = f" | 🏷️ {tags_str}"
                     if len(tags) > 2:
-                        tags_preview += "\\.\\.\\."
+                        tags_preview += "..."
 
                 result_msg += (
-                    f"{i}\\. *{escape_markdown(free_badge)} {escape_markdown(t_title)}*\n"
-                    f"   📁 {escape_markdown(t_size)} \\| 👥 {t_seeds} \\| 🔄 {t_finish} \\| 🆔 `{escape_markdown(t_tid)}`{tags_preview}\n\n"
+                    f"{i}. <b>{free_badge} {escape_html(t_title)}</b>\n"
+                    f"   📁 {escape_html(t_size)} | 👥 {t_seeds} | 🔄 {t_finish} | 🆔 <code>{escape_html(t_tid)}</code>{tags_preview}\n\n"
                 )
-
-                # 为每个热门结果添加查看详情按钮
-                buttons = ButtonMaker()
-                buttons.data_button(f"👁 查看详情 #{i}", f"{VIEW_PREFIX}{t_tid}")
 
         # 调试日志
         LOGGER.debug(f"构造分页按钮: 前缀={page_prefix}, 当前页={current_page}, 最大页={max_page}")
@@ -848,27 +806,26 @@ async def handle_search_results(client, message, search_results, user_id, page_p
         button_layout = buttons.build_menu(2)
 
         # 最后更新消息
-        await edit_markdown_message(message, result_msg, button_layout)
+        await edit_message(message, result_msg, button_layout)
 
     except Exception as e:
         LOGGER.error(f"处理搜索结果错误: {e}\n{traceback.format_exc()}")
         err = str(e).lower()
         if "message_not_modified" in err or "tag is not allowed" in err:
             # 如果内容没变或 Telegraph 标签错误，提醒用户
-            return await edit_markdown_message(message, f"*❌ 处理搜索结果失败:* {escape_markdown(str(e))}")
-        await edit_markdown_message(message, f"*❌ 处理搜索结果异常:* {escape_markdown(str(e))}")
+            return await edit_message(message, f"<b>❌ 处理搜索结果失败:</b> {str(e)}")
+        await edit_message(message, f"<b>❌ 处理搜索结果异常:</b> {str(e)}")
 
 
 @new_task
 async def show_torrent_details(client, message, tid):
     """显示种子详细信息"""
     try:
-        await send_markdown_message(message, f"*🔍 正在获取种子* `{tid}` *的详细信息\\.\\.\\.*")
+        await send_message(message, f"<b>🔍 正在获取种子 <code>{tid}</code> 的详细信息...</b>")
         torrent_details = await get_torrent_details(tid)
 
         if not torrent_details.get('success', False):
-            return await send_markdown_message(message,
-                                               f"*❌ 获取种子详情失败:* {escape_markdown(torrent_details.get('msg', '未知错误'))}")
+            return await send_message(message, f"<b>❌ 获取种子详情失败:</b> {torrent_details.get('msg', '未知错误')}")
 
         torrent = torrent_details.get('data', {}).get('torrent', {})
 
@@ -908,51 +865,50 @@ async def show_torrent_details(client, message, tid):
                 f"免费状态详情: 名称={status_name}, 下载系数={down_coefficient}, 上传系数={up_coefficient}, 结束时间={status_end_time}")
 
             if status_name:
-                free_text = f"*🏷️ 优惠:* {status_name}"
+                free_text = f"<b>🏷️ 优惠:</b> {status_name}"
                 if status_end_time:
-                    free_text += f" \\(到期: {status_end_time}\\)"
+                    free_text += f" (到期: {status_end_time})"
                 free_text += "\n"
             elif down_coefficient == 0:
-                free_text = f"*🏷️ 优惠:* 免费 \\(FREE\\)"
+                free_text = f"<b>🏷️ 优惠:</b> 免费 (FREE)"
                 if status_end_time:
-                    free_text += f" \\(到期: {status_end_time}\\)"
+                    free_text += f" (到期: {status_end_time})"
                 free_text += "\n"
             elif down_coefficient < 1:
-                free_text = f"*🏷️ 优惠:* {int((1 - down_coefficient) * 100)}%折扣"
+                free_text = f"<b>🏷️ 优惠:</b> {int((1 - down_coefficient) * 100)}%折扣"
                 if status_end_time:
-                    free_text += f" \\(到期: {status_end_time}\\)"
+                    free_text += f" (到期: {status_end_time})"
                 free_text += "\n"
             elif has_status is False:
-                free_text = "*🏷️ 优惠:* 无优惠\n"
+                free_text = "<b>🏷️ 优惠:</b> 无优惠\n"
 
             if up_coefficient > 1:
-                free_text += f"*📈 上传:* {up_coefficient}倍\n"
+                free_text += f"<b>📈 上传:</b> {up_coefficient}倍\n"
 
-        # 创建详情消息 (MarkdownV2格式)
+        # 创建详情消息
         detail_msg = (
-            f"*🎬 {escape_markdown(title)}*\n\n"
-            f"*📊 种子信息:*\n"
-            f"• *大小:* {escape_markdown(file_size)}\n"
-            f"• *做种/下载:* {upload}/{download}\n"
-            f"• *完成数:* {finish}\n"
-            f"• *分类:* {escape_markdown(torrent_type)}\n"
-            f"• *发布时间:* {escape_markdown(created)}\n"
+            f"<b>🎬 {escape_html(title)}</b>\n\n"
+            f"<b>📊 种子信息:</b>\n"
+            f"• <b>大小:</b> {escape_html(file_size)}\n"
+            f"• <b>做种/下载:</b> {upload}/{download}\n"
+            f"• <b>完成数:</b> {finish}\n"
+            f"• <b>分类:</b> {escape_html(torrent_type)}\n"
+            f"• <b>发布时间:</b> {escape_html(created)}\n"
         )
 
         if free_text:
             detail_msg += free_text
 
-        tags_md = ", ".join([f"\\#{escape_markdown(tag)}" for tag in tags]) if tags else "无标签"
-        detail_msg += f"• *标签:* {tags_md}\n\n"
+        detail_msg += f"• <b>标签:</b> {escape_html(tags_text)}\n\n"
 
         # 处理演员信息（如果有）
         actresses = torrent.get('actress', [])
         if actresses:
-            actress_names = [escape_markdown(actress.get('name', '未知')) for actress in actresses]
-            detail_msg += f"*👩 演员:* {', '.join(actress_names)}\n\n"
+            actress_names = [escape_html(actress.get('name', '未知')) for actress in actresses]
+            detail_msg += f"<b>👩 演员:</b> {', '.join(actress_names)}\n\n"
 
         # 添加下载命令
-        detail_msg += f"*📥 下载命令:*\n`/fsm \\-do {tid}`\n"
+        detail_msg += f"<b>📥 下载命令:</b>\n<code>/fsm -do {tid}</code>\n"
 
         # 创建按钮
         buttons = ButtonMaker()
@@ -970,7 +926,7 @@ async def show_torrent_details(client, message, tid):
             telegraph_content.append(f"<p>📂 分类: {torrent_type} | 📅 上传日期: {created}</p>")
 
             if free_text:
-                telegraph_content.append(f"<p>{free_text.replace('*', '<strong>').replace('*', '</strong>')}</p>")
+                telegraph_content.append(f"<p>{free_text.replace('<b>', '<strong>').replace('</b>', '</strong>')}</p>")
 
             # 添加标签
             if tags:
@@ -1019,13 +975,13 @@ async def show_torrent_details(client, message, tid):
         buttons.data_button("❌ 关闭", f"{DETAILS_PREFIX}close")
         button = buttons.build_menu(2)
 
-        return await send_markdown_message(message, detail_msg, button)
+        return await send_message(message, detail_msg, button)
 
     except Exception as e:
         LOGGER.error(f"显示种子详情错误: {e}")
         error_trace = traceback.format_exc()
         LOGGER.error(f"显示种子详情异常详情:\n{error_trace}")
-        return await send_markdown_message(message, f"*❌ 显示种子详情失败:* {escape_markdown(str(e))}")
+        return await send_message(message, f"<b>❌ 显示种子详情失败:</b> {str(e)}")
 
 
 @new_task
@@ -1036,22 +992,22 @@ async def fsm_command_handler(client, message):
     # 显示帮助信息
     if len(args) == 1:
         help_msg = (
-            "*FSM 种子搜索帮助*\n\n"
-            "*📌 基本命令:*\n"
-            "• `/fsm 关键词` \\- 搜索种子\n"
-            "• `/fsm \\-do 种子ID` \\- 下载种子\n"
-            "• `/fsm \\-de 种子ID` \\- 查看种子详情\n"
-            "• `/fsm \\-b` \\- 按分类浏览种子\n"
-            "• `/fsm \\-h \\[页码\\]` \\- 查看热门种子\n"
-            "• `/fsm \\-l \\[页码\\]` \\- 查看最新种子\n"
-            "• `/fsm \\-t 标签名 \\[页码\\]` \\- 按标签搜索\n\n"
-            "*🔍 高级用法:*\n"
-            "• `/fsm 关键词 page:2` \\- 搜索并跳到指定页码\n"
-            "• `/fsm \\-h 2` \\- 查看热门种子第2页\n"
-            "• `/fsm \\-l 3` \\- 查看最新种子第3页\n"
-            "• `/fsm download 种子ID` \\- 兼容旧版下载命令"
+            "<b>FSM 种子搜索帮助</b>\n\n"
+            "<b>📌 基本命令:</b>\n"
+            "• <code>/fsm 关键词</code> - 搜索种子\n"
+            "• <code>/fsm -do 种子ID</code> - 下载种子\n"
+            "• <code>/fsm -de 种子ID</code> - 查看种子详情\n"
+            "• <code>/fsm -b</code> - 按分类浏览种子\n"
+            "• <code>/fsm -h [页码]</code> - 查看热门种子\n"
+            "• <code>/fsm -l [页码]</code> - 查看最新种子\n"
+            "• <code>/fsm -t 标签名 [页码]</code> - 按标签搜索\n\n"
+            "<b>🔍 高级用法:</b>\n"
+            "• <code>/fsm 关键词 page:2</code> - 搜索并跳到指定页码\n"
+            "• <code>/fsm -h 2</code> - 查看热门种子第2页\n"
+            "• <code>/fsm -l 3</code> - 查看最新种子第3页\n"
+            "• <code>/fsm download 种子ID</code> - 兼容旧版下载命令"
         )
-        return await send_markdown_message(message, help_msg)
+        return await send_message(message, help_msg)
 
     # 检查第二个参数是否为选项（以-开头）
     if len(args) >= 2 and args[1].startswith('-'):
@@ -1061,16 +1017,16 @@ async def fsm_command_handler(client, message):
         if option in ['-d', '-do', '-download'] and len(args) >= 3:
             tid = args[2]
             try:
-                await send_markdown_message(message, f"正在获取种子 `{tid}` 的下载链接\\.\\.\\.")
+                await send_message(message, f"正在获取种子 <code>{tid}</code> 的下载链接...")
                 download_url = await get_download_url(tid)
                 if not download_url:
-                    return await send_markdown_message(message, "*❌ 无法获取下载链接*")
+                    return await send_message(message, "<b>❌ 无法获取下载链接</b>")
 
-                msg = f"`{escape_markdown(download_url)}`\n\n"
-                return await send_markdown_message(message, msg)
+                msg = f"<code>{download_url}</code>\n\n"
+                return await send_message(message, msg)
             except Exception as e:
                 LOGGER.error(f"FSM下载命令错误: {e}")
-                return await send_markdown_message(message, f"*❌ 错误:* {escape_markdown(str(e))}")
+                return await send_message(message, f"<b>❌ 错误:</b> {str(e)}")
 
         # 详情选项：-de, -i, -info, -details
         elif option in ['-de', '-i', '-info', '-details'] and len(args) >= 3:
@@ -1114,28 +1070,29 @@ async def fsm_command_handler(client, message):
 
         # 未知选项
         else:
-            return await send_markdown_message(message,
-                                               f"*❌ 未知选项:* `{escape_markdown(option)}`\n使用 `/fsm` 查看帮助。")
+            return await send_message(message,
+                                      f"<b>❌ 未知选项:</b> <code>{option}</code>\n使用 <code>/fsm</code> 查看帮助。")
 
     # 处理旧版下载命令兼容性
     if len(args) >= 2 and args[1] == 'download':
         if len(args) < 3:
-            return await send_markdown_message(message, "*❌ 缺少种子ID，请使用正确的格式:* `/fsm download <tid>`")
+            return await send_message(message,
+                                      "<b>❌ 缺少种子ID，请使用正确的格式:</b> <code>/fsm download &lt;tid&gt;</code>")
 
         tid = args[2]
         try:
-            await send_markdown_message(message, f"正在获取种子 `{tid}` 的下载链接\\.\\.\\.")
+            await send_message(message, f"正在获取种子 <code>{tid}</code> 的下载链接...")
             download_url = await get_download_url(tid)
             if not download_url:
-                return await send_markdown_message(message, "*❌ 无法获取下载链接*")
+                return await send_message(message, "<b>❌ 无法获取下载链接</b>")
 
             msg = (
-                f"`{escape_markdown(download_url)}`\n\n"
+                f"<code>{download_url}</code>\n\n"
             )
-            return await send_markdown_message(message, msg)
+            return await send_message(message, msg)
         except Exception as e:
             LOGGER.error(f"FSM下载命令错误: {e}")
-            return await send_markdown_message(message, f"*❌ 错误:* {escape_markdown(str(e))}")
+            return await send_message(message, f"<b>❌ 错误:</b> {str(e)}")
 
     # 处理搜索命令（默认行为）
     page = 1
@@ -1160,8 +1117,7 @@ async def fsm_command_handler(client, message):
             search_contexts[user_id]['selected_system'] = '0'
             search_contexts[user_id]['current_page'] = page
 
-            await send_markdown_message(message,
-                                        f"*正在搜索:* _{escape_markdown(keyword)}_ \\(第 {page} 页\\)\\.\\.\\.")
+            await send_message(message, f"<b>正在搜索:</b> <i>{escape_html(keyword)}</i> (第 {page} 页)...")
             search_results = await search_torrents(keyword, '0', '0', page=str(page))
             return await handle_search_results(client, message, search_results, user_id)
 
