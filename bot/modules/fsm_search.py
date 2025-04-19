@@ -137,127 +137,6 @@ async def fsm_browse(client, message) :
         return await send_message(message, error_msg)
 
 
-@new_task
-async def show_torrent_details(client, message, tid) :
-    """显示种子详细信息"""
-    try :
-        await send_message(message, f"<b>🔍 正在获取种子 <code>{tid}</code> 的详细信息...</b>")
-        torrent_details = await get_torrent_details(tid)
-
-        if not torrent_details.get('success', False) :
-            return await send_message(message, f"<b>❌ 获取种子详情失败:</b> {torrent_details.get('msg', '未知错误')}")
-
-        torrent = torrent_details.get('data', {}).get('torrent', {})
-
-        # 提取基本信息
-        title = torrent.get('title', f'未知标题')
-        file_size = torrent.get('fileSize', '未知大小')
-        upload = torrent.get('peers', {}).get('upload', 0)
-        download = torrent.get('peers', {}).get('download', 0)
-        finish = torrent.get('finish', 0)
-        created_ts = torrent.get('createdTs', 0)
-        created = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(created_ts)) if created_ts else '未知'
-
-        # 获取类型、标签信息
-        torrent_type = torrent.get('type', {}).get('name', '未知')
-        tags = torrent.get('tags', [])
-        tags_text = ", ".join([f"#{tag}" for tag in tags]) if tags else "无标签"
-
-        # 处理免费状态
-        status = torrent.get('status', {})
-        free_text = ""
-
-        # 详细记录状态信息
-        LOGGER.debug(f"种子状态信息: {status}")
-
-        if status.get('hasStatus', False) :
-            status_name = status.get('name', '')
-            down_coefficient = status.get('downCoefficient', 1)
-            up_coefficient = status.get('upCoefficient', 1)
-
-            LOGGER.debug(f"免费状态详情: 名称={status_name}, 下载系数={down_coefficient}, 上传系数={up_coefficient}")
-
-            if status_name :
-                free_text = f"<b>🏷️ 优惠:</b> {status_name}\n"
-            elif down_coefficient == 0 :
-                free_text = "<b>🏷️ 优惠:</b> 免费 (FREE)\n"
-            elif down_coefficient < 1 :
-                free_text = f"<b>🏷️ 优惠:</b> {int((1 - down_coefficient) * 100)}%折扣\n"
-
-            if up_coefficient > 1 :
-                free_text += f"<b>📈 上传:</b> {up_coefficient}倍\n"
-
-        # 创建详情消息
-        detail_msg = (
-            f"<b>🎬 {title}</b>\n\n"
-            f"<b>📊 种子信息:</b>\n"
-            f"• <b>大小:</b> {file_size}\n"
-            f"• <b>做种/下载:</b> {upload}/{download}\n"
-            f"• <b>完成数:</b> {finish}\n"
-            f"• <b>分类:</b> {torrent_type}\n"
-            f"• <b>发布时间:</b> {created}\n"
-        )
-
-        if free_text :
-            detail_msg += free_text
-
-        detail_msg += f"• <b>标签:</b> {tags_text}\n\n"
-
-        # 处理演员信息（如果有）
-        actresses = torrent.get('actress', [])
-        if actresses :
-            actress_names = [actress.get('name', '未知') for actress in actresses]
-            detail_msg += f"<b>👩 演员:</b> {', '.join(actress_names)}\n\n"
-
-        # 添加下载命令
-        detail_msg += f"<b>📥 下载命令:</b>\n<code>/fsm -do {tid}</code>\n"
-
-        # 创建按钮
-        buttons = ButtonMaker()
-        if torrent.get('cover') or torrent.get('content') :
-            # 使用Telegraph创建详情页面
-            telegraph_content = []
-            telegraph_content.append(f"<h3>{title}</h3>")
-            telegraph_content.append(f"<p>📁 大小: {file_size} | 👥 做种/下载: {upload}/{download}</p>")
-            telegraph_content.append(f"<p>📂 分类: {torrent_type} | 📅 上传日期: {created}</p>")
-
-            if free_text :
-                telegraph_content.append(f"<p>{free_text.replace('<b>', '<strong>').replace('</b>', '</strong>')}</p>")
-
-            # 添加封面图片
-            if torrent.get('cover') :
-                telegraph_content.append(f"<img src='{torrent.get('cover')}' />")
-
-            # 添加内容描述
-            if torrent.get('content') :
-                telegraph_content.append(torrent.get('content'))
-
-            # 添加截图
-            screenshots = torrent.get('screenshots', [])
-            if screenshots :
-                telegraph_content.append("<h4>📸 截图:</h4>")
-                for screenshot in screenshots :
-                    telegraph_content.append(f"<img src='{screenshot}' />")
-
-            telegraph_page = await telegraph.create_page(
-                title=f"FSM种子详情: {title}",
-                content=''.join(telegraph_content)
-            )
-            telegraph_url = telegraph_page['url']
-            buttons.url_button("📋 查看完整详情", telegraph_url)
-
-        buttons.data_button("📥 获取下载链接", f"{DOWNLOAD_PREFIX}{tid}")
-        buttons.data_button("❌ 关闭", f"{DETAILS_PREFIX}close")
-        button = buttons.build_menu(2)
-
-        return await send_message(message, detail_msg, button)
-
-    except Exception as e :
-        LOGGER.error(f"显示种子详情错误: {e}")
-        error_trace = traceback.format_exc()
-        LOGGER.error(f"显示种子详情异常详情:\n{error_trace}")
-        return await send_message(message, f"<b>❌ 显示种子详情失败:</b> {str(e)}")
-
 
 @new_task
 async def fsm_hot(client, message, page="1") :
@@ -689,20 +568,21 @@ async def fsm_callback(client, callback_query) :
         await edit_message(message, f"<b>❌ 错误:</b> {str(e)}")
 
 
-async def handle_search_results(client, message, search_results, user_id, page_prefix=PAGE_PREFIX) :
+async def handle_search_results(client, message, search_results, user_id, page_prefix=PAGE_PREFIX):
     """
     处理并显示搜索结果，使用优化的Telegraph页面
     可以指定不同的页面前缀以支持不同的分页功能
     """
-    if not search_results.get('success', False) :
+    if not search_results.get('success', False):
         return await edit_message(message, f"<b>❌ 搜索失败:</b> {search_results.get('msg', '未知错误')}")
 
     torrents = search_results['data'].get('list', [])
     max_page = int(search_results['data'].get('maxPage', 1))
     current_page = int(search_results['data'].get('page', 1))
     keyword = search_contexts[user_id].get('keyword', '')
+    total_count = search_results['data'].get('torrentCount', len(torrents))
 
-    if not torrents :
+    if not torrents:
         return await edit_message(
             message,
             f"<b>🔍 未找到与</b> <i>'{keyword}'</i> <b>相关的结果</b>"
@@ -711,14 +591,14 @@ async def handle_search_results(client, message, search_results, user_id, page_p
     # 保存当前页
     search_contexts[user_id]['current_page'] = current_page
 
-    try :
+    try:
         # 构建 Telegraph 页面内容
         telegraph_content = []
         telegraph_content.append(f"<h3>🔍 FSM 搜索: {keyword}</h3>")
-        telegraph_content.append(f"<p>找到 <b>{len(torrents)}</b> 个结果 | 第 {current_page}/{max_page} 页</p>")
+        telegraph_content.append(f"<p>找到 <b>{total_count}</b> 个结果 | 第 {current_page}/{max_page} 页</p>")
         telegraph_content.append("<hr/><ol>")
 
-        for torrent in torrents[:MAX_TELEGRAPH_RESULTS] :
+        for torrent in torrents[:MAX_TELEGRAPH_RESULTS]:
             title = torrent.get('title', '未知')
             size = torrent.get('fileSize', '未知')
             seeds = torrent.get('peers', {}).get('upload', 0) if isinstance(torrent.get('peers'),
@@ -728,55 +608,92 @@ async def handle_search_results(client, message, search_results, user_id, page_p
             tid = torrent.get('tid')
             created_ts = torrent.get('createdTs', 0)
             created = time.strftime('%Y-%m-%d', time.localtime(created_ts)) if created_ts else '未知'
+            finish = torrent.get('finish', 0)  # 完成数
+
+            # 处理标签信息
+            tags = torrent.get('tags', [])
+            tags_text = ""
+            if tags:
+                tags_text = f"<p>🏷️ 标签: {', '.join(['#' + tag for tag in tags])}</p>"
+
+            # 处理演员信息
+            actresses = torrent.get('actress', [])
+            actress_text = ""
+            if actresses:
+                actress_names = [actress.get('name', '') for actress in actresses if 'name' in actress]
+                if actress_names:
+                    actress_text = f"<p>👩 演员: {', '.join(actress_names)}</p>"
 
             # 处理免费状态 - 添加详细日志以辅助调试
             status = torrent.get('status', {})
             free_badge = ""
+            free_detail = ""
 
             # 检查status字段结构
-            if isinstance(status, dict) :
-                has_status = status.get('hasStatus', False)
-                LOGGER.debug(f"种子 {tid} 状态: hasStatus={has_status}, status={status}")
+            if isinstance(status, dict):
+                has_status = status.get('hasStatus', True)  # 默认假设有状态
+                LOGGER.debug(f"种子 {tid} 状态: status={status}")
 
-                if has_status :
+                if 'name' in status and status['name']:  # 有明确名称的情况
                     status_name = status.get('name', '')
                     down_coefficient = status.get('downCoefficient', 1)
                     up_coefficient = status.get('upCoefficient', 1)
 
-                    if status_name :
+                    end_at = status.get('endAt', 0)
+                    end_time = ""
+                    if end_at:
+                        end_time = time.strftime('%Y-%m-%d %H:%M', time.localtime(end_at))
+                        free_detail = f"(到期: {end_time})"
+
+                    if status_name:
                         free_badge = f"【{status_name}】"
-                    elif down_coefficient == 0 :
+
+                    # 补充系数信息
+                    if down_coefficient == 0:
                         free_badge = "【FREE】"
-                    elif down_coefficient < 1 :
-                        free_badge = f"【{int((1 - down_coefficient) * 100)}%OFF】"
-                    elif up_coefficient > 1 :
-                        free_badge = f"【{up_coefficient}x上传】"
+                        free_detail = f"免费下载 {free_detail}"
+                    elif down_coefficient < 1:
+                        discount = int((1 - down_coefficient) * 100)
+                        free_badge = f"【{discount}%OFF】"
+                        free_detail = f"下载折扣{discount}% {free_detail}"
+
+                    if up_coefficient > 1:
+                        if free_badge:
+                            free_badge += f" {up_coefficient}x上传"
+                        else:
+                            free_badge = f"【{up_coefficient}x上传】"
+                        free_detail += f" {up_coefficient}倍上传"
+                elif has_status is False:
+                    # 没有特殊状态
+                    free_badge = "【普通】"
+                    free_detail = "无优惠"
 
             # 处理优惠标记
             systematic = torrent.get('systematic', {})
-            if isinstance(systematic, dict) and systematic.get('name', '') :
+            if isinstance(systematic, dict) and systematic.get('name', ''):
                 sys_name = systematic.get('name', '')
-                if free_badge :
+                if free_badge:
                     free_badge += f" {sys_name}"
-                else :
+                else:
                     free_badge = f"【{sys_name}】"
+                free_detail += f" {sys_name}"
 
-            # 调试日志
-            LOGGER.debug(f"种子 {tid} 最终免费标记: {free_badge}")
+            # 整理显示状态信息
+            status_display = ""
+            if free_badge:
+                status_display = f"<p>🏷️ <b>{free_badge}</b> {free_detail}</p>"
 
             telegraph_content.append(
-                f"<li>"
+                f"<li id='torrent-{tid}'>"
                 f"<h4>{free_badge} {title}</h4>"
-                f"<p>📁 大小: <b>{size}</b></p>"
-                f"<p>👥 做种/下载: <b>{seeds}/{leech}</b></p>"
-                f"<p>📂 分类: {category}</p>"
-                f"<p>📅 上传日期: {created}</p>"
+                f"<p>📁 大小: <b>{size}</b> | 👥 做种/下载: <b>{seeds}/{leech}</b> | 🔄 完成: <b>{finish}</b></p>"
+                f"<p>📂 分类: {category} | 📅 上传日期: {created}</p>"
+                f"{status_display}"
+                f"{tags_text}"
+                f"{actress_text}"
                 f"<p>🆔 种子ID: <code>{tid}</code></p>"
-                f"<p> 种子ID: <code>{tid}</code></p>"
-                f"<p>📥 下载命令:</p>"
-                f"<p><code>/fsm -do {tid}</code></p>"
-                f"<p>📋 详情命令:</p>"
-                f"<p><code>/fsm -de {tid}</code></p>"
+                f"<p>📥 下载命令: <code>/fsm -do {tid}</code></p>"
+                f"<p>📋 详情命令: <code>/fsm -de {tid}</code></p>"
                 f"</li><hr/>"
             )
         telegraph_content.append("</ol>")
@@ -792,47 +709,66 @@ async def handle_search_results(client, message, search_results, user_id, page_p
         result_msg = (
             f"<b>🔍 FSM搜索结果</b>\n\n"
             f"<b>关键词:</b> <code>{keyword}</code>\n"
-            f"<b>找到结果:</b> {len(torrents)} 个\n"
+            f"<b>找到结果:</b> {total_count} 个\n"
             f"<b>当前页码:</b> {current_page}/{max_page}\n\n"
             f"📋 完整列表：<a href=\"{telegraph_url}\">在Telegraph查看</a>\n\n"
             f"👇 <i>点击下方按钮翻页或刷新</i>\n"
         )
 
-        if torrents :
+        if torrents:
             result_msg += "\n<b>📊 热门结果预览:</b>\n"
-            for i, torrent in enumerate(torrents[:3], 1) :
+            for i, torrent in enumerate(torrents[:3], 1):
                 t_title = torrent.get('title', '未知')
                 t_seeds = torrent.get('peers', {}).get('upload', 0) if isinstance(torrent.get('peers'),
                                                                                   dict) else torrent.get('_seeders', 0)
                 t_size = torrent.get('fileSize', '未知')
                 t_tid = torrent.get('tid')
+                t_finish = torrent.get('finish', 0)  # 完成数
 
                 # 处理结果预览中的免费状态
                 status = torrent.get('status', {})
                 free_badge = ""
-                if isinstance(status, dict) and status.get('hasStatus', False) :
-                    status_name = status.get('name', '')
-                    down_coefficient = status.get('downCoefficient', 1)
+                if isinstance(status, dict):
+                    if 'name' in status and status['name']:
+                        status_name = status.get('name', '')
+                        down_coefficient = status.get('downCoefficient', 1)
+                        up_coefficient = status.get('upCoefficient', 1)
 
-                    if status_name :
-                        free_badge = f"【{status_name}】"
-                    elif down_coefficient == 0 :
-                        free_badge = "【FREE】"
-                    elif down_coefficient < 1 :
-                        free_badge = f"【{int((1 - down_coefficient) * 100)}%OFF】"
+                        if status_name:
+                            free_badge = f"【{status_name}】"
+                        elif down_coefficient == 0:
+                            free_badge = "【FREE】"
+                        elif down_coefficient < 1:
+                            free_badge = f"【{int((1 - down_coefficient) * 100)}%OFF】"
+
+                        if up_coefficient > 1:
+                            if free_badge:
+                                free_badge += f"⬆️{up_coefficient}x"
+                            else:
+                                free_badge = f"【⬆️{up_coefficient}x】"
+                    elif status.get('hasStatus', True) is False:
+                        free_badge = "【普通】"
 
                 # 添加系统标记
                 systematic = torrent.get('systematic', {})
-                if isinstance(systematic, dict) and systematic.get('name', '') :
+                if isinstance(systematic, dict) and systematic.get('name', ''):
                     sys_name = systematic.get('name', '')
-                    if free_badge :
+                    if free_badge:
                         free_badge += f" {sys_name}"
-                    else :
+                    else:
                         free_badge = f"【{sys_name}】"
+
+                # 处理标签
+                tags = torrent.get('tags', [])
+                tags_preview = ""
+                if tags and len(tags) > 0:
+                    tags_preview = f" | 🏷️ {', '.join(['#' + tag for tag in tags[:2]])}"
+                    if len(tags) > 2:
+                        tags_preview += "..."
 
                 result_msg += (
                     f"{i}. <b>{free_badge} {t_title}</b>\n"
-                    f"   📁 {t_size} | 👥 {t_seeds} | 🆔 <code>{t_tid}</code>\n\n"
+                    f"   📁 {t_size} | 👥 {t_seeds} | 🔄 {t_finish} | 🆔 <code>{t_tid}</code>{tags_preview}\n\n"
                 )
 
         # 调试日志
@@ -840,22 +776,22 @@ async def handle_search_results(client, message, search_results, user_id, page_p
 
         # 构造分页、刷新、取消按钮
         buttons = ButtonMaker()
-        if max_page > 1 :
-            if current_page > 1 :
+        if max_page > 1:
+            if current_page > 1:
                 # 为浏览分类添加特殊前缀，明确区分
-                if page_prefix == BROWSE_PREFIX :
+                if page_prefix == BROWSE_PREFIX:
                     buttons.data_button("⬅️ 上一页", f"{page_prefix}page_{current_page - 1}")
-                else :
+                else:
                     buttons.data_button("⬅️ 上一页", f"{page_prefix}{current_page - 1}")
-            if current_page < max_page :
-                if page_prefix == BROWSE_PREFIX :
+            if current_page < max_page:
+                if page_prefix == BROWSE_PREFIX:
                     buttons.data_button("下一页 ➡️", f"{page_prefix}page_{current_page + 1}")
-                else :
+                else:
                     buttons.data_button("下一页 ➡️", f"{page_prefix}{current_page + 1}")
         # 刷新按钮也需要特殊处理
-        if page_prefix == BROWSE_PREFIX :
+        if page_prefix == BROWSE_PREFIX:
             buttons.data_button("🔄 刷新", f"{page_prefix}page_{current_page}")
-        else :
+        else:
             buttons.data_button("🔄 刷新", f"{page_prefix}{current_page}")
         buttons.data_button("❌ 取消", f"{TYPE_PREFIX}cancel")
         button_layout = buttons.build_menu(2)
@@ -863,13 +799,179 @@ async def handle_search_results(client, message, search_results, user_id, page_p
         # 最后更新消息
         await edit_message(message, result_msg, button_layout)
 
-    except Exception as e :
+    except Exception as e:
         LOGGER.error(f"处理搜索结果错误: {e}\n{traceback.format_exc()}")
         err = str(e).lower()
-        if "message_not_modified" in err or "tag is not allowed" in err :
+        if "message_not_modified" in err or "tag is not allowed" in err:
             # 如果内容没变或 Telegraph 标签错误，提醒用户
             return await edit_message(message, f"<b>❌ 处理搜索结果失败:</b> {str(e)}")
         await edit_message(message, f"<b>❌ 处理搜索结果异常:</b> {str(e)}")
+
+
+@new_task
+async def show_torrent_details(client, message, tid):
+    """显示种子详细信息"""
+    try:
+        await send_message(message, f"<b>🔍 正在获取种子 <code>{tid}</code> 的详细信息...</b>")
+        torrent_details = await get_torrent_details(tid)
+
+        if not torrent_details.get('success', False):
+            return await send_message(message, f"<b>❌ 获取种子详情失败:</b> {torrent_details.get('msg', '未知错误')}")
+
+        torrent = torrent_details.get('data', {}).get('torrent', {})
+
+        # 提取基本信息
+        title = torrent.get('title', f'未知标题')
+        file_size = torrent.get('fileSize', '未知大小')
+        upload = torrent.get('peers', {}).get('upload', 0)
+        download = torrent.get('peers', {}).get('download', 0)
+        finish = torrent.get('finish', 0)
+        created_ts = torrent.get('createdTs', 0)
+        created = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(created_ts)) if created_ts else '未知'
+
+        # 获取类型、标签信息
+        torrent_type = torrent.get('type', {}).get('name', '未知')
+        tags = torrent.get('tags', [])
+        tags_text = ", ".join([f"#{tag}" for tag in tags]) if tags else "无标签"
+
+        # 处理免费状态
+        status = torrent.get('status', {})
+        free_text = ""
+        status_end_time = ""
+
+        # 详细记录状态信息
+        LOGGER.debug(f"种子状态信息: {status}")
+
+        if status:
+            has_status = status.get('hasStatus', True)  # 默认有状态
+            status_name = status.get('name', '')
+            down_coefficient = status.get('downCoefficient', 1)
+            up_coefficient = status.get('upCoefficient', 1)
+            end_at = status.get('endAt', 0)
+
+            if end_at:
+                status_end_time = time.strftime('%Y-%m-%d %H:%M', time.localtime(end_at))
+
+            LOGGER.debug(
+                f"免费状态详情: 名称={status_name}, 下载系数={down_coefficient}, 上传系数={up_coefficient}, 结束时间={status_end_time}")
+
+            if status_name:
+                free_text = f"<b>🏷️ 优惠:</b> {status_name}"
+                if status_end_time:
+                    free_text += f" (到期: {status_end_time})"
+                free_text += "\n"
+            elif down_coefficient == 0:
+                free_text = f"<b>🏷️ 优惠:</b> 免费 (FREE)"
+                if status_end_time:
+                    free_text += f" (到期: {status_end_time})"
+                free_text += "\n"
+            elif down_coefficient < 1:
+                free_text = f"<b>🏷️ 优惠:</b> {int((1 - down_coefficient) * 100)}%折扣"
+                if status_end_time:
+                    free_text += f" (到期: {status_end_time})"
+                free_text += "\n"
+            elif has_status is False:
+                free_text = "<b>🏷️ 优惠:</b> 无优惠\n"
+
+            if up_coefficient > 1:
+                free_text += f"<b>📈 上传:</b> {up_coefficient}倍\n"
+
+        # 创建详情消息
+        detail_msg = (
+            f"<b>🎬 {title}</b>\n\n"
+            f"<b>📊 种子信息:</b>\n"
+            f"• <b>大小:</b> {file_size}\n"
+            f"• <b>做种/下载:</b> {upload}/{download}\n"
+            f"• <b>完成数:</b> {finish}\n"
+            f"• <b>分类:</b> {torrent_type}\n"
+            f"• <b>发布时间:</b> {created}\n"
+        )
+
+        if free_text:
+            detail_msg += free_text
+
+        detail_msg += f"• <b>标签:</b> {tags_text}\n\n"
+
+        # 处理演员信息（如果有）
+        actresses = torrent.get('actress', [])
+        if actresses:
+            actress_names = [actress.get('name', '未知') for actress in actresses]
+            detail_msg += f"<b>👩 演员:</b> {', '.join(actress_names)}\n\n"
+
+        # 添加下载命令
+        detail_msg += f"<b>📥 下载命令:</b>\n<code>/fsm -do {tid}</code>\n"
+
+        # 创建按钮
+        buttons = ButtonMaker()
+        has_content = False
+
+        # 检查是否有描述内容
+        if torrent.get('content'):
+            has_content = True
+
+        if torrent.get('cover') or has_content or torrent.get('screenshots'):
+            # 使用Telegraph创建详情页面
+            telegraph_content = []
+            telegraph_content.append(f"<h3>{title}</h3>")
+            telegraph_content.append(f"<p>📁 大小: {file_size} | 👥 做种/下载: {upload}/{download}</p>")
+            telegraph_content.append(f"<p>📂 分类: {torrent_type} | 📅 上传日期: {created}</p>")
+
+            if free_text:
+                telegraph_content.append(f"<p>{free_text.replace('<b>', '<strong>').replace('</b>', '</strong>')}</p>")
+
+            # 添加标签
+            if tags:
+                telegraph_content.append(f"<p>🏷️ 标签: {tags_text}</p>")
+
+            # 添加演员
+            if actresses:
+                telegraph_content.append(f"<p>👩 演员: {', '.join(actress_names)}</p>")
+
+            # 添加封面图片
+            if torrent.get('cover'):
+                telegraph_content.append(f"<img src='{torrent.get('cover')}' />")
+
+            # 添加内容描述
+            if has_content:
+                telegraph_content.append("<h4>📝 内容描述:</h4>")
+                telegraph_content.append(torrent.get('content'))
+
+            # 添加截图
+            screenshots = torrent.get('screenshots', [])
+            if screenshots:
+                telegraph_content.append("<h4>📸 截图:</h4>")
+                for screenshot in screenshots:
+                    telegraph_content.append(f"<img src='{screenshot}' />")
+
+            # 添加评论信息
+            comments = torrent_details.get('data', {}).get('commentInfo', {}).get('list', [])
+            if comments:
+                telegraph_content.append("<h4>💬 评论:</h4>")
+                for comment in comments:
+                    commenter = comment.get('userInfo', {}).get('username', '匿名')
+                    comment_time = time.strftime('%Y-%m-%d %H:%M', time.localtime(comment.get('ts', 0)))
+                    comment_content = comment.get('comment', '')
+                    telegraph_content.append(
+                        f"<p><strong>{commenter}</strong> ({comment_time}):<br>{comment_content}</p>")
+
+            telegraph_page = await telegraph.create_page(
+                title=f"FSM种子详情: {title}",
+                content=''.join(telegraph_content)
+            )
+            telegraph_url = telegraph_page['url']
+            buttons.url_button("📋 查看完整详情", telegraph_url)
+
+        buttons.data_button("📥 获取下载链接", f"{DOWNLOAD_PREFIX}{tid}")
+        buttons.data_button("❌ 关闭", f"{DETAILS_PREFIX}close")
+        button = buttons.build_menu(2)
+
+        return await send_message(message, detail_msg, button)
+
+    except Exception as e:
+        LOGGER.error(f"显示种子详情错误: {e}")
+        error_trace = traceback.format_exc()
+        LOGGER.error(f"显示种子详情异常详情:\n{error_trace}")
+        return await send_message(message, f"<b>❌ 显示种子详情失败:</b> {str(e)}")
 
 
 @new_task
