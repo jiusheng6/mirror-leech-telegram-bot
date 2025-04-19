@@ -42,11 +42,12 @@ search_contexts = {}
 
 # 辅助函数：HTML转义字符
 def escape_html(text):
-    """转义HTML中的特殊字符"""
-    if not text:
+    """转义HTML中的特殊字符，确保输入是字符串"""
+    if text is None:
         return ""
+    if not isinstance(text, str):
+        text = str(text)  # 将非字符串类型转换为字符串
     return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-
 
 @new_task
 async def fsm_search(client, message):
