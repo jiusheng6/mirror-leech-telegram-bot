@@ -361,14 +361,55 @@ async def fsm_callback(client, callback_query):
             back_data = data[len(BACK_PREFIX):]
             step = back_data
 
+            # 获取当前的搜索步骤
+            current_step = search_contexts[user_id].get('search_step', '')
+
             # 根据当前步骤执行返回操作
-            if step == "type":
+            if current_step == 'browse_results':
+                # 浏览模式下，直接返回到分类选择
+                await callback_query.answer("返回到分类选择")
+
+                # 重新获取分类并显示
+                torrent_types = await get_torrent_types()
+                buttons = ButtonMaker()
+                for i, type_item in enumerate(torrent_types):
+                    buttons.data_button(type_item['name'], f"{BROWSE_PREFIX}{i}")
+
+                buttons.data_button("全部分类", f"{BROWSE_PREFIX}all")
+                buttons.data_button("取消", f"{BROWSE_PREFIX}cancel")
+
+                button = buttons.build_menu(2)
+                search_contexts[user_id]['search_step'] = 'select_browse_type'
+                return await edit_message(message, "<b>📂 请选择要浏览的种子分类:</b>", button)
+
+            elif current_step == 'view_results':
+                # 搜索模式下，返回到优惠类型选择
+                if 'keyword' not in search_contexts[user_id]:
+                    return await callback_query.answer("无法返回，搜索上下文已丢失", show_alert=True)
+
+                await callback_query.answer("返回到优惠类型选择")
+
+                # 重新获取系统类型并显示
+                systematics = await get_systematics()
+                buttons = ButtonMaker()
+                for i, sys_item in enumerate(systematics):
+                    buttons.data_button(sys_item['name'], f"{SYSTEM_PREFIX}{i}")
+
+                buttons.data_button("全部优惠", f"{SYSTEM_PREFIX}all")
+                buttons.data_button("返回上一步", f"{BACK_PREFIX}type")
+                buttons.data_button("取消", f"{SYSTEM_PREFIX}cancel")
+
+                button = buttons.build_menu(2)
+                search_contexts[user_id]['search_step'] = 'select_system'
+                return await edit_message(message, "<b>🔍 请选择优惠类型:</b>", button)
+
+            elif current_step == 'select_system':
                 # 返回到选择分类类型
                 if 'keyword' not in search_contexts[user_id]:
                     return await callback_query.answer("无法返回，搜索上下文已丢失", show_alert=True)
 
                 keyword = search_contexts[user_id].get('keyword', '')
-                await callback_query.answer(f"返回到分类选择")
+                await callback_query.answer("返回到分类选择")
 
                 # 重新获取分类并显示
                 torrent_types = await get_torrent_types()
@@ -381,30 +422,10 @@ async def fsm_callback(client, callback_query):
 
                 button = buttons.build_menu(2)
                 search_contexts[user_id]['search_step'] = 'select_type'
-                return await edit_message(message, f"<b>🔍 请选择种子分类:</b>", button)
-
-            elif step == "system":
-                # 返回到选择优惠类型
-                if 'keyword' not in search_contexts[user_id]:
-                    return await callback_query.answer("无法返回，搜索上下文已丢失", show_alert=True)
-
-                await callback_query.answer(f"返回到优惠类型选择")
-
-                # 重新获取系统类型并显示
-                systematics = await get_systematics()
-                buttons = ButtonMaker()
-                for i, sys_item in enumerate(systematics):
-                    buttons.data_button(sys_item['name'], f"{SYSTEM_PREFIX}{i}")
-
-                buttons.data_button("全部优惠", f"{SYSTEM_PREFIX}all")
-                buttons.data_button("取消", f"{SYSTEM_PREFIX}cancel")
-
-                button = buttons.build_menu(2)
-                search_contexts[user_id]['search_step'] = 'select_system'
-                return await edit_message(message, f"<b>🔍 请选择优惠类型:</b>", button)
+                return await edit_message(message, "<b>🔍 请选择种子分类:</b>", button)
 
             else:
-                # 默认返回到搜索起点
+                # 其他情况，返回搜索起点
                 await callback_query.answer("返回到搜索起点")
                 if user_id in search_contexts:
                     del search_contexts[user_id]
@@ -586,6 +607,7 @@ async def fsm_callback(client, callback_query):
                     search_results = await search_torrents("", type_id, "0", page=page)
                     # 确保页码正确
                     search_results['data']['page'] = int(page)
+                    search_contexts[user_id]['search_step'] = 'browse_results'  # 标记为浏览结果阶段
                     await handle_search_results(client, message, search_results, user_id, page_prefix=BROWSE_PREFIX)
                 except Exception as e:
                     LOGGER.error(f"浏览分类分页错误: {e}")
@@ -599,6 +621,7 @@ async def fsm_callback(client, callback_query):
                 type_id = search_contexts[user_id]['type_mapping'].get(browse_data, "0")
             search_contexts[user_id]['selected_type'] = type_id
             search_contexts[user_id]['selected_system'] = "0"  # 默认选择全部优惠
+            search_contexts[user_id]['search_step'] = 'browse_results'  # 标记为浏览结果阶段
 
             await callback_query.answer("正在浏览分类...")
             await edit_message(message, "<b>📂 正在获取分类内容...</b>")
@@ -701,14 +724,17 @@ async def handle_search_results(client, message, search_results, user_id, page_p
     if not torrents:
         # 无结果时添加返回按钮 - 根据当前上下文决定返回步骤
         buttons = ButtonMaker()
+        # 添加返回上一步按钮 - 根据当前工作流程确定返回目标
         search_step = search_contexts[user_id].get('search_step', '')
-
-        if search_step in ['select_system', 'view_results']:
-            buttons.data_button("🔙 返回上一步", f"{BACK_PREFIX}system")
-        elif search_step in ['select_type', 'select_browse_type']:
-            buttons.data_button("🔙 返回上一步", f"{BACK_PREFIX}type")
-        else:
-            buttons.data_button("🔙 返回上一步", f"{BACK_PREFIX}start")
+        if search_step == 'browse_results':
+            # 分类浏览模式 - 返回到分类选择
+            buttons.data_button("🔙 返回分类选择", f"{BACK_PREFIX}browse")
+        elif search_step == 'view_results':
+            # 搜索模式 - 返回到优惠选择
+            buttons.data_button("🔙 返回优惠选择", f"{BACK_PREFIX}system")
+        elif search_step == 'select_system':
+            # 优惠选择阶段 - 返回到分类选择
+            buttons.data_button("🔙 返回分类选择", f"{BACK_PREFIX}type")
 
         button = buttons.build_menu(1)
 
