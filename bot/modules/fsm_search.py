@@ -1032,6 +1032,7 @@ async def show_torrent_details(client, message, tid):
         LOGGER.error(f"显示种子详情异常详情:\n{error_trace}")
         return await send_message(message, f"<b>❌ 显示种子详情失败:</b> {str(e)}")
 
+
 @new_task
 async def fsm_command_handler(client, message) :
     """处理 /fsm 命令，支持选项和搜索功能"""
