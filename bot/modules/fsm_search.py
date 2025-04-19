@@ -24,6 +24,7 @@ Config.load()
 # 常量
 RESULTS_PER_PAGE = 10  # 每页显示的结果数
 MAX_TELEGRAPH_RESULTS = 50  # Telegraph页面最大显示结果数
+PREVIEW_RESULTS = 4  # 预览结果数量，增加到4个
 
 # 回调数据前缀
 TYPE_PREFIX = "fsmt:"  # 缩短前缀
@@ -35,6 +36,7 @@ DETAILS_PREFIX = "fsmi:"  # 种子详情前缀
 HOT_PREFIX = "fsmh:"  # 热门种子前缀
 LATEST_PREFIX = "fsml:"  # 最新种子前缀
 VIEW_PREFIX = "fsmv:"  # 查看详情前缀 - 新增
+BACK_PREFIX = "fsmback:"  # 返回前缀 - 新增
 
 # 存储当前搜索上下文的字典，使用用户ID作为键
 search_contexts = {}
@@ -48,6 +50,7 @@ def escape_html(text):
     if not isinstance(text, str):
         text = str(text)  # 将非字符串类型转换为字符串
     return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
 
 @new_task
 async def fsm_search(client, message):
@@ -76,6 +79,8 @@ async def fsm_search(client, message):
                 search_contexts[user_id]['type_mapping'] = {}
             search_contexts[user_id]['type_mapping'][str(i)] = type_item['id']
             search_contexts[user_id]['keyword'] = keyword
+            search_contexts[user_id]['search_step'] = 'select_type'  # 记录当前步骤
+            search_contexts[user_id]['indicator_msg'] = indicator_msg  # 保存消息对象
             LOGGER.debug(f"FSM搜索: 添加分类按钮: {type_item['name']} (ID: {type_item['id']})")
 
         buttons.data_button("全部分类", f"{TYPE_PREFIX}all")
@@ -131,6 +136,8 @@ async def fsm_browse(client, message):
                 search_contexts[user_id]['type_mapping'] = {}
             search_contexts[user_id]['type_mapping'][str(i)] = type_item['id']
             search_contexts[user_id]['keyword'] = "分类浏览"  # 标记为分类浏览
+            search_contexts[user_id]['search_step'] = 'select_browse_type'  # 记录当前步骤
+            search_contexts[user_id]['indicator_msg'] = indicator_msg  # 保存消息对象
             LOGGER.debug(f"FSM分类浏览: 添加分类按钮: {type_item['name']} (ID: {type_item['id']})")
 
         buttons.data_button("全部分类", f"{BROWSE_PREFIX}all")
@@ -163,6 +170,8 @@ async def fsm_hot(client, message, page="1"):
         search_contexts[user_id]['selected_system'] = "0"
         search_contexts[user_id]['current_page'] = int(page)
         search_contexts[user_id]['sort_type'] = "hot"
+        search_contexts[user_id]['search_step'] = 'view_hot'  # 记录当前步骤
+        search_contexts[user_id]['indicator_msg'] = indicator_msg  # 保存消息对象
 
         # 获取所有种子（使用指定页码）
         search_results = await search_torrents("", "0", "0", page=page)
@@ -229,6 +238,8 @@ async def fsm_latest(client, message, page="1"):
         search_contexts[user_id]['selected_system'] = "0"
         search_contexts[user_id]['current_page'] = int(page)
         search_contexts[user_id]['sort_type'] = "latest"
+        search_contexts[user_id]['search_step'] = 'view_latest'  # 记录当前步骤
+        search_contexts[user_id]['indicator_msg'] = indicator_msg  # 保存消息对象
 
         # 获取所有种子（使用指定页码）
         search_results = await search_torrents("", "0", "0", page=page)
@@ -291,6 +302,8 @@ async def fsm_search_by_tag(client, message, tag, page="1"):
         search_contexts[user_id]['selected_type'] = "0"
         search_contexts[user_id]['selected_system'] = "0"
         search_contexts[user_id]['current_page'] = int(page)
+        search_contexts[user_id]['search_step'] = 'search_by_tag'  # 记录当前步骤
+        search_contexts[user_id]['indicator_msg'] = indicator_msg  # 保存消息对象
 
         # 使用标签作为关键词搜索
         search_results = await search_torrents(tag, "0", "0", page=page)
@@ -316,7 +329,61 @@ async def fsm_callback(client, callback_query):
         search_contexts[user_id] = {}
 
     try:
-        if data.startswith(TYPE_PREFIX):
+        # 处理返回上一步按钮
+        if data.startswith(BACK_PREFIX):
+            back_data = data[len(BACK_PREFIX):]
+            step = back_data
+
+            # 根据当前步骤执行返回操作
+            if step == "type":
+                # 返回到选择分类类型
+                if 'keyword' not in search_contexts[user_id]:
+                    return await callback_query.answer("无法返回，搜索上下文已丢失", show_alert=True)
+
+                keyword = search_contexts[user_id].get('keyword', '')
+                await callback_query.answer(f"返回到分类选择")
+
+                # 重新获取分类并显示
+                torrent_types = await get_torrent_types()
+                buttons = ButtonMaker()
+                for i, type_item in enumerate(torrent_types):
+                    buttons.data_button(type_item['name'], f"{TYPE_PREFIX}{i}")
+
+                buttons.data_button("全部分类", f"{TYPE_PREFIX}all")
+                buttons.data_button("取消", f"{TYPE_PREFIX}cancel")
+
+                button = buttons.build_menu(2)
+                search_contexts[user_id]['search_step'] = 'select_type'
+                return await edit_message(message, f"<b>🔍 请选择种子分类:</b>", button)
+
+            elif step == "system":
+                # 返回到选择优惠类型
+                if 'keyword' not in search_contexts[user_id]:
+                    return await callback_query.answer("无法返回，搜索上下文已丢失", show_alert=True)
+
+                await callback_query.answer(f"返回到优惠类型选择")
+
+                # 重新获取系统类型并显示
+                systematics = await get_systematics()
+                buttons = ButtonMaker()
+                for i, sys_item in enumerate(systematics):
+                    buttons.data_button(sys_item['name'], f"{SYSTEM_PREFIX}{i}")
+
+                buttons.data_button("全部优惠", f"{SYSTEM_PREFIX}all")
+                buttons.data_button("取消", f"{SYSTEM_PREFIX}cancel")
+
+                button = buttons.build_menu(2)
+                search_contexts[user_id]['search_step'] = 'select_system'
+                return await edit_message(message, f"<b>🔍 请选择优惠类型:</b>", button)
+
+            else:
+                # 默认返回到搜索起点
+                await callback_query.answer("返回到搜索起点")
+                if user_id in search_contexts:
+                    del search_contexts[user_id]
+                return await edit_message(message, "<b>🔍 搜索已重置。请使用 /fsm 命令重新开始搜索。</b>")
+
+        elif data.startswith(TYPE_PREFIX):
             type_data = data[len(TYPE_PREFIX):]
             if type_data == "cancel":
                 await callback_query.answer("已取消搜索")
@@ -346,9 +413,11 @@ async def fsm_callback(client, callback_query):
                 search_contexts[user_id]['system_mapping'][str(i)] = sys_item['id']
 
             buttons.data_button("全部优惠", f"{SYSTEM_PREFIX}all")
+            buttons.data_button("返回上一步", f"{BACK_PREFIX}type")
             buttons.data_button("取消", f"{SYSTEM_PREFIX}cancel")
 
             button = buttons.build_menu(2)
+            search_contexts[user_id]['search_step'] = 'select_system'
             await callback_query.answer("请选择优惠类型")
             await edit_message(message, "<b>🔍 请选择优惠类型:</b>", button)
 
@@ -367,6 +436,7 @@ async def fsm_callback(client, callback_query):
             else:
                 systematics_id = search_contexts[user_id]['system_mapping'].get(sys_data, "0")
             search_contexts[user_id]['selected_system'] = systematics_id
+            search_contexts[user_id]['search_step'] = 'view_results'
 
             await callback_query.answer("正在搜索中...")
             await edit_message(message, f"<b>🔍 正在搜索:</b> <i>{keyword}</i>...")
@@ -384,6 +454,8 @@ async def fsm_callback(client, callback_query):
             # 处理查看详情按钮回调
             tid = data[len(VIEW_PREFIX):]
             await callback_query.answer(f"正在获取种子 {tid} 的详情...")
+            loading_msg = await send_message(message, f"<b>🔍 正在获取种子 <code>{tid}</code> 的详细信息...</b>")
+            search_contexts[user_id]['loading_msg'] = loading_msg
             await show_torrent_details(client, message, tid)
 
         elif data.startswith(DOWNLOAD_PREFIX):
@@ -548,6 +620,12 @@ async def fsm_callback(client, callback_query):
             details_data = data[len(DETAILS_PREFIX):]
             if details_data == "close":
                 await callback_query.answer("已关闭详情")
+                # 如果有之前的loading消息，同时删除它
+                if 'loading_msg' in search_contexts[user_id]:
+                    try:
+                        await delete_message(search_contexts[user_id]['loading_msg'])
+                    except Exception as e:
+                        LOGGER.error(f"删除加载消息错误: {e}")
                 return await delete_message(message)
 
     except Exception as e:
@@ -579,9 +657,17 @@ async def handle_search_results(client, message, search_results, user_id, page_p
     total_count = search_results['data'].get('torrentCount', len(torrents))
 
     if not torrents:
-        # 无结果时添加返回按钮
+        # 无结果时添加返回按钮 - 根据当前上下文决定返回步骤
         buttons = ButtonMaker()
-        buttons.data_button("🔙 返回上一步", f"{TYPE_PREFIX}cancel")
+        search_step = search_contexts[user_id].get('search_step', '')
+
+        if search_step in ['select_system', 'view_results']:
+            buttons.data_button("🔙 返回上一步", f"{BACK_PREFIX}system")
+        elif search_step in ['select_type', 'select_browse_type']:
+            buttons.data_button("🔙 返回上一步", f"{BACK_PREFIX}type")
+        else:
+            buttons.data_button("🔙 返回上一步", f"{BACK_PREFIX}start")
+
         button = buttons.build_menu(1)
 
         return await edit_message(
@@ -713,14 +799,14 @@ async def handle_search_results(client, message, search_results, user_id, page_p
             f"<b>关键词:</b> <code>{escape_html(keyword)}</code>\n"
             f"<b>找到结果:</b> {total_count} 个\n"
             f"<b>当前页码:</b> {current_page}/{max_page}\n\n"
-            f"📋 完整列表：<a href=\"{telegraph_url}\">在Telegraph查看</a>\n\n"
-            f"👇 <i>点击下方按钮翻页或刷新</i>\n"
+            f"📋 <b>完整列表：</b><a href=\"{telegraph_url}\">在Telegraph查看</a>\n\n"
+            f"👇 <i>点击下方按钮翻页或查看详情</i>\n"
         )
 
         if torrents:
             result_msg += "\n<b>📊 热门结果预览:</b>\n"
-            # 使用HTML格式美化热门结果
-            for i, torrent in enumerate(torrents[:3], 1):
+            # 美化热门结果预览，增加到4个
+            for i, torrent in enumerate(torrents[:PREVIEW_RESULTS], 1):
                 t_title = torrent.get('title', '未知')
                 t_seeds = torrent.get('peers', {}).get('upload', 0) if isinstance(torrent.get('peers'),
                                                                                   dict) else torrent.get('_seeders', 0)
@@ -770,9 +856,11 @@ async def handle_search_results(client, message, search_results, user_id, page_p
                     if len(tags) > 2:
                         tags_preview += "..."
 
+                # 美化结果预览格式
                 result_msg += (
-                    f"{i}. <b>{free_badge} {escape_html(t_title)}</b>\n"
-                    f"   📁 {escape_html(t_size)} | 👥 {t_seeds} | 🔄 {t_finish} | 🆔 <code>{escape_html(t_tid)}</code>{tags_preview}\n\n"
+                    f"<b>{i}. {free_badge} {escape_html(t_title)}</b>\n"
+                    f"   <code>📁 {escape_html(t_size)} | 👥 {t_seeds} | 🔄 {t_finish}</code>\n"
+                    f"   <code>🆔 {escape_html(t_tid)}</code>{tags_preview}\n\n"
                 )
 
         # 调试日志
@@ -782,7 +870,7 @@ async def handle_search_results(client, message, search_results, user_id, page_p
         buttons = ButtonMaker()
 
         # 为每个热门结果添加查看详情按钮
-        for i, torrent in enumerate(torrents[:3], 1):
+        for i, torrent in enumerate(torrents[:PREVIEW_RESULTS], 1):
             tid = torrent.get('tid')
             buttons.data_button(f"👁 查看详情 #{i}", f"{VIEW_PREFIX}{tid}")
 
@@ -798,6 +886,14 @@ async def handle_search_results(client, message, search_results, user_id, page_p
                     buttons.data_button("下一页 ➡️", f"{page_prefix}page_{current_page + 1}")
                 else:
                     buttons.data_button("下一页 ➡️", f"{page_prefix}{current_page + 1}")
+
+        # 添加返回上一步按钮
+        search_step = search_contexts[user_id].get('search_step', '')
+        if search_step in ['select_system', 'view_results']:
+            buttons.data_button("🔙 返回上一步", f"{BACK_PREFIX}system")
+        elif search_step in ['select_type', 'select_browse_type']:
+            buttons.data_button("🔙 返回上一步", f"{BACK_PREFIX}type")
+
         # 刷新按钮也需要特殊处理
         if page_prefix == BROWSE_PREFIX:
             buttons.data_button("🔄 刷新", f"{page_prefix}page_{current_page}")
@@ -822,7 +918,15 @@ async def handle_search_results(client, message, search_results, user_id, page_p
 async def show_torrent_details(client, message, tid):
     """显示种子详细信息"""
     try:
-        await send_message(message, f"<b>🔍 正在获取种子 <code>{tid}</code> 的详细信息...</b>")
+        # 如果有之前的loading消息，现在可以删除
+        user_id = message.from_user.id
+        if user_id in search_contexts and 'loading_msg' in search_contexts[user_id]:
+            try:
+                await delete_message(search_contexts[user_id]['loading_msg'])
+                del search_contexts[user_id]['loading_msg']
+            except Exception as e:
+                LOGGER.error(f"删除加载消息错误: {e}")
+
         torrent_details = await get_torrent_details(tid)
 
         if not torrent_details.get('success', False):
@@ -1018,13 +1122,13 @@ async def fsm_command_handler(client, message):
         if option in ['-d', '-do', '-download'] and len(args) >= 3:
             tid = args[2]
             try:
-                await send_message(message, f"正在获取种子 <code>{tid}</code> 的下载链接...")
+                loading_msg = await send_message(message, f"正在获取种子 <code>{tid}</code> 的下载链接...")
                 download_url = await get_download_url(tid)
                 if not download_url:
-                    return await send_message(message, "<b>❌ 无法获取下载链接</b>")
+                    return await edit_message(loading_msg, "<b>❌ 无法获取下载链接</b>")
 
                 msg = f"<code>{download_url}</code>\n\n"
-                return await send_message(message, msg)
+                return await edit_message(loading_msg, msg)
             except Exception as e:
                 LOGGER.error(f"FSM下载命令错误: {e}")
                 return await send_message(message, f"<b>❌ 错误:</b> {str(e)}")
@@ -1082,15 +1186,15 @@ async def fsm_command_handler(client, message):
 
         tid = args[2]
         try:
-            await send_message(message, f"正在获取种子 <code>{tid}</code> 的下载链接...")
+            loading_msg = await send_message(message, f"正在获取种子 <code>{tid}</code> 的下载链接...")
             download_url = await get_download_url(tid)
             if not download_url:
-                return await send_message(message, "<b>❌ 无法获取下载链接</b>")
+                return await edit_message(loading_msg, "<b>❌ 无法获取下载链接</b>")
 
             msg = (
                 f"<code>{download_url}</code>\n\n"
             )
-            return await send_message(message, msg)
+            return await edit_message(loading_msg, msg)
         except Exception as e:
             LOGGER.error(f"FSM下载命令错误: {e}")
             return await send_message(message, f"<b>❌ 错误:</b> {str(e)}")
@@ -1117,10 +1221,13 @@ async def fsm_command_handler(client, message):
             search_contexts[user_id]['selected_type'] = '0'
             search_contexts[user_id]['selected_system'] = '0'
             search_contexts[user_id]['current_page'] = page
+            search_contexts[user_id]['search_step'] = 'direct_search'  # 记录当前步骤
 
-            await send_message(message, f"<b>正在搜索:</b> <i>{escape_html(keyword)}</i> (第 {page} 页)...")
+            loading_msg = await send_message(message,
+                                             f"<b>正在搜索:</b> <i>{escape_html(keyword)}</i> (第 {page} 页)...")
+            search_contexts[user_id]['indicator_msg'] = loading_msg  # 保存消息对象
             search_results = await search_torrents(keyword, '0', '0', page=str(page))
-            return await handle_search_results(client, message, search_results, user_id)
+            return await handle_search_results(client, loading_msg, search_results, user_id)
 
     await fsm_search(client, message)
 
