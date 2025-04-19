@@ -297,7 +297,7 @@ async def fsm_hot(client, message, page="1") :
             else :
                 torrent['_seeders'] = 0
 
-        sorted_torrents = sorted(torrents, key=lambda x : x.get('_seeders', 0), reverse=True)
+        sorted_torrents = sorted(torrents, key=lambda x : int(x.get('_seeders', 0)) if isinstance(x.get('_seeders'), str) else x.get('_seeders', 0), reverse=True)
 
         # 创建热门种子结果集（保留原始的maxPage）
         hot_results = {
@@ -601,23 +601,27 @@ async def fsm_callback(client, callback_query) :
                 error_trace = traceback.format_exc()
                 LOGGER.error(f"浏览分类异常详情:\n{error_trace}")
                 await edit_message(message, f"<b>❌ 浏览分类失败:</b> {str(e)}")
-            else :
-                # 假设是页码，尝试加载该页
-                try :
-                    page = browse_data
-                    page_num = int(page)
-                    type_id = search_contexts[user_id].get('selected_type', "0")
+            else:
+                # 检查是否是页码请求，只有数字才尝试转换
+                if browse_data.isdigit():
+                    try:
+                        page = browse_data
+                        page_num = int(page)
+                        type_id = search_contexts[user_id].get('selected_type', "0")
 
-                    await callback_query.answer(f"正在加载第 {page} 页...")
-                    await edit_message(message, f"<b>📂 正在获取分类内容 (第 {page} 页)...</b>")
+                        await callback_query.answer(f"正在加载第 {page} 页...")
+                        await edit_message(message, f"<b>📂 正在获取分类内容 (第 {page} 页)...</b>")
 
-                    search_contexts[user_id]['current_page'] = page_num
-                    search_results = await search_torrents("", type_id, "0", page=page)
-                    search_results['data']['page'] = page_num
-                    await handle_search_results(client, message, search_results, user_id, page_prefix=BROWSE_PREFIX)
-                except Exception as e :
-                    LOGGER.error(f"浏览分类分页错误: {e}")
-                    await edit_message(message, f"<b>❌ 获取分类第 {browse_data} 页失败:</b> {str(e)}")
+                        search_contexts[user_id]['current_page'] = page_num
+                        search_results = await search_torrents("", type_id, "0", page=page)
+                        search_results['data']['page'] = page_num
+                        await handle_search_results(client, message, search_results, user_id, page_prefix=BROWSE_PREFIX)
+                    except Exception as e:
+                        LOGGER.error(f"浏览分类分页错误: {e}")
+                        await edit_message(message, f"<b>❌ 获取分类第 {browse_data} 页失败:</b> {str(e)}")
+                else:
+                    LOGGER.error(f"浏览分类无效页码: {browse_data}")
+                    await callback_query.answer("无效的页码", show_alert=True)
 
         # 处理热门种子分页回调
         elif data.startswith(HOT_PREFIX) :
